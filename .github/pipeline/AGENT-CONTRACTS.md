@@ -9,7 +9,7 @@ Normative per-agent contract for the nine agents in the reference pipeline (`pip
 - **Purpose**: orchestrate the flow in `FLOW.md`; the only agent that talks to the developer; owns gates G1–G4 and the conditional STOP catalogue.
 - **Inputs**: `/pipeline` arguments; RUN.md if present; each stage subagent's returned artifact reference.
 - **Outputs**: RUN.md only.
-- **Tools**: `agent`, `vscode/askQuestions`, `read/readFile`, `search/listDirectory`, `edit/createFile`, `edit/editFiles` (RUN.md only).
+- **Tools**: `agent/runSubagent`, `vscode/askQuestions`, `read/readFile`, `search/listDirectory`, `edit/createFile`, `edit/editFiles` (RUN.md only).
 - **Forbidden**: terminal, any MCP tool, editing code or any artifact other than RUN.md, reordering Jira keys, expanding scope beyond confirmed repositories, reporting COMPLETE while any repository's status is not PREPARED/REUSED_EXISTING at the relevant stage, invoking a stage agent to regenerate an artifact that already exists without a developer decision to do so.
 - **STOP conditions**: `INVALID_KEY`, `RUN_EXISTS` (raised before any stage agent runs); `PRIMARY_JIRA_NOT_FOUND`, `JIRA_UNAVAILABLE` (raised after reading INTAKE.md, before G1); relays every STOP raised by a subagent verbatim.
 - **Out of scope**: planning, testing, implementation, verification, PR content, git mutation, Jira mutation, model or tool configuration changes, anything the organization's internal pipeline already handles as infrastructure (scheduling, retries beyond the documented bounded loops, concurrency control).
