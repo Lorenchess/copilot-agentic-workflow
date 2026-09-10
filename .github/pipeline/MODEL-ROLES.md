@@ -6,7 +6,7 @@ What each of the nine agent roles demands, and the model assigned to it. Folds t
 
 - **pipeline** — moderate reasoning (gate sequencing, STOP handling); low structured-output needs; must resist treating a developer's free-text gate answer as anything but that gate's answer; no code reasoning; low cost sensitivity (one call per stage transition).
 - **intake** — high injection resistance (the only agent reading raw Jira text); moderate structured-output fidelity (provenance-tagged INTAKE.md sections); low code reasoning; moderate cost sensitivity (one Jira-bounded pass per run).
-- **workspace** — low reasoning depth (mechanical git sequencing); high output fidelity (exact SHAs, exact command forms); no injection exposure (never reads Jira/repo text, only artifacts); no code reasoning; low cost sensitivity.
+- **workspace** — low reasoning depth (mechanical git sequencing); high output fidelity (exact SHAs, exact command forms); low injection exposure (does not receive INTAKE.md or read Jira/repository text; the artifacts it does receive remain untrusted data, contract A7); no code reasoning; low cost sensitivity.
 - **planner** — high reasoning depth (approach, Given/When/Then acceptance criteria, risk analysis); high code reasoning (reads existing repository code); moderate injection resistance (reads repository content); moderate cost sensitivity.
 - **adversary** — high reasoning depth (must find real gaps, not rubber-stamp); moderate code reasoning; moderate injection resistance; moderate cost sensitivity, bounded to two rounds.
 - **tester** — high reasoning depth (translate acceptance criteria into real tests) and high code reasoning (must write compiling, correctly-failing tests); moderate injection resistance; moderate cost sensitivity.
