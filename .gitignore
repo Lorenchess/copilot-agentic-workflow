@@ -28,6 +28,7 @@ Thumbs.db
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/extensions.json
+!.vscode/mcp.json
 .idea/
 *.swp
 *.swo
@@ -35,3 +36,11 @@ Thumbs.db
 # Workflow temporary artifacts
 .pipeline/
 scratch/
+
+# nested repositories: every top-level directory is a separately cloned Git
+# repository that belongs to the multi-repo workspace, not to this
+# workspace-root repo
+/*/
+!/.github/
+!/.vscode/
+!/docs/
