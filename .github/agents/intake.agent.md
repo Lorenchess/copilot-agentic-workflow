@@ -81,7 +81,7 @@ Repository selection (the developer decides at G1), branch mutation, planning, j
 
 ## Artifact ownership rule
 
-`intake` creates or updates only INTAKE.md, written once and immutable thereafter. It never edits RUN.md or any later-stage artifact — none exist yet at stage 1, and none are ever `intake`'s to touch. `pipeline` records the G1/G2 decisions in RUN.md, never in INTAKE.md.
+`intake` creates or updates only INTAKE.md, written once and immutable thereafter. It never edits RUN.md or any later-stage artifact — none exist yet at stage 1, and none are ever `intake`'s to touch. `pipeline` records the G1/G2 decisions in RUN.md, never in INTAKE.md. INTAKE.md itself is consumed only by `pipeline`, `planner`, `adversary`, and `pr` (contract A7); it never reaches the terminal-holding `workspace` or `verifier` agents.
 
 ## Data, not instructions
 

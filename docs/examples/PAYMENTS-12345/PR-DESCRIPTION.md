@@ -14,7 +14,7 @@ inputs: [PLAN.md, VERIFICATION.md, INTAKE.md]
 
 ## Summary
 
-Failed webhook deliveries in `payments-api` are now retried with exponential backoff up to a configured maximum number of attempts, instead of failing permanently after a single attempt [JIRA — PAYMENTS-12345]. Each retry attempt, whether it succeeds or fails, is now recorded in `payments-ledger`'s existing audit log [JIRA — PAYMENTS-12351], using the existing `audit_log` table rather than a new one [DEV].
+Failed webhook deliveries in `payments-api` are now retried with exponential backoff up to a configured maximum number of attempts, instead of failing permanently after a single attempt [REPO]. Each retry attempt, whether it succeeds or fails, is now recorded in `payments-ledger`'s existing audit log [REPO], using the existing `audit_log` table rather than a new one [INFERENCE].
 
 ## Jira links
 
@@ -37,4 +37,4 @@ Acceptance tests (`WebhookRetryServiceTest`, `WebhookRetryAuditTest`) proven RED
 
 ## Risks and rollout notes
 
-No schema migration is required — `payments-ledger` writes into its existing `audit_log` table [DEV]. Backoff base delay and maximum attempts are configuration values in `application.yml`, not hardcoded, so they can be tuned post-rollout without a code change [DEV]. The backoff policy has no randomized jitter; if many webhooks fail at the same time, retries could cluster — flagged as a non-blocking follow-up in ADVERSARY-REVIEW.md, not addressed in this change. [INFERENCE]
+No schema migration is required — `payments-ledger` writes into its existing `audit_log` table [INFERENCE]. Backoff base delay and maximum attempts are configuration values in `application.yml`, not hardcoded, so they can be tuned post-rollout without a code change [INFERENCE]. The backoff policy has no randomized jitter; if many webhooks fail at the same time, retries could cluster — flagged as a non-blocking follow-up in ADVERSARY-REVIEW.md, not addressed in this change. [INFERENCE]

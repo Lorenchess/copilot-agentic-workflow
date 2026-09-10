@@ -37,7 +37,7 @@ Each agent file below is read against its corresponding section of `AGENT-CONTRA
 
 ### `intake.agent.md`
 
-**What to look at**: the only agent with any Jira MCP tool, and the only agent that reads raw Jira text at all (`GUARDRAILS.md`'s Trust boundaries: "agents that hold a terminal ... never read Jira text or raw MCP responses directly"). Its `tools:` list has the four Jira read capabilities commented out pending confirmed tool names (`docs/questions.md`).
+**What to look at**: the only agent with any Jira MCP tool, and the only agent that reads raw Jira text at all. INTAKE.md, the artifact it produces, is consumed only by `pipeline`, `planner`, `adversary`, and `pr` — the terminal-holding `workspace` and `verifier` agents never receive it (contract A7; `GUARDRAILS.md` Trust boundaries). Its `tools:` list has the four Jira read capabilities commented out pending confirmed tool names (`docs/questions.md`).
 
 **Questions to ask of the internal pipeline**:
 - Does the internal pipeline isolate Jira-reading to a single agent/service, or do multiple components read raw Jira text?
@@ -46,7 +46,7 @@ Each agent file below is read against its corresponding section of `AGENT-CONTRA
 
 ### `workspace.agent.md`
 
-**What to look at**: the only agent with a terminal that never reads Jira or repository *text* — only artifacts and git command output (`GUARDRAILS.md` Trust boundaries). Its allowed git command forms are an explicit allowlist (Procedure section), and it runs the stage-9 publish sequence exactly as specified in contract §8.1 / `GUARDRAILS.md`.
+**What to look at**: the only agent that creates branches or pushes — `tester` and `developer` commit only on the feature branch, never a new one and never to the remote — and it never reads Jira or repository *text* at all, not even INTAKE.md (contract A7: `workspace` is a terminal-holding agent and does not receive it). Its allowed git command forms are an explicit allowlist (Procedure section), and it runs the stage-9 publish sequence exactly as amended by contract A3: a per-repository preflight against the tuple approved at G4, then a push of the explicit verified commit object (never a branch name), then a remote-SHA re-read — server-side branch protection governs the branch after that.
 
 **Questions to ask of the internal pipeline**:
 - Does the internal pipeline have a single git-mutating component, or does more than one agent touch git directly?
@@ -91,7 +91,7 @@ Each agent file below is read against its corresponding section of `AGENT-CONTRA
 
 ### `verifier.agent.md`
 
-**What to look at**: independently reruns the *full* test suite (not just the new acceptance tests) rather than trusting `IMPLEMENTATION.md`'s GREEN claim, and performs the test-immutability check (`git diff --stat <redCommit>..HEAD -- <paths>`) as a mechanical command, not a judgment call (Procedure steps 2–3).
+**What to look at**: independently reruns the *full* test suite (not just the new acceptance tests) rather than trusting `IMPLEMENTATION.md`'s GREEN claim, and performs the test-immutability check (`git diff --stat <redCommit>..HEAD -- <paths>`) as a mechanical command, not a judgment call (Procedure steps). It also requires a clean checkout and records a candidate SHA before running any test, then re-checks the checkout and HEAD afterward — the SHA it records as verified is provably the state it actually tested, not just a HEAD read at some point during the run (contract A3).
 
 **Questions to ask of the internal pipeline**:
 - Is there an independent verification step in the internal pipeline, separate from the implementer, or does the implementer's own test run stand as the record of GREEN?
@@ -100,7 +100,7 @@ Each agent file below is read against its corresponding section of `AGENT-CONTRA
 
 ### `pr.agent.md`
 
-**What to look at**: no merge, approve, decline, or create-branch Bitbucket tool appears in its `tools:` list under any name (Forbidden actions, MCP capability expectations) — it can only draft, create, and re-read. It re-confirms the remote SHA via a Bitbucket read tool immediately before creating the PR, in addition to trusting `WORKSPACE.md` (Procedure, stage 10, step 3).
+**What to look at**: no merge, approve, decline, or create-branch Bitbucket tool appears in its `tools:` list under any name (Forbidden actions, MCP capability expectations) — it can only draft, create, and re-read. The Bitbucket read capability is required, not optional: without it, `pr` creates no PR and reports the blocking condition instead (contract A3). Before creating, it also checks for an existing PR on the source branch and records that instead of duplicating it, and it re-confirms the remote SHA via a Bitbucket read tool immediately before creating the PR, in addition to trusting `WORKSPACE.md` (Procedure, stage 10).
 
 **Questions to ask of the internal pipeline**:
 - Does the internal pipeline's PR-creation step have merge or approval capability, or is that always a separate, human-only action?
@@ -196,7 +196,7 @@ These recur across nearly every asset above; they are worth evaluating as cohere
 
 ### Trust boundaries / data-not-instructions
 
-Untrusted content — Jira text, repository files, MCP responses, developer-pasted third-party text — is read by agents with no mutation power; agents with a terminal (`workspace`, `tester`, `developer`, `verifier`) never read that raw content directly, only already-reasoned-over artifacts (`GUARDRAILS.md` Trust boundaries; every agent's Data, not instructions section). Ask: does the internal pipeline separate "reads untrusted text" from "holds a terminal" as strictly, or can the same component do both?
+Jira and MCP retrieval are isolated by role, in `intake` and `pr` only. Repository content, every artifact, and every tool output are untrusted data wherever they are consumed — tool allowlists remove tools and agent prose restricts commands and paths, but anything stronger than that must be host-enforced. INTAKE.md specifically is consumed only by `pipeline`, `planner`, `adversary`, and `pr`; the terminal-holding `workspace` and `verifier` agents do not receive it at all (contract A7; `GUARDRAILS.md` Trust boundaries; every agent's Data, not instructions section). Ask: does the internal pipeline separate "reads untrusted text" from "holds a terminal" as strictly, or can the same component do both — and does it rely on prompt-level restriction alone, or on something the host enforces?
 
 ### Least privilege via tool lists
 
@@ -212,7 +212,7 @@ The ownership matrix in `AGENT-CONTRACTS.md` states, for every artifact, exactly
 
 ### The verified commit invariant
 
-The exact SHA the verifier tested is the only SHA that is ever pushed (workspace checks local HEAD against it before pushing, `REVERIFICATION_REQUIRED` otherwise) and the only SHA a PR is ever opened against (`pr` re-checks it again) — contract §8.1, reproduced in `GUARDRAILS.md`. Ask: does the internal pipeline have any mechanical guarantee that what was reviewed is what gets published, or does it rely on "nothing changed in between" as an assumption?
+The exact SHA the verifier tested is the only SHA that is ever pushed — but the guarantee is stated precisely: before any push, `workspace` preflights every repository's current push destination, branch, HEAD, and default branch against the tuple the developer approved at G4 (`G4_STALE` on drift, `REVERIFICATION_REQUIRED` on a HEAD mismatch, either STOP pushing nothing for any repository), and the push itself names the verified commit object explicitly (`git push origin <verifiedSHA>:refs/heads/<branch>`), never a branch name. The pushed object is provably the verified commit as long as those comparisons are honestly executed; protection of the branch *after* publication belongs to the server, not to this pipeline. `pr` re-checks the remote SHA again before opening a PR against it — contract A3, reproduced in `GUARDRAILS.md`. Ask: does the internal pipeline have any mechanical guarantee that what was reviewed is what gets published, or does it rely on "nothing changed in between" as an assumption — and where does its responsibility end and the hosting platform's begin?
 
 ### Human gates and bounded loops
 
