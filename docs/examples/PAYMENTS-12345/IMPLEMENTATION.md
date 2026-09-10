@@ -10,10 +10,10 @@ inputs: [PLAN.md, TEST-CONTRACT.md, RED-REPORT.md]
 ## Changes per repository
 
 ### `payments-api`
-- `src/main/java/com/payments/webhook/WebhookRetryService.java` (new) — computes exponential backoff, schedules retries, reports each attempt to `payments-ledger` via `LedgerClient`; per PLAN.md's round-2 AC5, re-reports an unreported attempt on the delivery's next scheduled attempt within the delivery's own max-attempts budget, and marks `ledgerReportStatus = UNREPORTED` on the delivery once that budget is exhausted with an attempt still unreported. [REPO]
+- `src/main/java/com/payments/webhook/WebhookRetryService.java` (new) — computes exponential backoff, schedules retries, reports each attempt to `payments-ledger` via `LedgerClient`; per PLAN.md's round-2 AC5, re-reports an unreported attempt on the delivery's next scheduled attempt within the delivery's own max-attempts budget, and marks `ledgerReportStatus = UNREPORTED` on the delivery whenever the delivery becomes terminal with an attempt still unreported — whether because that budget is exhausted or because the delivery succeeded first. [REPO]
 - `src/main/java/com/payments/webhook/WebhookDeliveryService.java` (edited) — calls `WebhookRetryService` on a retryable failure instead of stopping after one attempt. [REPO]
 - `src/main/resources/application.yml` (edited) — added `webhook.retry.base-delay` and `webhook.retry.max-attempts` configuration keys. [REPO]/[DEV]
-- `src/main/java/com/payments/webhook/WebhookDelivery.java` (edited) — added `ledgerReportStatus` field, set to `UNREPORTED` by `WebhookRetryService` when the retry budget is exhausted with an attempt still unreported. [REPO]
+- `src/main/java/com/payments/webhook/WebhookDelivery.java` (edited) — added `ledgerReportStatus` field, set to `UNREPORTED` by `WebhookRetryService` whenever the delivery becomes terminal with an attempt still unreported — budget exhausted, or delivered earlier. [REPO]
 
 ### `payments-ledger`
 - `src/main/java/com/payments/ledger/WebhookRetryAuditController.java` (new) — internal `POST /internal/webhook-retries` endpoint that records a reported attempt with delivery id, attempt number, and outcome. [REPO]
@@ -31,7 +31,7 @@ No path listed in TEST-CONTRACT.md's Test file paths per repository was edited.
 `payments-api` — `mvn -q -Dtest=WebhookRetryServiceTest test`:
 ```text
 [INFO] Running com.payments.webhook.WebhookRetryServiceTest
-[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.588 s
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.671 s
 [INFO] BUILD SUCCESS
 ```
 

@@ -39,10 +39,11 @@ Both repositories: clean before and after, identical HEAD, so the candidate SHA 
 | `stopsRetryingAfterSuccessfulAttempt` | yes | yes | no | GREEN | yes (WITNESS now GREEN) |
 | `reReportsUnreportedLedgerAttemptOnNextDeliveryAttempt` | yes | yes | no | GREEN | yes (WITNESS now GREEN) |
 | `marksDeliveryUnreportedWhenLedgerReportBudgetExhausted` | yes | yes | no | GREEN | yes (WITNESS now GREEN) |
+| `marksDeliveryUnreportedWhenDeliverySucceedsBeforeReportIsRecorded` | yes | yes | no | GREEN | yes (WITNESS now GREEN) |
 | `alreadyDeliveredWebhookIsNeverRetried` | yes | yes | no | GREEN | yes (PRESERVATION still GREEN) |
 
 ```text
-[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
@@ -64,7 +65,7 @@ Not trusting IMPLEMENTATION.md's GREEN claim: both runs above were independently
 
 `payments-api` — `mvn -q test` (independently detected full suite, distinct from the contract command above):
 ```text
-[INFO] Tests run: 51, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 52, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
@@ -74,7 +75,7 @@ Not trusting IMPLEMENTATION.md's GREEN claim: both runs above were independently
 [INFO] BUILD SUCCESS
 ```
 
-Both counts include the six contract-run tests for `payments-api` (51 = 45 pre-existing + 6 new: 5 WITNESS, 1 PRESERVATION) and the two for `payments-ledger` (23 = 21 pre-existing + 2 new: 1 WITNESS, 1 PRESERVATION), plus every pre-existing test in each repository; nothing pre-existing regressed. The contract command proves the acceptance contract; this full-suite run proves no broader regression — neither replaces the other. [TOOL]
+Both counts include the seven contract-run tests for `payments-api` (52 = 45 pre-existing + 7 new: 6 WITNESS, 1 PRESERVATION) and the two for `payments-ledger` (23 = 21 pre-existing + 2 new: 1 WITNESS, 1 PRESERVATION), plus every pre-existing test in each repository; nothing pre-existing regressed. The contract command proves the acceptance contract; this full-suite run proves no broader regression — neither replaces the other. [TOOL]
 
 ## Execution envelope check
 
@@ -82,7 +83,7 @@ Both counts include the six contract-run tests for `payments-api` (51 = 45 pre-e
 ```text
 M	pom.xml
 ```
-Finding: `pom.xml` changed — added runtime dependency `org.springframework.retry:spring-retry:2.0.5`. Justified in IMPLEMENTATION.md's Envelope changes (needed by `WebhookRetryService` to schedule delayed retry attempts; not a test-scope change). Not FAIL: the change does not remove, skip, or exclude any contract test — all four `payments-api` contract tests were still discovered and executed above. [TOOL]
+Finding: `pom.xml` changed — added runtime dependency `org.springframework.retry:spring-retry:2.0.5`. Justified in IMPLEMENTATION.md's Envelope changes (needed by `WebhookRetryService` to schedule delayed retry attempts; not a test-scope change). Not FAIL: the change does not remove, skip, or exclude any contract test — all seven `payments-api` contract tests were still discovered and executed above. [TOOL]
 
 `payments-ledger` — `git -C payments-ledger diff --name-status bbbb2222cccc3333dddd4444eeee5555aaaa1111..HEAD -- pom.xml src/test/resources/application-test.yml src/test/java/com/payments/ledger/support/AuditLogTestFixtures.java`:
 ```text

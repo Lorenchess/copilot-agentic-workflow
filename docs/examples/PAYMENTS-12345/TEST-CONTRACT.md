@@ -17,6 +17,7 @@ inputs: [PLAN.md]
 | AC4 — retry attempt recorded in the ledger audit log, including delivery id, attempt number, outcome | `payments-ledger`: `WebhookRetryAuditTest#recordsRetryAttemptInAuditLog` |
 | AC5 — a failed ledger-report call is re-reported on the delivery's next scheduled attempt | `payments-api`: `WebhookRetryServiceTest#reReportsUnreportedLedgerAttemptOnNextDeliveryAttempt` |
 | AC5 — delivery persisted with `ledgerReportStatus = UNREPORTED` once the retry budget is exhausted with an attempt still unreported | `payments-api`: `WebhookRetryServiceTest#marksDeliveryUnreportedWhenLedgerReportBudgetExhausted` |
+| AC5 — delivery succeeds on an attempt whose ledger report fails, no further attempt is scheduled, delivery persisted `DELIVERED` with `ledgerReportStatus = UNREPORTED` | `payments-api`: `WebhookRetryServiceTest#marksDeliveryUnreportedWhenDeliverySucceedsBeforeReportIsRecorded` |
 | Preservation — a webhook already marked `DELIVERED` is never retried again | `payments-api`: `WebhookRetryServiceTest#alreadyDeliveredWebhookIsNeverRetried` |
 | Preservation — an existing (pre-existing, unrelated) `payments-ledger` audit-log write path is unchanged | `payments-ledger`: `WebhookRetryAuditTest#existingAuditLogWriteIsUnchanged` |
 
@@ -29,6 +30,7 @@ inputs: [PLAN.md]
 | `payments-api`: `WebhookRetryServiceTest#stopsRetryingAfterSuccessfulAttempt` | WITNESS |
 | `payments-api`: `WebhookRetryServiceTest#reReportsUnreportedLedgerAttemptOnNextDeliveryAttempt` | WITNESS |
 | `payments-api`: `WebhookRetryServiceTest#marksDeliveryUnreportedWhenLedgerReportBudgetExhausted` | WITNESS |
+| `payments-api`: `WebhookRetryServiceTest#marksDeliveryUnreportedWhenDeliverySucceedsBeforeReportIsRecorded` | WITNESS |
 | `payments-api`: `WebhookRetryServiceTest#alreadyDeliveredWebhookIsNeverRetried` | PRESERVATION |
 | `payments-ledger`: `WebhookRetryAuditTest#recordsRetryAttemptInAuditLog` | WITNESS |
 | `payments-ledger`: `WebhookRetryAuditTest#existingAuditLogWriteIsUnchanged` | PRESERVATION |
@@ -45,7 +47,7 @@ inputs: [PLAN.md]
 
 ## Run command per repository
 
-- `payments-api`: `mvn -q -Dtest=WebhookRetryServiceTest test` (runs all six methods in the class: five WITNESS, one PRESERVATION)
+- `payments-api`: `mvn -q -Dtest=WebhookRetryServiceTest test` (runs all seven methods in the class: six WITNESS, one PRESERVATION)
 - `payments-ledger`: `mvn -q -Dtest=WebhookRetryAuditTest test` (runs both methods in the class: one WITNESS, one PRESERVATION)
 
 ## Execution envelope per repository

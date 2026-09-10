@@ -17,7 +17,7 @@ inputs: [PR-DESCRIPTION.md, VERIFICATION.md, WORKSPACE.md, RUN.md]
 - Target branch source: WORKSPACE.md (the default branch recorded for `payments-api`), never assumed
 - Eligibility (checked before any Bitbucket read): VERIFICATION.md Verdict = PASS; RUN.md G4 = `CURRENT` and `PUBLISH_AND_PR`; WORKSPACE.md's remote SHA (`cccc3333dddd4444eeee5555aaaa1111bbbb2222`) = the verified SHA; target `main` = WORKSPACE.md's recorded default branch = the G4 target branch — all four held.
 - Existing-PR check: read existing PRs for `PAYMENTS-12345-webhook-retry-backoff` before creating — none found; no existing PR, so no reuse eligibility comparison was needed
-- Remote SHA read before creation: `cccc3333dddd4444eeee5555aaaa1111bbbb2222` [TOOL] (via the Bitbucket read-branch capability — required on both the create and the reuse path)
+- Remote SHA read before creation: `cccc3333dddd4444eeee5555aaaa1111bbbb2222` [TOOL] (via the Bitbucket read-branch capability — required on both the create and the reuse path) — compared against the verified SHA on the common path before either creation or reuse: equal
 - Remote SHA read after creation: `cccc3333dddd4444eeee5555aaaa1111bbbb2222` [TOOL]
 - Which read it comes from: the recorded value is the read-after-creation value; the read-before-creation value was equal to it
 - Equality with verified SHA (`cccc3333dddd4444eeee5555aaaa1111bbbb2222` from VERIFICATION.md, matching WORKSPACE.md's Publish section): match
@@ -37,7 +37,7 @@ inputs: [PR-DESCRIPTION.md, VERIFICATION.md, WORKSPACE.md, RUN.md]
 - Target branch source: WORKSPACE.md (the default branch recorded for `payments-ledger`), never assumed
 - Eligibility (checked before any Bitbucket read): VERIFICATION.md Verdict = PASS; RUN.md G4 = `CURRENT` and `PUBLISH_AND_PR`; WORKSPACE.md's remote SHA (`dddd4444eeee5555aaaa1111bbbb2222cccc3333`) = the verified SHA; target `main` = WORKSPACE.md's recorded default branch = the G4 target branch — all four held.
 - Existing-PR check: read existing PRs for `PAYMENTS-12345-webhook-retry-backoff` before creating — none found; no existing PR, so no reuse eligibility comparison was needed
-- Remote SHA read before creation: `dddd4444eeee5555aaaa1111bbbb2222cccc3333` [TOOL] (via the Bitbucket read-branch capability — required on both the create and the reuse path)
+- Remote SHA read before creation: `dddd4444eeee5555aaaa1111bbbb2222cccc3333` [TOOL] (via the Bitbucket read-branch capability — required on both the create and the reuse path) — compared against the verified SHA on the common path before either creation or reuse: equal
 - Remote SHA read after creation: `dddd4444eeee5555aaaa1111bbbb2222cccc3333` [TOOL]
 - Which read it comes from: the recorded value is the read-after-creation value; the read-before-creation value was equal to it
 - Equality with verified SHA (`dddd4444eeee5555aaaa1111bbbb2222cccc3333` from VERIFICATION.md, matching WORKSPACE.md's Publish section): match
