@@ -1,0 +1,76 @@
+```yaml
+artifact: RUN.md
+run: PAYMENTS-12410
+primaryJira: PAYMENTS-12410
+status: PLANNED
+producedBy: pipeline
+inputs: [INTAKE.md, PLAN.md, ADVERSARY-REVIEW.md]
+```
+
+## Keys
+
+1. `PAYMENTS-12410` — primary [DEV] (only key typed to `/pipeline`)
+
+Developer invocation: `/pipeline PAYMENTS-12410` [DEV].
+
+## Repositories
+
+| Repository | Recommended | Confidence | Selected | Evidence summary |
+|---|---|---|---|---|
+| `payments-api` | yes | HIGH [JIRA]/[REPO] | yes | Jira Components match; `MerchantWebhookRegistrationService` found in code — see INTAKE.md |
+| `payments-ledger` | no | — [INFERENCE] | no | No Jira or code evidence — see INTAKE.md |
+| `payments-web` | no | — [INFERENCE] | no | Name similarity only, no Jira or code evidence — see INTAKE.md |
+
+## Branch
+
+`PAYMENTS-12410-https-only-webhook-urls` [DEV] — accepted as proposed at G2 (INTAKE.md's Proposed branch name, unchanged).
+
+## Developer context
+
+provided: false
+
+## Stage status table
+
+| # | Stage | Agent | Artifact | Status | Round |
+|---|---|---|---|---|---|
+| 0 | Entry | pipeline | RUN.md | COMPLETE | — |
+| 1 | Intake | intake | INTAKE.md | COMPLETE | — |
+| 2 | Workspace (prepare) | workspace | WORKSPACE.md | COMPLETE — `payments-api` PREPARED [INFERENCE] (not reproduced as a separate file in this planning-only example) | — |
+| 3 | Plan | planner | PLAN.md | COMPLETE | 1.1 |
+| 4 | Adversary | adversary | ADVERSARY-REVIEW.md | COMPLETE — APPROVE | 1.1 |
+| 5 | Test (RED) | tester | TEST-CONTRACT.md, RED-REPORT.md | NOT RUN — planning-only demonstration | — |
+| 6 | Develop (GREEN) | developer | IMPLEMENTATION.md | NOT RUN — planning-only demonstration | — |
+| 7 | Verify | verifier | VERIFICATION.md | NOT RUN — planning-only demonstration | — |
+| 8 | PR draft | pr | PR-DESCRIPTION.md | NOT RUN — planning-only demonstration | — |
+| 9 | Publish | workspace | WORKSPACE.md (Publish section) | NOT RUN — planning-only demonstration | — |
+| 10 | PR | pr | PR.md | NOT RUN — planning-only demonstration | — |
+
+This run stops at G3 by design (see README.md).
+
+## Artifact history
+
+| Artifact | Stage | Round | Status | Producing agent |
+|---|---|---|---|---|
+| INTAKE.md | 1 | 1 | ACTIVE | intake |
+| PLAN.md | 3 | 1.1 | ACTIVE | planner |
+| ADVERSARY-REVIEW.md | 4 | 1.1 | ACTIVE | adversary |
+
+A genuinely small, correct change with no unresolved material choice needed only one planning round: PLAN.md and ADVERSARY-REVIEW.md are both ACTIVE at round `1.1` — no REVISE, no second round, no planning cycle beyond cycle 1.
+
+## Gates log
+
+**G1 — Repositories.** Asked: "Which repositories does this work affect? Recommended: `payments-api` (HIGH, Jira Components match + `MerchantWebhookRegistrationService` found in code). `payments-ledger` and `payments-web` not recommended (no Jira or code evidence). Select the repositories to include." Answered [DEV]: select `payments-api` only. Basis: INTAKE.md round 1 — Status: CURRENT.
+
+**G2 — Branch and context.** Asked: "Proposed branch name: `PAYMENTS-12410-https-only-webhook-urls`. Accept or provide a replacement slug. Optionally add context — or continue without adding context." Answered [DEV]: accept proposed slug unchanged; no context added (`provided: false`). Basis: INTAKE.md round 1 — Status: CURRENT.
+
+**G3 — Plan approval.** Asked, round `1.1`, voiced directly from PLAN.md 1.1's Decision summary and ADVERSARY-REVIEW.md 1.1's verdict, round, and Residual findings:
+
+> "The plan for `PAYMENTS-12410` (cycle `1`, round `1`) has been reviewed (`APPROVE`). Intended outcomes: Merchants can no longer register or update a webhook endpoint using a non-https URL; such attempts are rejected with a validation error naming the field (AC1), while https URLs continue to be accepted exactly as today (AC2), and no existing registration is touched by this change (P1). Material choices needing your answer: none. Exclusions and unresolved scope: none. Consequential assumptions: 1 (Q1). Accepted risks: none. Cross-repository prerequisites: none. Adversary residual findings: none. For each material choice, accept the recommendation or give a replacement. Then: Approve this plan as displayed to proceed to test authoring / Send back with answers / Abort."
+
+Answered [DEV]: **APPROVE**. Material choices: none. Exclusions acknowledged: none (none were displayed). Basis: PLAN.md `1.1`, ADVERSARY-REVIEW.md `1.1` — Status: CURRENT.
+
+Only a `CURRENT` `APPROVE` answer authorizes stage 5; this run stops here by design (see README.md) — stage 5 (Test) is not invoked.
+
+## Resume notes
+
+None.
