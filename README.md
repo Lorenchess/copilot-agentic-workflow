@@ -1,50 +1,48 @@
 # copilot-agentic-workflow
 
-This repository is the **workspace root** for a multi-repository development workspace. It holds the shared GitHub Copilot configuration — agents, skills, instructions, MCP config — used by a standardized, Copilot-native pipeline that takes one or more Jira tickets from intake to a Bitbucket pull request. It also doubles as a **reference implementation** the team can use to tune its internal Claude Code pipeline setup.
+This repository is a **reference implementation and design laboratory** for the organization's existing internal AI pipeline. It is not a standalone executable pipeline, and it does not reproduce infrastructure the organization already has elsewhere (runtime state machinery, MCP server configuration, recovery simulation, end-to-end test harnesses). Its purpose is to give a team member a coherent, inspectable set of GitHub Copilot-native files they can open at work and compare directly against the internal pipeline: agent definitions, skills, flow, agent contracts, guardrails, model roles, and (once delivered) a worked example and a comparison guide.
 
-This repo owns only the shared configuration and pipeline run artifacts. Application code lives in separately cloned repositories that sit as siblings inside this folder, not inside this repository.
-
-## Layout
+## Asset tree
 
 ```text
-copilot-agentic-workflow/        <- this repo (workspace root)
-├─ .github/                      <- agents, skills, instructions, pipeline docs (this repo)
-├─ .vscode/                      <- workspace settings, MCP config (this repo)
-├─ docs/                         <- specs, questions, testing logs (this repo)
-├─ .pipeline/                    <- run artifacts, gitignored, NOT part of this repo
-│  └─ runs/<PRIMARY-JIRA>/       <- one directory per pipeline run
-├─ some-service/                 <- a nested, separately cloned repository
-├─ another-service/              <- a nested, separately cloned repository
-└─ ...                           <- every other nested repository
+.github/
+  copilot-instructions.md                  global rules: data vs instructions, secret safety, universal git safety
+  agents/                                  nine custom agents implementing the flow (R2)
+  skills/                                  /pipeline entry, Jira retrieval, repository discovery (R3)
+  pipeline/
+    FLOW.md                                stages, agents, artifacts, gates, STOP conditions, bounded loops, resume
+    AGENT-CONTRACTS.md                     per-agent purpose/inputs/outputs/tools/forbidden; artifact templates
+    GUARDRAILS.md                          trust boundaries, least-privilege table, git safety, test immutability
+    MODEL-ROLES.md                         model per role, reasoning; benchmark candidates (deferred)
+.vscode/
+  settings.json                            optional guardrail asset: terminal approval rules, edit approval
+  extensions.json                          recommends GitHub Copilot Chat
+docs/
+  specs/2026-09-09-phase-1-core-pipeline-design-contract.md   the approved lean contract for this scope
+  specs/archive/                           the superseded original contract and its C0 extracts, unedited
+  examples/PAYMENTS-12345/                 worked example: one artifact per stage (R3)
+  COMPARISON-GUIDE.md                      what to compare against the internal pipeline, file by file (R3)
+  questions.md                             open questions
 ```
 
-Every top-level directory other than `.github`, `.vscode`, and `docs` is treated as an independent, separately cloned Git repository belonging to the wider workspace, not to this repo; `.gitignore` excludes them here so this repo never tracks their content.
+## How to read the assets
 
-## Single root folder requirement
+Start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape of a run, then [`AGENT-CONTRACTS.md`](.github/pipeline/AGENT-CONTRACTS.md) for what each agent may and may not do, then [`GUARDRAILS.md`](.github/pipeline/GUARDRAILS.md) for the safety rules those contracts rely on, then [`MODEL-ROLES.md`](.github/pipeline/MODEL-ROLES.md) for which model runs each role and why. Once R2 lands, read the nine `.agent.md` files against `AGENT-CONTRACTS.md` to see the design realized; once R3 lands, read the three skills, the worked example under `docs/examples/`, and finally `docs/COMPARISON-GUIDE.md`, which is the intended entry point for comparing this design against the organization's internal pipeline.
 
-Open **this folder directly** in VS Code — do not open it via a multi-root `.code-workspace` file. Customization discovery (agents, skills, instructions, MCP config, hooks) is only well-defined for a single opened root, and the terminal's working directory needs to be deterministic for the pipeline's git operations.
+## Trying it in VS Code (prerequisites)
 
-Session target: **Local**. Permission mode: **Manual** (no global auto-approve). These are required for the pipeline's approval-gated terminal and edit rules to work as designed.
+- Open this folder directly as a **single root folder** — not via a multi-root `.code-workspace`.
+- Session target **Local**, permission mode **Manual** (no global auto-approve).
+- **Sonnet-5** selected in the Copilot Chat model picker (agent frontmatter omits `model:` until the exact picker string is confirmed at work).
+- Jira and Bitbucket MCP servers connected and authenticated in your VS Code session; both are configured **outside this repository**.
 
-## Running the pipeline
+## Checkpoint status
 
-1. Open this repository as the single root folder in VS Code, with the nested repositories cloned as siblings underneath it.
-2. In the Copilot Chat agent picker, select the **Pipeline Intake** agent.
-3. Run:
-   ```text
-   /pipeline KEY[, KEY...]
-   ```
-   The first key is the **primary Jira** and becomes the feature branch prefix; any additional keys are secondary requested Jiras.
-4. Follow the developer confirmation prompts the pipeline raises (repository selection, branch name, optional context, and any repository-state decisions).
-
-Run artifacts — state, evidence, and the final intake artifact — are written to `.pipeline/runs/<PRIMARY-JIRA>/`. This directory is gitignored; it is working data for the pipeline and the developer, not repository content.
-
-## Status
-
-The agents, skills, settings, and schemas that implement the pipeline are delivered in later checkpoints and are not yet present in this repository. This checkpoint establishes the workspace layout and the normative policy documents only.
+- **R1 — Design documents and housekeeping**: delivered. `FLOW.md`, `AGENT-CONTRACTS.md`, `GUARDRAILS.md`, `MODEL-ROLES.md`, `.github/copilot-instructions.md`, the archive, and this README.
+- **R2 — Agents**: pending. The nine `.agent.md` files and the `.vscode/settings.json` extensions for tester/developer/publish git forms.
+- **R3 — Skills, worked example, comparison guide**: pending.
 
 ## Further reading
 
-- [`docs/specs/2026-09-09-phase-1-architecture-contract.md`](docs/specs/2026-09-09-phase-1-architecture-contract.md) — the full, approved Phase 1 architecture and implementation contract (source of truth).
-- [`.github/pipeline/docs/phase-1-contract.md`](.github/pipeline/docs/phase-1-contract.md) — the normative Phase 1 policy, copied from the contract.
-- [`.github/pipeline/docs/decisions.md`](.github/pipeline/docs/decisions.md) — the key architectural decisions behind Phase 1, copied from the contract.
+- [`docs/specs/2026-09-09-phase-1-core-pipeline-design-contract.md`](docs/specs/2026-09-09-phase-1-core-pipeline-design-contract.md) — the approved lean contract (source of truth for scope and acceptance).
+- [`docs/specs/archive/README.md`](docs/specs/archive/README.md) — what was superseded, and why.

@@ -1,0 +1,68 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "/^git rev-parse --show-toplevel$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* rev-parse --show-toplevel$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* rev-parse --is-inside-work-tree$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* rev-parse --abbrev-ref HEAD$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* rev-parse HEAD$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* rev-parse (?!HEAD$)[^\\s-][^\\s]*$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* status --porcelain=v2 --branch$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* remote -v$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* symbolic-ref --short refs/remotes/origin/HEAD$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* ls-remote --symref origin HEAD$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* ls-remote --heads origin [^\\s-][^\\s]*$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* branch --list [^\\s-][^\\s]*$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* rev-list --left-right --count [^\\s-][^\\s]*$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* check-ref-format --branch [^\\s-][^\\s]*$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* var GIT_COMMITTER_IDENT$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* fetch --prune origin$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* switch [^\\s-][^\\s]*$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* switch -c [^\\s-][^\\s]*$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* switch -c [^\\s-][^\\s]* --track origin\/[^\\s]+$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* switch -c [^\\s-][^\\s]* --no-track origin\/[^\\s]+$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* merge --ff-only origin\/[^\\s]+$/": true,
+    "/^\\s*git\\b(\\s+\\S+)*?\\s+(reset|clean|push|pull|rebase|checkout|restore|stash|worktree|gc|filter-branch|update-ref|reflog|cherry-pick|am|apply)(\\s|$)/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "/^\\s*git\\b(\\s+\\S+)*?\\s+switch\\b(\\s+\\S+)*?\\s+(-C|--force-create|--discard-changes|--orphan)(\\s|$)/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "/^\\s*git\\b(\\s+\\S+)*?\\s+branch\\b(?!\\s+--list\\b)/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "/^\\s*git\\b(\\s+\\S+)*?\\s+merge\\b(?!\\s+--ff-only\\b)/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "/^\\s*git\\b(\\s+\\S+)*?\\s+fetch\\b(?!\\s+--prune\\s+origin\\s*$)/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "/(^|\\s)(-[a-zA-Z]*f[a-zA-Z]*|--force\\S*|--hard)(\\s|$)/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "/(^|\\s)(--upload-pack|--receive-pack|--output|-o\\b|--exec)/": {
+      "approve": false,
+      "matchCommandLine": true
+    }
+  },
+  "chat.tools.edits.autoApprove": {
+    "**/.github/**": false,
+    "**/.vscode/**": false
+  },
+  "json.schemas": [
+    {
+      "fileMatch": ["/.pipeline/runs/*/phase-1-intake.json"],
+      "url": "./.github/pipeline/schemas/phase-1-intake.schema.json"
+    },
+    {
+      "fileMatch": ["/.pipeline/runs/*/state.json"],
+      "url": "./.github/pipeline/schemas/state.schema.json"
+    }
+  ],
+  "git.autoRepositoryDetection": "subFolders"
+}
