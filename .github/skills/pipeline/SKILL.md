@@ -77,8 +77,14 @@ After parsing succeeds, check whether `.pipeline/runs/<PRIMARY>/` already holds 
   Decision needed from: developer.
   Choose where to resume, or start over.
   ```
-  Read RUN.md and list which of the eleven artifacts above are present, missing, or recorded as failed. Propose resuming at the **first missing or failed artifact** — never at an arbitrary later stage. The developer confirms that proposal or chooses to start the run over. An existing artifact is always treated as an immutable input unless the developer explicitly asks for it to be redone; that decision, if made, is recorded in RUN.md by `pipeline`, not by this skill.
-  A stage agent is **never** re-invoked to silently regenerate an artifact that already exists.
+  Read RUN.md. Before proposing a resume point, the requested key list must equal RUN.md's Keys, otherwise STOP `RUN_KEYS_MISMATCH`:
+  ```text
+  STOP [RUN_KEYS_MISMATCH]: The requested Jira keys differ from the keys recorded in RUN.md for this run.
+  Decision needed from: developer.
+  Re-run with the recorded keys, or start a new run with a different primary.
+  ```
+  Otherwise, list which of the eleven artifacts above are present, missing, or recorded as failed. Propose resuming at the earlier of (a) the **first missing or failed artifact** and (b) the **first gate in G1–G4 with no recorded answer** — never at an arbitrary later stage. The developer confirms that proposal or chooses to start the run over. An existing artifact is always treated as an immutable input unless the developer explicitly asks for it to be redone; that decision, if made, is recorded in RUN.md by `pipeline`, not by this skill. Redoing an artifact marks every later-stage artifact SUPERSEDED in RUN.md's Artifact history, and those later stages run again; a SUPERSEDED artifact is never used as an input by any agent.
+  A stage agent is **never** re-invoked to silently regenerate an artifact that already exists — except the authorized regenerations under contract A6 (planner round 2, developer fix rounds, tester amendments and RED re-proofs, verifier re-runs), each recorded in RUN.md's Artifact history with the prior version marked SUPERSEDED.
 - **If it does not**, create an empty RUN.md for the new run and proceed.
 
 ## Hand-off

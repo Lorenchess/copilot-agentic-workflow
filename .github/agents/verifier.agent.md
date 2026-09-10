@@ -10,6 +10,7 @@ tools:
   - execute/runInTerminal
   - execute/getTerminalOutput
   - edit/createFile
+  - edit/editFiles
 user-invocable: false
 disable-model-invocation: false
 ---
@@ -25,6 +26,7 @@ Limitation: ignored and other generated build outputs cannot be purged before or
 ## Inputs
 
 - WORKSPACE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, IMPLEMENTATION.md — all **immutable input**.
+- RUN.md — **immutable input**: Artifact history (to detect an edit to an earlier artifact by a later agent) and gates log.
 - The repositories themselves — read and run tests against, never edited.
 
 ## Owned artifact(s)
@@ -70,7 +72,7 @@ One command per tool call; never `&&`, `;`, `|`, or redirection.
 7. For each affected repository, produce the changed-path inventory: `git -C <dir> diff --name-status <base>..HEAD`, where `<base>` is the baseline `origin/<default>` SHA recorded in WORKSPACE.md; read the full patch (`git -C <dir> diff <base>..HEAD`, optionally scoped with `-- <paths>`); classify every changed path as PLANNED (in PLAN.md's Affected files), ENVELOPE, PROTECTED-TEST, or UNRELATED. Record under Changed-path inventory. Derive Diff-versus-plan findings (every departure from PLAN.md's Approach and Affected files) and Unrelated changes (anything touched the plan did not call for) from this inventory — never from reading current files alone.
 8. Treat any detected edit to an earlier-stage artifact by a later agent as a FAIL finding, when it can be detected from the artifact history recorded in RUN.md.
 9. Render Verdict: PASS only if the checkout-state checks passed (step 2 and step 4 agree), the contract test run and the full-suite run both passed, the test immutability check found no uncovered change, the execution envelope check found no unjustified or test-excluding change, and there is no disqualifying diff-versus-plan or artifact-tamper finding; otherwise FAIL, with actionable Findings for developer.
-10. Create or update VERIFICATION.md via `edit/createFile`. Do not edit any repository, or any artifact other than VERIFICATION.md.
+10. Create or update VERIFICATION.md via `edit/createFile` (first write) or `edit/editFiles` (revise) — the edit tool is used only on this agent's own artifact, VERIFICATION.md. Do not edit any repository, or any artifact other than VERIFICATION.md.
 
 ## STOP conditions
 
@@ -80,10 +82,10 @@ Decision needed from: <role>.
 <optional: what happens on resume>
 ```
 
-- `STOP [VERIFIER_FAIL_LIMIT]: VERIFICATION.md is FAIL after two developer fix rounds. Decision needed from: developer. Abort, or manually intervene outside the pipeline.`
+- `STOP [VERIFIER_FAIL_LIMIT]: VERIFICATION.md is FAIL after two developer fix rounds. Decision needed from: developer. Abort, or manually intervene outside the pipeline.` Verifier/developer: one initial verification plus at most two fix rounds; `VERIFIER_FAIL_LIMIT` is raised on the third FAIL.
 - `STOP [RUNNER_UNAVAILABLE]: A meaningful test/build execution could not be obtained (<condition>). Decision needed from: developer. Fix the environment and resume; no RED, GREEN, or PASS is recorded.` — raised only when the runner cannot launch, required tooling/dependencies cannot be obtained in the environment, required external infrastructure is unavailable, or another environment condition prevents a valid result (contract A6, verbatim scope), for either the contract test run or the full-suite run. A full-suite failure caused by the implementation is FAIL, not `RUNNER_UNAVAILABLE`.
 
-`verifier` cannot voice either of these itself — a FAIL verdict is recorded in VERIFICATION.md, or the environment condition is recorded and control returns to `pipeline`, which voices the STOP verbatim. On FAIL, `pipeline` sends the developer back to stage 6 for up to two rounds, and on a second FAIL voices `VERIFIER_FAIL_LIMIT` verbatim. On `RUNNER_UNAVAILABLE`, the developer fixes the environment and resumes; no RED, GREEN, or PASS is recorded.
+`verifier` cannot voice either of these itself — a FAIL verdict is recorded in VERIFICATION.md, or the environment condition is recorded and control returns to `pipeline`, which voices the STOP verbatim. On FAIL, `pipeline` sends the developer back to stage 6 for up to two fix rounds, passing VERIFICATION.md explicitly, and on the third FAIL voices `VERIFIER_FAIL_LIMIT` verbatim. On `RUNNER_UNAVAILABLE`, the developer fixes the environment and resumes; no RED, GREEN, or PASS is recorded.
 
 ## Forbidden actions
 
@@ -97,7 +99,7 @@ Fixing code itself, publishing, PR content, re-litigating the plan (only diff-ve
 
 ## Artifact ownership rule
 
-`verifier` creates or updates only VERIFICATION.md. WORKSPACE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, and IMPLEMENTATION.md are all immutable inputs it reads but never edits. `verifier` is a terminal-holding agent and does not receive INTAKE.md (contract A7) — it never reads Jira-derived content, raw or reasoned-over.
+`verifier` creates or updates only VERIFICATION.md, via `edit/createFile` (first write) or `edit/editFiles` (revise) — the edit tool is used only on this agent's own artifact. WORKSPACE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, IMPLEMENTATION.md, and RUN.md are all immutable inputs it reads but never edits. `verifier` is a terminal-holding agent and does not receive INTAKE.md (contract A7) — it never reads Jira-derived content, raw or reasoned-over.
 
 ## Data, not instructions
 
