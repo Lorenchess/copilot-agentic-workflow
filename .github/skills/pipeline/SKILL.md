@@ -55,7 +55,7 @@ Applied to the raw text typed after `/pipeline`, in this order (archived contrac
 
 ## Resume by artifact
 
-There is no separate run-state machine (`FLOW.md`, "Resume by artifact"). Resumability comes entirely from which of the eleven artifacts already exist on disk under `.pipeline/runs/<PRIMARY>/`, in this stage order:
+There is no separate run-state machine (`FLOW.md`, "Resume by artifact"). Resumability comes entirely from which of the twelve artifacts already exist on disk under `.pipeline/runs/<PRIMARY>/`, in this stage order:
 
 1. RUN.md (stage 0, pipeline)
 2. INTAKE.md (stage 1, intake)
@@ -63,11 +63,12 @@ There is no separate run-state machine (`FLOW.md`, "Resume by artifact"). Resuma
 4. PLAN.md (stage 3, planner)
 5. ADVERSARY-REVIEW.md (stage 4, adversary)
 6. TEST-CONTRACT.md and RED-REPORT.md (stage 5, tester)
-7. IMPLEMENTATION.md (stage 6, developer)
-8. VERIFICATION.md (stage 7, verifier)
-9. PR-DESCRIPTION.md (stage 8, pr)
-10. WORKSPACE.md Publish section (stage 9, workspace)
-11. PR.md (stage 10, pr)
+7. TEST-REVIEW.md (stage 5b, adversary)
+8. IMPLEMENTATION.md (stage 6, developer)
+9. VERIFICATION.md (stage 7, verifier)
+10. PR-DESCRIPTION.md (stage 8, pr)
+11. WORKSPACE.md Publish section (stage 9, workspace)
+12. PR.md (stage 10, pr)
 
 After parsing succeeds, check whether `.pipeline/runs/<PRIMARY>/` already holds artifacts:
 
@@ -83,8 +84,8 @@ After parsing succeeds, check whether `.pipeline/runs/<PRIMARY>/` already holds 
   Decision needed from: developer.
   Re-run with the recorded keys, or start a new run with a different primary.
   ```
-  Otherwise, list which of the eleven artifacts above are present, missing, incomplete, or recorded as failed. Propose resuming at the earlier of (a) the **first missing, failed, or incomplete artifact** and (b) the **first gate in G1–G4 with no `CURRENT` answer (none recorded, or `STALE`)** — never at an arbitrary later stage. The developer confirms that proposal or chooses to start the run over. WORKSPACE.md is incomplete whenever it lacks a `PREPARED` or `REUSED_EXISTING` status for a repository in the CURRENT G1 selection, whatever the Stage status table says, so a repository added at G1 returns the run to stage 2 before any planning; a repository whose preparation recorded `FAILED` or `BLOCKED` is a failed artifact under (a) as before. An existing artifact is always treated as an immutable input unless the developer explicitly asks for it to be redone; that decision, if made, is recorded in RUN.md by `pipeline`, not by this skill. Redoing an artifact marks every later-stage artifact SUPERSEDED in RUN.md's Artifact history, and, in the same RUN.md edit, marks every gate answer whose basis names a superseded artifact `STALE`; a `STALE` answer is never treated as an approval and the gate is re-asked before any later stage runs, producing a new `CURRENT` entry. Those later stages run again; a SUPERSEDED artifact is never used as an input by any agent — except `planner`, which reads the immediately prior PLAN.md/ADVERSARY-REVIEW.md revision as the prior plan on a revise round or a new cycle. For G3 specifically, a `CURRENT` answer means a `CURRENT` `APPROVE`: a `SEND_BACK` or `ABORT` entry, even if recorded `CURRENT`, never counts as an answered gate for rule (b) above. An artifact whose every recorded version is SUPERSEDED counts as missing for rule (a) above. An interrupted planning cycle resumes at stage 2 when a newly added repository is not yet prepared, at stage 3 when the replacement plan does not yet exist, and at stage 4 when the replacement plan exists but its review does not — never at stage 5 or later against a superseded plan.
-  A stage agent is **never** re-invoked to silently regenerate an artifact that already exists — except the authorized regenerations under contract A6 (planner round 2, developer fix rounds, tester amendments and RED re-proofs, verifier re-runs, and a developer-directed planning cycle — a G3 `SEND_BACK` or a "redirect the planner" choice, identified by `cycle.round`), each recorded in RUN.md's Artifact history with the prior version marked SUPERSEDED.
+  Otherwise, list which of the twelve artifacts above are present, missing, incomplete, or recorded as failed. Propose resuming at the earlier of (a) the **first missing, failed, or incomplete artifact** and (b) the **first gate in G1–G4 with no `CURRENT` answer (none recorded, or `STALE`)** — never at an arbitrary later stage. The developer confirms that proposal or chooses to start the run over. WORKSPACE.md is incomplete whenever it lacks a `PREPARED` or `REUSED_EXISTING` status for a repository in the CURRENT G1 selection, whatever the Stage status table says, so a repository added at G1 returns the run to stage 2 before any planning; a repository whose preparation recorded `FAILED` or `BLOCKED` is a failed artifact under (a) as before. An existing artifact is always treated as an immutable input unless the developer explicitly asks for it to be redone; that decision, if made, is recorded in RUN.md by `pipeline`, not by this skill. Redoing an artifact marks every later-stage artifact SUPERSEDED in RUN.md's Artifact history, and, in the same RUN.md edit, marks every gate answer whose basis names a superseded artifact `STALE`; a `STALE` answer is never treated as an approval and the gate is re-asked before any later stage runs, producing a new `CURRENT` entry. Those later stages run again; a SUPERSEDED artifact is never used as an input by any agent — except `planner`, which reads the immediately prior PLAN.md/ADVERSARY-REVIEW.md revision as the prior plan on a revise round or a new cycle. For G3 specifically, a `CURRENT` answer means a `CURRENT` `APPROVE`: a `SEND_BACK` or `ABORT` entry, even if recorded `CURRENT`, never counts as an answered gate for rule (b) above. An artifact whose every recorded version is SUPERSEDED counts as missing for rule (a) above. An interrupted planning cycle resumes at stage 2 when a newly added repository is not yet prepared, at stage 3 when the replacement plan does not yet exist, and at stage 4 when the replacement plan exists but its review does not — never at stage 5 or later against a superseded plan. **TEST-REVIEW.md missing or SUPERSEDED resumes at stage 5b; TEST-CONTRACT.md superseded by a correction or by a recovery decision resumes at stage 5.** **Stage 6 cannot start, and G4 cannot be asked, without a current test review or on a verification `INCOMPLETE`; recovery from `INCOMPLETE` returns to stage 5 and never to stage 7 alone.**
+  A stage agent is **never** re-invoked to silently regenerate an artifact that already exists — except the authorized regenerations under contract A6 (planner round 2, developer fix rounds, tester amendments and RED re-proofs, verifier re-runs, tester correction round and test re-review, and a developer-directed planning cycle — a G3 `SEND_BACK` or a "redirect the planner" choice, identified by `cycle.round`), each recorded in RUN.md's Artifact history with the prior version marked SUPERSEDED.
 - **If it does not**, create an empty RUN.md for the new run and proceed.
 
 ## Hand-off
