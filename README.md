@@ -43,6 +43,7 @@ Start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape 
 - **R3 — Skills, worked example, comparison guide**: delivered. The three skills under `.github/skills/`, the worked example under `docs/examples/PAYMENTS-12345/`, and `docs/COMPARISON-GUIDE.md`. This completes Phase 1. The Copilot Chat agent-picker smoke check from R2 remains **pending**, deferred until a VS Code session is available.
 - **Post-audit remediation: delivered** (contract §14 A3–A7; commits fix-1 to fix-4). The Copilot Chat agent-picker smoke check is still **pending**.
 - **Post-closure-review corrections: delivered** (contract §14 A8–A10 plus the R3/R5/R6 traceability paragraph; commits fix-5 and fix-6). Closes the six remaining findings of the independent remediation closure review. The agent-picker smoke check remains **pending**.
+- **Phase 1 reference closure: recorded** at `03d4230` (fix-7, common re-read SHA comparison and the example's AC5 terminal rule; tag `phase-1-reference`). The independent R2/R3 closure review found no remaining finding and no new regression (contract §15). Accepted limitations and the deferred corporate validation — exact Jira/Bitbucket MCP tool names, the model-picker string, the agent-picker smoke check, approval-engine behavior, model benchmarks — carry forward unchanged; the agent-picker smoke check remains **pending**. Phase 2 is not started.
 
 ## Further reading
 
