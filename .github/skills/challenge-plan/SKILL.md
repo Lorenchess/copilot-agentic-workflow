@@ -68,7 +68,7 @@ A finding may include a concise counterexample or a bounded alternative to expla
 
 ## Reviewing the Response to adversary findings
 
-On a second round within a cycle, or on the first round of a new cycle, read PLAN.md's Response to adversary findings section before re-deriving anything. Each prior finding must appear there as `ACCEPTED (what changed)` or `REJECTED (rationale, evidence)`. A `REJECTED` entry with no cited evidence or rationale is re-raised as if unaddressed — the response table makes omissions reviewable, it does not by itself prevent them. On a new cycle, also check how each G3 answer (recorded in RUN.md and referenced by the new PLAN.md) was incorporated.
+On a second round within a cycle, or on the first round of a new cycle, the independent requirement derivation and the independent checks (steps 1–3) are always performed first, exactly as on a first round; only after they are complete is PLAN.md's Response to adversary findings section read. Each prior finding must appear there as `ACCEPTED (what changed)` or `REJECTED (rationale, evidence)`. A `REJECTED` entry with no cited evidence or rationale is re-raised as if unaddressed — the response table makes omissions reviewable, it does not by itself prevent them. On a new cycle, also check how each G3 answer (recorded in RUN.md and referenced by the new PLAN.md) was incorporated.
 
 ## Decision summary fidelity
 

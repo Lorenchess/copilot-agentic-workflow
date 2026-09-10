@@ -45,6 +45,8 @@ The plan declares `Change class: SMALL | MEDIUM | LARGE` in Scope with one sente
 - a material unresolved requirement;
 - a localized change whose failure consequence is severe (permissions, money, data integrity).
 
+An interface is *new or changed* when its shape, its semantics for existing callers, or a consumer's contract changes; tightening which inputs an existing endpoint accepts while keeping the request and response shapes is not a changed interface — it is a behavior change whose class is decided by consequence, like any other.
+
 Everything else is `MEDIUM`. An unresolved *minor* detail does not by itself force `LARGE`.
 
 The class selects review **depth**, never authorization: the coverage check (R1), decision check (R6), failure-path check (R5), and summary-fidelity check (R10) apply to every class. `SMALL` may write `None — <reason>` for Dependencies and interfaces (R4) and needs only the evidence types its change actually touches (R3). A wrong label is a finding only through what it caused to be omitted, at that omission's severity — never a standalone formatting violation.

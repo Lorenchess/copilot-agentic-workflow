@@ -56,7 +56,7 @@ None — single repository, no new/changed interface; the existing response shap
 Source class: JIRA. Observed at: the existing registration endpoint's response (E2). Preconditions: non-`https` scheme submitted. Path: NEGATIVE.
 
 **AC2.** Given a registration/update URL that is `https`, When submitted, Then it is accepted as today.
-Source class: JIRA. Observed at: the existing registration endpoint's response (E2). Preconditions: `https` scheme submitted. Path: POSITIVE.
+Source class: DERIVED (the complement of R1's rejection rule: an accepted `https` URL continues to be accepted; reasoning recorded here). Observed at: the existing registration endpoint's response (E2). Preconditions: `https` scheme submitted. Path: POSITIVE.
 
 ### Preservation expectations
 
