@@ -1,0 +1,148 @@
+# Phase 2 — Planning Quality & Adversarial Review
+## Contract (Fable → Sonnet 5 handoff)
+
+Status: **approved for implementation by the owner on 2026-09-10** (Astra review `docs/reviews/2026-09-10-phase-2-architecture-review.md`: PROCEED_WITH_CHANGES; owner decisions D1 ACCEPT_WITH_CHANGES, D2 ACCEPT_WITH_CHANGES, D3 ACCEPT, D4 ACCEPT_WITH_CHANGES). Supersedes the proposal `docs/specs/2026-09-10-phase-2-planning-quality-architecture-proposal.md`, which is kept unedited as the reviewed record. The Phase 1 reference (`03d4230`, tag `phase-1-reference`) and the Phase 1 contract are not reopened; everything here is forward evolution of current `main`.
+
+Roles: Fable is architect, planner, and independent reviewer; Sonnet 5 (`model: "sonnet"`, verified `claude-sonnet-5`) implements each checkpoint; at most two correction rounds per checkpoint; Fable commits on PASS; Astra reviews the result.
+
+## 1. Question, boundary, and binding constraints
+
+**Question.** How do Planner + Adversary produce a plan that is grounded, complete, testable, and challengeable before Tester writes executable acceptance tests?
+
+**Boundary.** Phase 2 changes Planner → Adversary → G3 and the two artifacts they own. It states business outcomes, preservation *intent*, and testability *prerequisites*; it never chooses test levels, doubles, scaffolding, RED mechanics (Phase 3), implementation or verifier semantics (Phase 4), or delivery integration (Phase 5). `tester`, `developer`, `verifier`, `pr`, `intake`, `workspace` remain unchanged.
+
+**Constraints** (Phase 1 §2 continues): Copilot-native Markdown assets only; no scripts, hooks, schemas, runtime, or state machine; nine roles, eleven artifacts, four gates, the existing STOP catalogue; Planner and Adversary `tools:` lists byte-identical to Phase 1; Sonnet-5 for every role.
+
+## 2. Design rules
+
+Each rule is normative. R-numbers are referenced by the checkpoints. "Rows" and "tables" are Markdown; "ids" are stable strings kept across revisions.
+
+### R1 — Requirement items and item-level disposition
+
+Planner enumerates **requirement items**: each separable source obligation in a requested key's Acceptance Criteria field and explicit requirement statements in its description (`R1…`), and each developer constraint in RUN.md's Developer context (`D1…`). Separable obligations, not every sentence. Context-only Jiras never produce items. INTAKE.md Unknowns and Warnings that bear on an item are carried into the plan as rows (R6), never dropped.
+
+PLAN.md's **Requested scope disposition** keeps the per-key table (IMPLEMENTED / PARTIALLY IMPLEMENTED / EXCLUDED) and adds an items table: id · source anchor (key and field, or "RUN.md Developer context") · obligation · disposition · covered by · note. Disposition ∈ `IMPLEMENTED` (planned coverage, not delivered proof) · `PRESERVED` (existing behavior the item requires to remain) · `EXCLUDED` (reason) · `UNRESOLVED` (→ a `G3` or `BLOCKING` row, R6). "Covered by" names AC ids, P ids, interface ids, or an implementation constraint id (`C1…`, stated in Approach) — a technical developer constraint is not forced into a Given/When/Then. `PARTIALLY IMPLEMENTED` at key level lists the items that are not `IMPLEMENTED`. Every item appears exactly once.
+
+### R2 — Change class (D1, as qualified)
+
+Planner declares `Change class: SMALL | MEDIUM | LARGE` in Scope with one sentence on **consequence and uncertainty**, not file or repository count. `SMALL` requires **all** of: one repository, localized behavior, no new or changed interface, no persistence or configuration change, no permission/money/data-integrity consequence, no unresolved material choice. `LARGE` is warranted by any of: an interface between repositories added or changed; persistence schema or migration; a contract consumed outside this run; deploy/config coordination; a material unresolved requirement; or a localized change whose failure consequence is severe (permissions, money, data integrity). Everything else is `MEDIUM`. An unresolved minor detail does not force `LARGE`.
+
+The class selects review *depth*, never authorization: the coverage check (R1), decision check (R6), failure-path check (R5), and summary-fidelity check (R10) apply to every class; `SMALL` may write `None — <reason>` for Dependencies and interfaces and needs only the evidence types its change touches. A wrong label is a finding only through what it caused to be omitted, at that omission's severity — never a standalone formatting violation.
+
+### R3 — Repository evidence
+
+PLAN.md gains **Repository evidence**: per confirmed repository, rows `id (E1…) · type · location (path[:symbol]) · one-sentence statement · [REPO]`. Types: `RESPONSIBLE_COMPONENT`, `ENTRY_POINT`, `INTERFACE`, `CONFIG`, `PERSISTENCE`, `CROSS_REPO_CALL`, `ADJACENT_TEST`, `NOT_FOUND`. A `NOT_FOUND` row records the terms and scope searched and means "not found by these searches in this scope", never proof of absence; it states the consequence of that uncertainty, and when the plan depends on absence the Planner either investigates sufficiently to cite the responsible component or routes the dependency as a `G3`/`BLOCKING` row. This is not RED proof.
+
+Every `[REPO]` claim that supports the Approach, an interface row, an affected-file entry, or a criterion cites an evidence id; one row may support several claims. Excerpts are at most one line. Roughly twelve rows per repository is a presentation target, not a cap — evidence is never omitted to meet it. A "Searched:" line lists the identifiers and terms used.
+
+### R4 — Affected files and Dependencies and interfaces
+
+**Affected files** (heading unchanged; the unchanged verifier classifies changed paths against it): operative entries are **file paths only** — path · repository · change type (`NEW`/`EDIT`/`CONFIG`/`DELETE`) · reason (AC/P/I/Q/C ids) · confidence (`HIGH` when an evidence row cites the path or its package; `LOW` otherwise, with the reason) · evidence id. An entry with no reason is forbidden. Locations that cannot be named as a file go under a separate **Investigation notes** list inside the section, explicitly non-operative: the verifier does not consult it, and the developer's IMPLEMENTATION.md Deviations from plan remains the place a resulting path is explained. No directory or component entry is ever operative.
+
+**Dependencies and interfaces**: `None — <reason>` or rows `id (I1…) · provider · consumer · contract (what is added or changed, field level, never code) · failure behavior (what the consumer does when the provider fails or is absent) · deployment compatibility (may the consumer ship first? old callers?) · implementation order (development sequencing, distinct from rollout) · owner / prerequisite`. An owner outside this run is recorded as an external dependency with the decision or constraint it needs; a G3 answer never authorizes another team's work.
+
+### R5 — Acceptance criteria: testability fields and preservation expectations
+
+Each criterion keeps Given/When/Then and its source class (`JIRA` / `DEV` / `DERIVED` / `PROPOSED`, the last citing its `G3` row) and adds:
+- **Observed at** — an **existing** exercise route through which the *Then* is observable (a public entry point, returned value, persisted state, emitted call), citing an evidence id. A new behavior is usually reachable through an existing route; the Planner must identify it. When no existing route exists, the criterion states `NO EXISTING ROUTE` and the prerequisite becomes a `G3` row (approve scaffolding as scope, redirect, or accept that the tester will raise `TEST_BOUNDARY_MISSING`) — the gap is exposed at planning time; the tester's contract is unchanged and a future boundary never satisfies it.
+- **Preconditions** — the state the *Given* requires.
+- **Path** — `POSITIVE` or `NEGATIVE`. Every requirement item whose source text or evidence names a failure, limit, exhaustion, empty, or unavailable condition has at least one `NEGATIVE` criterion or an explicit "no failure path: <reason>".
+- **Combined outcomes** — where two outcomes can coincide (success with reporting failure, terminal state with pending work), the plan states the required combined behavior as a criterion or an explicit decision; the Adversary challenges this (R9).
+
+Sub-heading **Preservation expectations** (`P1…`, Given/When/Then, evidence id): intended unchanged business behavior, from `PRESERVED` items and from evidence the change touches. They express intent supported by evidence; they do not prove the baseline passes, do not predetermine any test's classification, and do not override the tester's baseline-failure procedure. Because they sit under Acceptance criteria, the unchanged tester consumes them as ordinary scenarios.
+
+### R6 — Decisions and open questions (replaces "Open questions"; D4, as qualified)
+
+PLAN.md's **Decisions and open questions** table: `id (Q1…) · statement · routing · planner recommendation (may be empty) · basis · consequence if wrong (concrete and observable) · surfaced at`. A row is required for every **consequential unresolved choice or material assumption**; routine implementation details are not rows.
+
+| Routing | Meaning | Rule |
+|---|---|---|
+| `ASSUMED` | Planner proceeds; shown at G3 as a count with ids. | Only when the choice is technical, reversible within the change, and its consequence-if-wrong is recorded concretely or is already covered by cited evidence. A row is never `ASSUMED` because future RED/verification "would catch it"; ordering, latency, and failure semantics (for example synchronous versus asynchronous calls) are material unless evidence shows otherwise. |
+| `G3` | Developer decides; the recommendation is displayed, not consent. | Any of: fixes user-observable behavior Jira/DEV do not state; chooses between interpretations of a requirement; adds or removes scope; changes a cross-repository contract or persisted shape; introduces a **new or changed materially observable default or limit** with no authoritative requirement or approved basis; a `NO EXISTING ROUTE` prerequisite. |
+| `BLOCKING` | Planning cannot proceed on any honest proposal. | Meaning undeterminable, contradictory items, or a repository or owner outside the run's authorization. The item is `UNRESOLVED`; the Adversary renders BLOCK by rule. |
+| `OUT_OF_SCOPE` | Belongs elsewhere. | Recorded under Out of scope with reason. |
+
+Shipped values: preserving an evidenced existing default, or applying a supplied approved policy, is not a new decision merely because Jira omits the number — the plan cites the evidence or policy instead. Inventing a value is a `G3` row that states units, counting semantics, and consequence. Inconsequential internal constants are not rows.
+
+A newly needed repository is never added by a plan or by G3: it is a `BLOCKING` row; the developer's decision to include it re-asks G1 for that repository and runs stage 2 for it before a new planning cycle (R8).
+
+### R7 — Risks
+
+Each risk names its trigger (an item, evidence, interface, or decision id), an optional category (`correctness · backward-compatibility · data-integrity · integration · operational/config · rollout · uncertainty` — vocabulary, not checklist), and a **treatment**: covered by AC/P id · decision id · unresolved prerequisite (Q id) · `ACCEPTED (reason)`. A risk that restates a criterion or names nothing specific to this change is dropped. `ACCEPTED` risks appear at G3.
+
+### R8 — G3 semantics, planning cycles, and evidence identity (D2, as qualified)
+
+**Identity.** Stage 3 and 4 artifacts carry a `cycle.round` identity (`1.1`, `1.2`, `2.1` …) in PLAN.md's and ADVERSARY-REVIEW.md's round sections and in RUN.md's Stage status table, Artifact history, and gate bases. Cycle 1 is the ordinary run. A **new planning cycle** starts only on an explicit developer decision — a G3 `SEND_BACK`, or "redirect the planner" at `ADVERSARY_REVISE_LIMIT` / `ADVERSARY_BLOCK` — never automatically. Each cycle has its own two-round Adversary/Planner allowance. Starting a cycle marks the prior PLAN.md and ADVERSARY-REVIEW.md SUPERSEDED and every gate answer based on them `STALE` (existing A8 rule); prior findings remain in the superseded review and are referenced by the new cycle's Response to adversary findings. A superseded revision is never used as an input except by the next Planner round as the prior plan.
+
+**G3 answers.** RUN.md's G3 entry records answer ∈ `APPROVE` / `SEND_BACK` / `ABORT`, the per-question answers, basis (PLAN.md `cycle.round`, ADVERSARY-REVIEW.md `cycle.round`), status. Only an `APPROVE` answer with status `CURRENT` authorizes stage 5. An answer that accepts every displayed recommendation and changes nothing may be `APPROVE`. Any answer that changes approach, acceptance behavior, scope, or a material decision is recorded as `SEND_BACK` with the answers tagged `[DEV]`: it is authoritative developer input, not approval of an unwritten plan; Planner incorporates it in the next cycle (reading the G3 entry from RUN.md, already a Planner input), Adversary reviews the resulting plan, and G3 is asked again on that revision. Recording a `SEND_BACK` never manufactures a `CURRENT` approval. Approving the plan as-is after a second REVISE or a BLOCK (an existing option) is an `APPROVE` answer with the verdict and residual findings displayed.
+
+Bounded-loop wording is reconciled in every current-main location (FLOW.md, GUARDRAILS.md, AGENT-CONTRACTS.md, `pipeline.agent.md`, `adversary.agent.md`, `skills/pipeline/SKILL.md`): "Adversary/Planner: at most two rounds per planning cycle; a new cycle starts only on an explicit developer decision and is never automatic."
+
+### R9 — Adversary method
+
+Order and independence: (1) read INTAKE.md and RUN.md **first** and record an **Independent requirement derivation** (items and developer constraints, and the INTAKE Unknowns/Warnings that bear on them) before reading PLAN.md's disposition; then diff (missing → HIGH; unsourced → invented scope, HIGH). Fidelity to the captured inputs is what this establishes — not completeness against the original Jira. (2) Confirm the change class through what it caused to be included or omitted. (3) **Independent checks**, recorded even when nothing is found: (a) verify the evidence rows that material claims rest on; (b) answer the question *"what relevant caller, consumer, configuration, invariant, or failure interaction would make this plan wrong even if its citations are true?"*, select the material boundary that reasoning points to — including evidence the Planner did not cite — inspect it, and record what was inspected and the result (SMALL work may need one obvious local check; no quota of files or findings); (c) answer *"could an implementation satisfy every listed criterion yet violate the requested business behavior?"* and record the combined-outcome cases considered. (4) Work the challenge catalogue (in `challenge-plan`): missing requirements · invented scope · unsupported or misrouted assumptions · untestable criteria (no existing route, no preconditions) · missing failure paths and combined outcomes · cross-repository inconsistency · backward-compatibility gaps · unacknowledged operational risk · plan-to-repository mismatch · unnecessary complexity · unclear proposed decisions · Decision summary fidelity (R10). (5) Findings: `id · category · severity · evidence · what the plan must show or decide`, which may include a concise counterexample or a bounded alternative ("this existing operation appears to cover the requirement; why introduce another?") but never a competing full plan; the Adversary never edits PLAN.md. (6) On a later round or cycle, review the Response to adversary findings and re-raise any rejection lacking evidence-backed rationale.
+
+Severity: **HIGH** — item missing or invented; evidence contradiction the approach depends on; criterion with no existing route and no `G3` row; undeclared interface; an `ASSUMED` row that meets the `G3` rule; a material combined outcome unstated. **MEDIUM** — missing negative criterion where a failure path exists; risk without treatment; `LOW`-confidence entry without reason; `G3` row without concrete consequence. **LOW** — note. Verdict: any HIGH → REVISE; BLOCK for a `BLOCKING` row, contradictory items, or a choice only the developer can make before revision is worthwhile; APPROVE only when no HIGH remains and every MEDIUM is fixed or listed as a **residual finding**. A zero-finding APPROVE is legitimate and simply records the independent checks performed. No requirement that a review contain a novel finding; no count-based sentence.
+
+### R10 — Decision summary and G3 view
+
+PLAN.md ends with **Decision summary** (before the round sections), written for the developer: **Intended outcomes** (two to five sentences of business behavior, ids linking to criteria, never ids alone) · **Material choices** (each `G3` row: statement, recommendation, consequence if wrong) · **Exclusions and unresolved scope** (`EXCLUDED`/`UNRESOLVED` items; `PRESERVED` items are *not* listed for acknowledgement) · **Consequential assumptions** (`ASSUMED` count with ids; any the Adversary flagged material is re-routed `G3` in the revision) · **Accepted risks** · **Cross-repository prerequisites** (order, compatibility, external owners). "One screen" is a usability target, never permission to omit material information. The Adversary's fidelity check compares the summary to the body; a material omission is HIGH.
+
+`pipeline` voices G3 from the summary **and directly from ADVERSARY-REVIEW.md** (verdict, `cycle.round`, residual findings — not filtered through the Planner). Exact wording:
+
+> "The plan for `<PRIMARY>` (cycle `<c>`, round `<r>`) has been reviewed (`<verdict>`). Intended outcomes: `<summary text>`. Material choices needing your answer: `<Q-id: statement — recommended: <recommendation>; if wrong: <consequence>>` [, …] or none. Exclusions and unresolved scope: `<item: disposition — reason>` [, …] or none. Consequential assumptions: `<n>` (`<ids>`). Accepted risks: `<list>` or none. Cross-repository prerequisites: `<line>` or none. Adversary residual findings: `<id, severity: one line>` [, …] or none. For each material choice, accept the recommendation or give a replacement. Then: Approve this plan as displayed to proceed to test authoring / Send back with answers / Abort."
+
+Options: Approve as displayed (valid only when every material choice accepts the recommendation) / Send back with answers (starts a new planning cycle, R8) / Abort. Recorded per R8.
+
+### R11 — Policy skills and agent bodies
+
+Two skills, `user-invocable: false`, `disable-model-invocation: true`, read explicitly (the intake pattern):
+- `.github/skills/plan-grounding/SKILL.md` — the shared planning-quality policy: R1–R7, R10's summary content, `cycle.round` representation (R8 identity only). Read by `planner` (its construction rules) and by `adversary` (the shared contract it reviews against).
+- `.github/skills/challenge-plan/SKILL.md` — the independent review method: R9 in full (order, independent checks, the two questions, catalogue with per-category evidence expectations, finding shape, severity and verdict interpretation, counterexample allowance). Read by `adversary` only. `planner` does not read it.
+
+Agent bodies reference these rules and specify their own role, inputs, outputs, procedure, STOPs, forbidden actions, and ownership; artifact contracts specify representation (section headings and row shapes) without copying policy text.
+
+### R12 — Model correlation (documentation only)
+
+MODEL-ROLES.md records: Planner and Adversary are the roles whose value depends on independence and therefore the primary candidates for model diversity later; Phase 2's structural measures (source-first derivation, independently selected checks, a challenge catalogue distinct from construction rules) yield procedural independence with Sonnet-5 on both sides but do not guarantee a blind review, faithful read order, or independent model errors; the deferred benchmark protocol gains "independently selected checks recorded and their results" as an observation, not a required outcome. Sonnet-5 remains the baseline for every role.
+
+## 3. Artifact templates (representation)
+
+**PLAN.md** fixed headings, in order: Scope (with Change class) · Requested scope disposition (per-key table; requirement items table) · Repository evidence (per repository; Searched line) · Approach per repository (with implementation constraints `C1…` where used) · Dependencies and interfaces (or `None — reason`) · Affected files (operative table; Investigation notes) · Acceptance criteria (AC entries with Observed at / Preconditions / Path; Preservation expectations `P1…`) · Risks · Decisions and open questions · Out of scope · Decision summary · Adversary round (`cycle.round`) · Response to adversary findings (`n/a` on `1.1`; otherwise per finding id `ACCEPTED (what changed)` / `REJECTED (rationale, evidence)`, and on a new cycle per G3 answer how it was incorporated). The response table makes omissions reviewable; it does not prevent them.
+
+**ADVERSARY-REVIEW.md** fixed headings: Verdict · Independent requirement derivation · Independent checks (evidence verification; consequence-driven check with boundary selected, inspected, result; combined-outcome cases) · Findings (id, category, severity, evidence, what the plan must show or decide) · Assumptions and decisions challenged (per Q row: agree / should be `G3` / should be `BLOCKING`) · Acceptance criteria and preservation review · Decision summary fidelity · Round (`cycle.round`) · Residual findings (listed for G3 on APPROVE; `none`).
+
+**RUN.md** (pipeline-owned) changes: Stage status table and Artifact history use `cycle.round` for stages 3–4; the Gates log G3 entry records answer (`APPROVE`/`SEND_BACK`/`ABORT`), each material choice's answer, exclusions acknowledged, basis (`cycle.round` per artifact), status.
+
+## 4. Files
+
+**Modified:** `.github/agents/planner.agent.md`, `.github/agents/adversary.agent.md`, `.github/agents/pipeline.agent.md` (G3, cycle bookkeeping, send-back), `.github/pipeline/FLOW.md` (stages 3–4, G3, bounded loops, resume note), `.github/pipeline/AGENT-CONTRACTS.md` (planner/adversary sections; PLAN.md, ADVERSARY-REVIEW.md, RUN.md templates; bounded-loop wording), `.github/pipeline/GUARDRAILS.md` (Bounded loops paragraph only), `.github/skills/pipeline/SKILL.md` (authorized-regeneration sentence: developer-directed planning cycle), `.github/pipeline/MODEL-ROLES.md` (R12), `docs/COMPARISON-GUIDE.md`, `README.md`, `docs/examples/README`-level index lines as needed.
+
+**Added:** `.github/skills/plan-grounding/SKILL.md`, `.github/skills/challenge-plan/SKILL.md`, `docs/examples/PAYMENTS-12345-planning/` (Phase 2 planning-only variant of the PAYMENTS scenario through G3: `README.md`, `RUN.md` through G3, `INTAKE.md` reused verbatim from the Phase 1 example with a note, `PLAN.md`, `ADVERSARY-REVIEW.md`; it states that the Phase 1 run's tests, verification, and publication do **not** validate this plan), `docs/examples/<SMALL-KEY>/` (planning-only SMALL example through G3; honest zero-or-few-finding review permitted; no fabricated complexity).
+
+**Not modified:** `docs/examples/PAYMENTS-12345/` (the completed Phase 1 run, all eleven artifacts, byte-identical), `tester`, `developer`, `verifier`, `pr`, `intake`, `workspace` agents, `gather-jira-context`, `discover-affected-projects`, `.github/copilot-instructions.md`, `.vscode/*`, the Phase 1 contract, the archive, `docs/reviews/`.
+
+## 5. Checkpoints and acceptance
+
+**P2-C1 — Policy skills, contracts, agents.** Files: the two skills; planner, adversary, pipeline agents; FLOW.md, AGENT-CONTRACTS.md, GUARDRAILS.md (loops paragraph), MODEL-ROLES.md, `skills/pipeline/SKILL.md`.
+Acceptance: (a) every rule R1–R12 lives in exactly one normative place (skill or contract) and agents reference rather than restate it; (b) no contradiction across AGENT-CONTRACTS.md, the three agent bodies, FLOW.md, GUARDRAILS.md, the pipeline skill, and the two new skills — in particular the bounded-loop sentence, `cycle.round`, the G3 wording (identical in FLOW.md and `pipeline.agent.md`), and the G3 answer enum; (c) Planner/Adversary `tools:` byte-identical to Phase 1; `planner` reads `plan-grounding` only, `adversary` reads both; (d) no new agent, artifact, gate, STOP code, tool, or setting; (e) Affected files operative-path rule and Investigation notes present; `Observed at` requires an existing route, `NO EXISTING ROUTE` routes to `G3`; `NOT_FOUND` semantics stated; D4 shipped-value rule stated with the preserved-default exception; (f) adversary procedure contains the two independent-check questions and records checks even with zero findings; no novel-finding requirement, no count sentence; (g) `tester`, `verifier`, `developer`, `pr`, `intake`, `workspace` agents and the two intake skills unchanged (`git diff` empty).
+
+**P2-C2 — Planning examples.** Files: `docs/examples/PAYMENTS-12345-planning/`, `docs/examples/<SMALL-KEY>/`, index lines in `docs/examples/PAYMENTS-12345/README.md` **not** edited (that directory is byte-identical); example discovery via README.md instead.
+Acceptance: (a) PAYMENTS planning variant: items table covers the separable clauses of both keys and both developer constraints; shipped `maxAttempts`/`baseDelay` defaults are a `G3` row with units and consequence; synchronous-versus-asynchronous reporting is a `G3` row (or evidenced `ASSUMED` with a concrete consequence — not preclassified harmless); one interface row with failure behavior, deployment compatibility, implementation order; every AC has an existing route, preconditions, path; the combined outcome (terminal success with pending report) is stated; P rows present; Decision summary in outcome words; ADVERSARY-REVIEW.md records derivation, both independent checks with a boundary the plan did not cite when one exists, and residuals; RUN.md through G3 with `cycle.round` and the per-choice answers; README states the boundary and the non-validation caveat. (b) SMALL example: all SMALL limiting conditions hold and are stated; Interfaces `None — reason`; PLAN.md short (target under ~60 lines, a soft target); review APPROVE on `1.1` with the independent checks recorded and zero or few findings; README states it stops at G3. (c) Every identifier fictional; `docs/examples/PAYMENTS-12345/` unchanged.
+
+**P2-C3 — Guide, README, closure.** Files: `docs/COMPARISON-GUIDE.md`, `README.md`, this contract's §6.
+Acceptance: (a) guide entries for the two skills, the planner/adversary changes, the G3/cycle rule, the two planning examples, and a cross-cutting theme "Facts, assumptions, decisions"; (b) README asset tree and Phase 2 status current; (c) §6 below completed by Fable with the five challenge cases traced as document scenarios against the delivered files.
+
+## 6. Closure evidence — challenge cases (completed by Fable at P2-C3)
+
+| Case | Expected outcome | Where the rule lives | Traced |
+|---|---|---|---|
+| One source clause or developer constraint disappears from the plan | Independent derivation detects the omission; HIGH; the plan cannot proceed as complete | R1, R9 | — |
+| Every cited evidence row is true but a relevant consumer or combined failure condition is missing | The consequence-driven check inspects the uncited boundary; the missing outcome or compatibility decision is required | R9(3b, 3c), R5 | — |
+| Developer replaces a material G3 choice after round two | `SEND_BACK`; new cycle `2.1`; prior artifacts SUPERSEDED, prior G3 `STALE`; no old identity authorizes stage 5 | R8 | — |
+| A new observable boundary has no existing exercise route | `NO EXISTING ROUTE` → `G3` prerequisite; no claim that a future boundary satisfies the unchanged tester | R5, R6 | — |
+| A genuinely small, correct change with no unresolved material choice | Short plan; proportionate review; legitimate zero-finding APPROVE with independent checks recorded; no invented issues or acknowledgements | R2, R9, R10 | — |
+
+## 7. Deferred (unchanged from Phase 1 §12 and §15)
+
+Exact Jira/Bitbucket MCP names, the Sonnet-5 picker string, the agent-picker smoke check, corporate approval-engine behavior, model benchmarks. Phase 3 owns test-level policy; Phase 4 owns verifier matching beyond operative file paths.
