@@ -39,7 +39,7 @@ Start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape 
 ## Checkpoint status
 
 - **R1 — Design documents and housekeeping**: delivered. `FLOW.md`, `AGENT-CONTRACTS.md`, `GUARDRAILS.md`, `MODEL-ROLES.md`, `.github/copilot-instructions.md`, the archive, and this README.
-- **R2 — Agents**: pending. The nine `.agent.md` files and the `.vscode/settings.json` extensions for tester/developer/publish git forms.
+- **R2 — Agents**: delivered. The nine `.agent.md` files under `.github/agents/` and the `.vscode/settings.json` extensions for the tester/developer/publish git forms. The Copilot Chat agent-picker smoke check (agents appear and are selectable in VS Code) is **pending** — no VS Code session is available in this environment.
 - **R3 — Skills, worked example, comparison guide**: pending.
 
 ## Further reading

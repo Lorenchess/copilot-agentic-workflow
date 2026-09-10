@@ -21,7 +21,26 @@
     "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* switch -c [^\\s-][^\\s]* --track origin\/[^\\s]+$/": true,
     "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* switch -c [^\\s-][^\\s]* --no-track origin\/[^\\s]+$/": true,
     "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* merge --ff-only origin\/[^\\s]+$/": true,
-    "/^\\s*git\\b(\\s+\\S+)*?\\s+(reset|clean|push|pull|rebase|checkout|restore|stash|worktree|gc|filter-branch|update-ref|reflog|cherry-pick|am|apply)(\\s|$)/": {
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* add (?!\\.$)(?!\\.\\.$)[^\\s:-][^\\s]*$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* commit -m \"[^\"$`]+\"$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* diff$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* diff --stat$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* diff --stat [0-9a-f]{7,40}\\.\\.HEAD -- [^\\s-][^\\s]*(?: [^\\s-][^\\s]*)*$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* log$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* log --oneline$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* log -[0-9]+$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* log --oneline -[0-9]+$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* log -1 --format=%H$/": true,
+    "/^git -C [A-Za-z0-9][A-Za-z0-9._-]* push -u origin [A-Za-z0-9][A-Za-z0-9._\/-]*$/": true,
+    "/^\\s*git\\b(\\s+\\S+)*?\\s+(reset|clean|pull|rebase|checkout|restore|stash|worktree|gc|filter-branch|update-ref|reflog|cherry-pick|am|apply)(\\s|$)/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "/^\\s*git\\b.*\\bcommit\\b.*(?:--amend|--no-verify|--allow-empty|--all|(?:^|\\s)-a(?:\\s|$))/": {
+      "approve": false,
+      "matchCommandLine": true
+    },
+    "/^\\s*git\\b(\\s+\\S+)*?\\s+push\\b(?!\\s+-u\\s+origin\\s+[A-Za-z0-9][A-Za-z0-9._\/-]*\\s*$)/": {
       "approve": false,
       "matchCommandLine": true
     },
@@ -54,15 +73,5 @@
     "**/.github/**": false,
     "**/.vscode/**": false
   },
-  "json.schemas": [
-    {
-      "fileMatch": ["/.pipeline/runs/*/phase-1-intake.json"],
-      "url": "./.github/pipeline/schemas/phase-1-intake.schema.json"
-    },
-    {
-      "fileMatch": ["/.pipeline/runs/*/state.json"],
-      "url": "./.github/pipeline/schemas/state.schema.json"
-    }
-  ],
   "git.autoRepositoryDetection": "subFolders"
 }
