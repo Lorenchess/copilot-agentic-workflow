@@ -10,7 +10,7 @@ Normative per-agent contract for the nine agents in the reference pipeline (`pip
 - **Inputs**: `/pipeline` arguments; RUN.md if present; each stage subagent's returned artifact reference.
 - **Outputs**: RUN.md only.
 - **Tools**: `agent/runSubagent`, `vscode/askQuestions`, `read/readFile`, `search/listDirectory`, `edit/createFile`, `edit/editFiles` (RUN.md only).
-- **Forbidden**: terminal, any MCP tool, editing code or any artifact other than RUN.md, reordering Jira keys, expanding scope beyond confirmed repositories, reporting COMPLETE while any repository's status is not PREPARED/REUSED_EXISTING at the relevant stage, invoking a stage agent to regenerate an artifact that already exists without a developer decision to do so — except the authorized regenerations under contract A6 (planner round 2, developer fix rounds, tester amendments and RED re-proofs, verifier re-runs), each recorded in RUN.md's Artifact history with the prior version marked SUPERSEDED, treating a `STALE` gate answer as an approval.
+- **Forbidden**: terminal, any MCP tool, editing code or any artifact other than RUN.md, reordering Jira keys, expanding scope beyond confirmed repositories, reporting COMPLETE while any repository's status is not PREPARED/REUSED_EXISTING at the relevant stage, invoking a stage agent to regenerate an artifact that already exists without a developer decision to do so — except the authorized regenerations under contract A6 (planner round 2, developer fix rounds, tester amendments and RED re-proofs, verifier re-runs, and a developer-directed planning cycle), each recorded in RUN.md's Artifact history with the prior version marked SUPERSEDED, treating a `STALE` gate answer as an approval, starting a new planning cycle other than on an explicit developer decision (a G3 `SEND_BACK` or a "redirect the planner" choice at `ADVERSARY_REVISE_LIMIT`/`ADVERSARY_BLOCK`).
 - **STOP conditions**: `INVALID_KEY`, `RUN_EXISTS` (raised before any stage agent runs); `RUN_KEYS_MISMATCH` (raised on resume when the requested key list does not equal RUN.md's Keys); `PRIMARY_JIRA_NOT_FOUND`, `JIRA_UNAVAILABLE` (raised after reading INTAKE.md, before G1); relays every STOP raised by a subagent verbatim.
 - **Out of scope**: planning, testing, implementation, verification, PR content, git mutation, Jira mutation, model or tool configuration changes, anything the organization's internal pipeline already handles as infrastructure (scheduling, retries beyond the documented bounded loops, concurrency control).
 
@@ -44,23 +44,23 @@ Normative per-agent contract for the nine agents in the reference pipeline (`pip
 
 ## planner
 
-- **Purpose**: turn INTAKE.md and the affected repositories' existing code into an approach, acceptance criteria, and risk list.
-- **Inputs**: INTAKE.md (immutable); RUN.md (immutable; confirmed repositories, confirmed branch, developer context); repository code (read-only); on a revise round, its own prior PLAN.md and ADVERSARY-REVIEW.md (immutable input for that round).
+- **Purpose**: turn INTAKE.md and the affected repositories' existing code into a grounded, evidence-backed plan (requirement items, change class, repository evidence, approach, dependencies and interfaces, affected files, testable acceptance criteria, risks, decisions, decision summary) per `.github/skills/plan-grounding/SKILL.md`, subject to adversarial review. Reads `plan-grounding` only — not `challenge-plan`.
+- **Inputs**: `.github/skills/plan-grounding/SKILL.md` (construction rules, read explicitly); INTAKE.md (immutable); RUN.md (immutable; confirmed repositories, confirmed branch, developer context, and, on a new planning cycle, the G3 entry that started it, tagged `[DEV]`); repository code (read-only); on a revise round or a new cycle, its own prior PLAN.md and ADVERSARY-REVIEW.md (immutable input, including the superseded prior revision on a new cycle).
 - **Outputs**: PLAN.md only.
 - **Tools**: `read/readFile`, `search/listDirectory`, `search/fileSearch`, `search/textSearch`, `search/codebase`, `edit/createFile`, `edit/editFiles` (PLAN.md only, own artifact only).
-- **Forbidden**: terminal, any MCP tool, editing code or tests, editing INTAKE.md or ADVERSARY-REVIEW.md, inventing acceptance criteria not traceable to INTAKE.md or RUN.md's developer context or explicit reasoning recorded in PLAN.md, presenting a `PROPOSED` or `DERIVED` acceptance criterion as sourced (as `JIRA` or `DEV`).
-- **STOP conditions**: none raised directly; a second REVISE or a BLOCK from the adversary ends the loop and escalates to the developer (see adversary, below).
+- **Forbidden**: terminal, any MCP tool, editing code or tests, editing INTAKE.md, RUN.md, or ADVERSARY-REVIEW.md, inventing acceptance criteria not traceable to INTAKE.md or RUN.md's developer context or explicit reasoning recorded in PLAN.md, presenting a `PROPOSED` or `DERIVED` acceptance criterion as sourced (as `JIRA` or `DEV`), a `[REPO]` claim with no supporting evidence row, a directory/component as an operative Affected files entry, resolving a consequential choice silently (no Decisions and open questions row), carrying a `BLOCKING` question as `ASSUMED`, presenting an `ASSUMED` row's content as fact, adding a repository not already confirmed in RUN.md, writing `Observed at: NEW` or citing any future boundary as already testable.
+- **STOP conditions**: none raised directly; a second REVISE or a BLOCK from the adversary ends that planning cycle's round budget and escalates to the developer (see adversary, below). Adversary/Planner: at most two rounds per planning cycle; a new cycle starts only on an explicit developer decision and is never automatic.
 - **Out of scope**: test design, implementation, verification, deciding repository selection, judging its own plan (that is the adversary's role).
 
 ## adversary
 
-- **Purpose**: independent, read-only challenge of PLAN.md before any test or code is written; renders APPROVE / REVISE / BLOCK. Checks that PLAN.md's Requested scope disposition covers every requested key in INTAKE.md/RUN.md and flags every `PROPOSED` acceptance criterion as needing a G3 decision; a plan whose disposition omits a requested key is REVISE.
-- **Inputs**: PLAN.md, INTAKE.md, RUN.md (immutable; developer decisions and context), repository code (all immutable).
+- **Purpose**: independent, read-only challenge of PLAN.md before any test or code is written, per `.github/skills/challenge-plan/SKILL.md`'s method (independent requirement derivation from INTAKE.md/RUN.md read before PLAN.md's disposition; change-class confirmation; independent checks — evidence verification, a consequence-driven boundary check, a combined-outcome check; the challenge catalogue); renders APPROVE / REVISE / BLOCK. Checks that PLAN.md's Requested scope disposition covers every requested key in INTAKE.md/RUN.md and flags every `PROPOSED` acceptance criterion as needing a G3 decision; a plan whose disposition omits a requested key is REVISE; a `BLOCKING` row in Decisions and open questions is BLOCK by rule.
+- **Inputs**: `.github/skills/plan-grounding/SKILL.md` (the shared contract PLAN.md must satisfy, read first) and `.github/skills/challenge-plan/SKILL.md` (its own independent review method, read next); PLAN.md, INTAKE.md, RUN.md (immutable; developer decisions and context), repository code (all immutable); on a later round or cycle, PLAN.md's Response to adversary findings.
 - **Outputs**: ADVERSARY-REVIEW.md only.
 - **Tools**: `read/readFile`, `search/listDirectory`, `search/fileSearch`, `search/textSearch`, `search/codebase`, `edit/createFile`, `edit/editFiles` (ADVERSARY-REVIEW.md only, own artifact only).
-- **Forbidden**: terminal, any MCP tool, editing the plan or code, approving a plan with no acceptance criteria, issuing a third round (bounded loop is enforced by the orchestrator, not by the adversary refusing to answer).
-- **STOP conditions**: `ADVERSARY_BLOCK`; `ADVERSARY_REVISE_LIMIT` (second REVISE).
-- **Out of scope**: proposing an alternative plan (it may only critique), writing tests, implementation.
+- **Forbidden**: terminal, any MCP tool, editing PLAN.md or code, proposing a competing full plan (a concise counterexample or bounded alternative to explain a finding is allowed), approving a plan with no acceptance criteria, approving a plan whose Requested scope disposition omits a requested key, approving with an unaddressed HIGH finding, requiring a novel finding or a count-based independence claim (a zero-finding APPROVE that records the independent checks performed is legitimate), issuing a third round within a planning cycle (bounded loop is enforced by the orchestrator, not by the adversary refusing to answer).
+- **STOP conditions**: `ADVERSARY_BLOCK`; `ADVERSARY_REVISE_LIMIT` (second REVISE within the current planning cycle; the developer may accept the plan as-is, redirect the planner — starting a new planning cycle — or abort). Adversary/Planner: at most two rounds per planning cycle; a new cycle starts only on an explicit developer decision and is never automatic.
+- **Out of scope**: proposing an alternative plan (it may only critique, with concise counterexamples or bounded alternatives as explanation), writing tests, implementation.
 
 ## tester
 
@@ -161,9 +161,9 @@ Provenance tags are mandatory wherever a fact is stated: `[JIRA]` (from a Jira f
 - **Repositories** — recommended vs. selected, with a one-line evidence summary per repository.
 - **Branch** — the confirmed branch name (accepted or edited at G2).
 - **Developer context** — verbatim, tagged `[DEV]`, or `provided: false`.
-- **Stage status table** — one row per stage, its artifact, its status, and its round (attempt counter: adversary/planner round, developer fix round, verifier run).
-- **Artifact history** — one row per artifact production: artifact, stage, round, status (ACTIVE or SUPERSEDED), producing agent.
-- **Gates log** — G1–G4, each with the question asked, the developer's answer, its **basis** (the artifact revision(s) reviewed: G1/G2 → INTAKE.md round; G3 → PLAN.md round and ADVERSARY-REVIEW.md round; G4 → VERIFICATION.md round, PR-DESCRIPTION.md round, and the per-repository tuple), and its **status** (`CURRENT` or `STALE`). G4 records, per repository, the approved tuple: directory, push destination, source branch, verified SHA, target branch, publish mode.
+- **Stage status table** — one row per stage, its artifact, its status, and its round (attempt counter: for stages 3–4, the `cycle.round` identity, e.g. `1.1`, `1.2`, `2.1`; elsewhere, developer fix round or verifier run).
+- **Artifact history** — one row per artifact production: artifact, stage, round (`cycle.round` for PLAN.md/ADVERSARY-REVIEW.md), status (ACTIVE or SUPERSEDED), producing agent.
+- **Gates log** — G1–G4, each with the question asked, the developer's answer, its **basis** (the artifact revision(s) reviewed: G1/G2 → INTAKE.md round; G3 → PLAN.md `cycle.round` and ADVERSARY-REVIEW.md `cycle.round`; G4 → VERIFICATION.md round, PR-DESCRIPTION.md round, and the per-repository tuple), and its **status** (`CURRENT` or `STALE`). G3 additionally records the answer enum (`APPROVE`/`SEND_BACK`/`ABORT`), each material choice's answer, and exclusions acknowledged. G4 records, per repository, the approved tuple: directory, push destination, source branch, verified SHA, target branch, publish mode.
 - **Resume notes** — which artifact resumption started from, if any.
 
 ### INTAKE.md (owner: intake)
@@ -179,22 +179,34 @@ Provenance tags are mandatory wherever a fact is stated: `[JIRA]` (from a Jira f
 - **Publish section** — per repository: the preflight reads (push destination, current branch, current HEAD, current default branch, VERIFICATION.md SHA), the G4 tuple compared against, verified SHA, equality result, push result, remote SHA from `ls-remote`, final verdict.
 
 ### PLAN.md (owner: planner)
-- **Scope** — what this change covers.
-- **Requested scope disposition** — per requested key (primary first): IMPLEMENTED / PARTIALLY IMPLEMENTED / EXCLUDED, with the criteria covering it or the reason for exclusion (for example the key was unreachable — a Warning in INTAKE.md).
-- **Approach per repository** — one subsection per affected repository.
-- **Affected files** — the files expected to change.
-- **Acceptance criteria** — as Given/When/Then; each carries a source class — `JIRA` (a Jira field), `DEV` (developer context in RUN.md), `DERIVED` (a technical constraint the planner derived, with the reasoning), `PROPOSED` (a product decision the planner proposes; requires explicit G3 confirmation).
-- **Risks** — what could go wrong.
-- **Open questions** — anything unresolved.
+
+Fixed headings, in order (representation only; construction rules are normative in `.github/skills/plan-grounding/SKILL.md`):
+- **Scope** — what this change covers, including `Change class: SMALL | MEDIUM | LARGE`.
+- **Requested scope disposition** — per-key table (IMPLEMENTED / PARTIALLY IMPLEMENTED / EXCLUDED) and the requirement items table (id · source anchor · obligation · disposition · covered by · note).
+- **Repository evidence** — per repository, evidence rows (`E1…`) and a Searched line.
+- **Approach per repository** — one subsection per affected repository, with implementation constraints (`C1…`) where used.
+- **Dependencies and interfaces** — rows (`I1…`), or `None — <reason>`.
+- **Affected files** — the operative table (file paths only); a separate, non-operative Investigation notes list, written as prose (a question plus the evidence id it relates to), never as a path or path prefix.
+- **Acceptance criteria** — Given/When/Then with source class, Observed at, Preconditions, Path, and combined outcomes where relevant; sub-heading Preservation expectations (`P1…`).
+- **Risks** — trigger, category, treatment.
+- **Decisions and open questions** — the routing table (`Q1…`, `ASSUMED`/`G3`/`BLOCKING`/`OUT_OF_SCOPE`).
 - **Out of scope** — what this plan deliberately excludes.
-- **Adversary round** — which round this plan version is (1 or 2).
+- **Decision summary** — written for the developer; the content voiced at G3.
+- **Adversary round** — this plan version's `cycle.round` (e.g. `1.1`, `1.2`, `2.1`).
+- **Response to adversary findings** — `n/a` on `1.1`; otherwise per finding id `ACCEPTED (what changed)` / `REJECTED (rationale, evidence)`, and, on a new cycle, per G3 answer how it was incorporated.
 
 ### ADVERSARY-REVIEW.md (owner: adversary)
+
+Fixed headings (representation only; the review method is normative in `.github/skills/challenge-plan/SKILL.md`):
 - **Verdict** — APPROVE / REVISE / BLOCK.
-- **Findings** — severity, evidence, recommendation, per finding.
-- **Assumptions challenged** — plan assumptions the adversary questioned.
-- **Missing or weak acceptance criteria** — gaps found.
-- **Round** — which round this review answers.
+- **Independent requirement derivation** — items and developer constraints, and bearing INTAKE Unknowns/Warnings, derived from INTAKE.md/RUN.md before reading PLAN.md's disposition.
+- **Independent checks** — evidence verification; consequence-driven check (boundary selected, inspected, result); combined-outcome cases considered.
+- **Findings** — id, category, severity, evidence, what the plan must show or decide, per finding.
+- **Assumptions and decisions challenged** — per `Q` row: agree / should be `G3` / should be `BLOCKING`.
+- **Acceptance criteria and preservation review** — gaps found.
+- **Decision summary fidelity** — comparison of the Decision summary against the plan body.
+- **Round** — this review's `cycle.round`, matching the plan version it answers.
+- **Residual findings** — every finding still open on this verdict: on APPROVE, the unresolved MEDIUM/LOW; on REVISE or BLOCK, every open finding — so a developer who later accepts the plan as-is at `ADVERSARY_REVISE_LIMIT`/`ADVERSARY_BLOCK` sees them at G3; `none` only when nothing is open.
 
 ### TEST-CONTRACT.md (owner: tester)
 - **Scenario-to-test mapping** — which Given/When/Then maps to which test.

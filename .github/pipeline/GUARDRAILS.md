@@ -79,7 +79,7 @@ G1 (repositories), G2 (branch and context), G3 (plan approval), G4 (publish and 
 
 ## Bounded loops
 
-Adversary/planner: at most two rounds. Verifier/developer: at most two rounds. A test-change request is never looped automatically — it is exactly one STOP and one human decision. See `FLOW.md` for what happens when a bound is hit.
+Adversary/Planner: at most two rounds per planning cycle; a new cycle starts only on an explicit developer decision and is never automatic. Verifier/developer: at most two rounds. A test-change request is never looped automatically — it is exactly one STOP and one human decision. See `FLOW.md` for what happens when a bound is hit.
 
 ## Self-protection
 

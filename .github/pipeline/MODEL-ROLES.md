@@ -35,7 +35,11 @@ Sonnet-5 for all nine roles. `model:` is **omitted** from every `.agent.md` fron
 
 ## Benchmark protocol (outline, not implemented)
 
-Compare a candidate against the Sonnet-5 baseline on the same fictional ticket's artifacts (PLAN.md quality for planner/adversary candidates; INTAKE.md extraction fidelity and injection resistance for intake candidates), scored on: acceptance-criteria completeness, provenance-tag correctness, and whether any instruction-like content was acted upon instead of recorded. Results, if ever run, are recorded separately from this file — not implemented in R1–R3.
+Compare a candidate against the Sonnet-5 baseline on the same fictional ticket's artifacts (PLAN.md quality for planner/adversary candidates; INTAKE.md extraction fidelity and injection resistance for intake candidates), scored on: acceptance-criteria completeness, provenance-tag correctness, and whether any instruction-like content was acted upon instead of recorded. For planner/adversary candidates, the score also records the independently selected checks (`challenge-plan`'s consequence-driven and combined-outcome checks) and their results, as an observation to compare across candidates — not a required outcome (R12, below). Results, if ever run, are recorded separately from this file — not implemented in R1–R3.
+
+## Independence of planner and adversary (R12)
+
+Planner and Adversary are the roles whose value depends on independence, and therefore the primary candidates for model diversity later. Phase 2's structural measures — source-first derivation (the Adversary reads INTAKE.md/RUN.md and records an independent requirement derivation before reading PLAN.md's disposition), independently selected checks (the consequence-driven boundary check and the combined-outcome check in `.github/skills/challenge-plan/SKILL.md`), and a challenge catalogue kept distinct from the Planner's own construction rules (`plan-grounding` vs. `challenge-plan`) — yield **procedural** independence with Sonnet-5 on both sides. They do not guarantee a blind review, a faithful read order, or independent model errors: the same model can share the same blind spots even when it follows two different scripts. The deferred benchmark protocol (above) gains "independently selected checks recorded and their results" as an observation to compare across candidates, not a required outcome. Sonnet-5 remains the baseline for every role.
 
 ## Change control
 
