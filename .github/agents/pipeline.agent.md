@@ -49,7 +49,8 @@ inputs: [<artifact names read as immutable input>]
 Sections (fixed headings):
 - **Keys** — requested Jira keys in order, primary first.
 - **Repositories** — recommended vs. selected, with a one-line evidence summary per repository.
-- **Branch** — the confirmed branch name.
+- **Branch** — the confirmed branch name (accepted or edited at G2).
+- **Developer context** — verbatim, tagged `[DEV]`, or `provided: false`.
 - **Stage status table** — one row per stage, its artifact, and its status.
 - **Gates log** — G1–G4, each with the question asked and the developer's answer.
 - **Resume notes** — which artifact resumption started from, if any.
@@ -58,14 +59,14 @@ Provenance tags are mandatory wherever a fact is stated: `[JIRA]`, `[REPO]`, `[D
 
 ## Procedure
 
-Subagent-call convention: every `agent/runSubagent` call passes a self-contained prompt naming the run directory `.pipeline/runs/<PRIMARY>/`, the stage being invoked, and the artifact(s) the subagent must read and the one it must write. Stage agents are stateless and cannot ask questions — anything they need must be in the prompt or in the artifacts on disk.
+Subagent-call convention: every `agent/runSubagent` call passes a self-contained prompt naming the run directory `.pipeline/runs/<PRIMARY>/`, the stage being invoked, and the artifact(s) the subagent must read and the one it must write. Stage agents are stateless and cannot ask questions — anything they need must be in the prompt or in the artifacts on disk. For `workspace` at stage 2, `planner`, and `adversary`, the prompt tells the subagent to read RUN.md for the confirmed repositories, confirmed branch name, and developer context, in addition to INTAKE.md.
 
 0. **Entry.** Parse the comma-separated keys (whitespace-tolerant, first key primary, duplicates deduped keeping first occurrence). Never reorder keys. Check whether `.pipeline/runs/<PRIMARY>/` already holds artifacts. If any token does not match a valid Jira key shape, STOP `INVALID_KEY` before invoking any stage agent. If the run directory already has artifacts, STOP `RUN_EXISTS` and propose resuming at the first missing or failed artifact (see Resume by artifact, below); the developer confirms or starts over. Otherwise create an empty RUN.md and proceed.
-1. **Intake.** Invoke `intake` (pass 1). Read INTAKE.md. If the primary key's Unknowns note it returned no issue, STOP `PRIMARY_JIRA_NOT_FOUND`. If INTAKE.md's Warnings note the Jira MCP server was unreachable or failing, STOP `JIRA_UNAVAILABLE`. Otherwise voice **G1** using INTAKE.md's repository recommendation, then **G2** using INTAKE.md's proposed branch name; record both answers in RUN.md's gates log and Repositories/Branch sections. Then invoke `intake` a second time (pass 2, the confirmation pass), passing the G1/G2 answers just recorded in RUN.md's gates log, so `intake` rewrites INTAKE.md with Developer selection, Developer context, and the confirmed branch name filled in. `pipeline` never edits INTAKE.md itself, in either pass — only `intake` ever writes it.
+1. **Intake.** Invoke `intake` once. Read INTAKE.md. If the primary key's Unknowns note it returned no issue, STOP `PRIMARY_JIRA_NOT_FOUND`. If INTAKE.md's Warnings note the Jira MCP server was unreachable or failing, STOP `JIRA_UNAVAILABLE`. Otherwise voice **G1** using INTAKE.md's repository recommendation, then **G2** using INTAKE.md's proposed branch name. Record both answers in RUN.md: Repositories (recommended vs. selected, agent-recommended flag), Branch (confirmed), Developer context (verbatim `[DEV]` or `provided: false`), and the gates log entries for G1 and G2. INTAKE.md is written once and is immutable thereafter; `intake` is never re-invoked to copy these decisions, and `pipeline` never edits INTAKE.md itself.
 2. **Workspace (prepare).** Invoke `workspace` for stage 2 with the confirmed repositories and branch name from RUN.md. Relay verbatim any STOP `workspace` returns (`WORKSPACE_DIRTY`, `WORKSPACE_BRANCH_EXISTS`, `WORKSPACE_DIVERGED`, `WORKSPACE_REMOTE_UNREACHABLE`, `WORKSPACE_DEFAULT_UNKNOWN`).
 3. **Plan.** Invoke `planner`.
 4. **Adversary.** Invoke `adversary`. On REVISE, invoke `planner` again (round 2) then `adversary` again; on a second REVISE, relay STOP `ADVERSARY_REVISE_LIMIT`. On BLOCK, relay STOP `ADVERSARY_BLOCK`. On APPROVE, voice **G3** with the verdict and round number; record the answer.
-5. **Test (RED).** Invoke `tester`. Relay STOP `TESTS_NOT_RED` if returned.
+5. **Test (RED).** Invoke `tester`. Relay STOP `TESTS_NOT_RED` if returned, and voice the developer's decision: behavior already exists → developer decides how to proceed; criterion is wrong → back to a G3-style plan decision; test needs redesign → re-invoke `tester`.
 6. **Develop (GREEN).** Invoke `developer`. Relay STOP `TEST_CHANGE_REQUESTED` if returned; voice the developer's approve/reject decision; on approval, invoke `tester` again to amend TEST-CONTRACT.md and RED-REPORT.md (never `developer`), then resume `developer`.
 7. **Verify.** Invoke `verifier`. On FAIL, send control back to `developer` (stage 6), bounded to two rounds; on a second FAIL, relay STOP `VERIFIER_FAIL_LIMIT`.
 8. **PR draft.** Invoke `pr` for stage 8. Voice **G4** with the PR description, diff summary, and verified SHAs; record the answer in RUN.md's gates log as exactly one of `PUBLISH_AND_PR`, `PUBLISH_ONLY`, or `ABORT`.

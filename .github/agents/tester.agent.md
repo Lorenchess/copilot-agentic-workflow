@@ -77,7 +77,7 @@ One command per tool call; never `&&`, `;`, `|`, or redirection.
 2. Detect the test/build runner from build files present in each affected repository (e.g. `pom.xml`, `build.gradle`, `package.json`); never guess a runner that isn't evidenced by a build file.
 3. Write one acceptance test per Given/When/Then scenario, under the repository's existing test directories, using `edit/createFile`/`edit/editFiles` restricted to files you create.
 4. Run the detected runner; capture the output.
-5. If any newly written test passes before implementation exists, STOP `TESTS_NOT_RED` — fix the test rather than proceeding.
+5. If any newly written test passes before implementation exists, investigate before proceeding: does the test exercise the acceptance behavior? does the behavior already exist? is a fixture or setup masking it? Correct the test and re-run, at most two correction attempts, re-proving RED each time. Never weaken or narrow the acceptance criterion to force a failure. Only if legitimate RED still cannot be established after two correction attempts, record `TESTS_NOT_RED` in RED-REPORT.md — which test, the attempts made, and why RED cannot be established — and return control to `pipeline`.
 6. Once every new test fails for the acceptance condition itself (not a compile or setup error), record the run command, failing tests, failure reasons, and a trimmed evidence excerpt in RED-REPORT.md, plus an explicit Confirmation that no contract test passed.
 7. `git -C <dir> status --porcelain=v2 --branch` to confirm only your new test files are unstaged; `git -C <dir> add <path>` once per path you created; `git -C <dir> commit -m "<message>"`; `git -C <dir> log -1 --format=%H` to capture the RED commit SHA.
 8. Record the scenario-to-test mapping, test file paths per repository, the RED commit SHA per repository, and the run command per repository in TEST-CONTRACT.md.
@@ -92,15 +92,15 @@ Decision needed from: <role>.
 <optional: what happens on resume>
 ```
 
-- `STOP [TESTS_NOT_RED]: A written acceptance test passes before any implementation exists. Decision needed from: tester. Fix the test; pipeline halts stage 5.`
+- `STOP [TESTS_NOT_RED]: After two correction attempts, an acceptance test still cannot be made to fail for the missing acceptance behavior. Decision needed from: developer. Decide whether the behavior already exists, the criterion is wrong, or the test needs redesign.`
 
-`tester` cannot voice this itself — it records the condition (which test passed and why) in RED-REPORT.md and returns control to `pipeline`, which voices the STOP verbatim; the actual fix happens on `tester`'s next invocation, not through a developer gate answer.
+`tester` cannot voice this itself — it records the condition (which test, attempts made, why RED cannot be established) in RED-REPORT.md and returns control to `pipeline`, which voices the STOP verbatim; the developer decides whether the behavior already exists, the criterion is wrong, or the test needs redesign.
 
 ## Forbidden actions
 
 No agent, anywhere, under any tool name, may run: `reset`, `clean`, `checkout`, `restore`, `stash`, `rebase`, `pull`, any force flag (`--force`, `-f`, `--hard`, `--force-with-lease`), branch delete or rename, or `worktree`.
 
-In addition, `tester` may never: edit any non-test production file; `git push`; use any MCP tool; edit any artifact other than TEST-CONTRACT.md and RED-REPORT.md; `git add` a path it did not create under a test directory; amend TEST-CONTRACT.md for any reason other than an approved test-change request.
+In addition, `tester` may never: edit any non-test production file; `git push`; use any MCP tool; edit any artifact other than TEST-CONTRACT.md and RED-REPORT.md; `git add` a path it did not create under a test directory; amend TEST-CONTRACT.md for any reason other than an approved test-change request; weaken or narrow an acceptance criterion to make a test fail.
 
 ## Out of scope
 

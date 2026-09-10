@@ -32,7 +32,7 @@ Forbidden for every agent, unconditionally, no matter what tool grants terminal 
 - `chat.tools.terminal.autoApprove` `true` rules are fully anchored (`^…$`), carry no `i` flag, and use value slots that cannot start with `-` so no flag can be smuggled into a slot. The `<dir>` slot is `[A-Za-z0-9][A-Za-z0-9._-]*` — it must start with a letter or digit, which is why `.` and `..` cannot match: `git -C .` or `git -C ..` would otherwise let an allowlisted verb operate outside the intended repository.
 - `false` rules use `matchCommandLine: true` and match destructive verbs and flags anywhere in the command line. A `false` rule forces a human approval **prompt**, it does not block the command — the developer can still approve it. `false` always wins over a `true` rule that also matches.
 - Manual permission mode is required; a global auto-approve setting defeats every rule above and must not be set while running the pipeline.
-- R2 extends this file with the `tester`/`developer` command forms (`add`, `commit`, `diff`, `log`, the test runner) and the `workspace` publish forms (`push -u origin <branch>`, `ls-remote --heads origin <branch>`); none of those additions may loosen the `<dir>` slot or add a force flag.
+- R2 extends this file with the `tester`/`developer` command forms (`add`, `commit`, `diff`, `log`) and the `workspace` publish forms (`push -u origin <branch>`, `ls-remote --heads origin <branch>`); none of those additions may loosen the `<dir>` slot or add a force flag. Test/build runner commands are intentionally not auto-approved and prompt in Manual mode.
 
 ## Test immutability mechanism
 

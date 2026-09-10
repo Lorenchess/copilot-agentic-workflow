@@ -47,10 +47,10 @@ PR (pr agent) -----------------------> PR.md
 |---|---|---|---|---|---|
 | 0 | Entry | skill + pipeline | `/pipeline KEYS` | RUN.md | Invalid key -> STOP. Existing run -> propose resume, developer confirms. |
 | 1 | Intake | intake | Jira, workspace listing, README heads | INTAKE.md | G1 repositories; G2 branch + context |
-| 2 | Workspace | workspace | INTAKE.md | WORKSPACE.md | Per repo: dirty / existing branch / diverged / unreachable / unknown default -> STOP |
-| 3 | Plan | planner | INTAKE.md, code | PLAN.md | none |
-| 4 | Adversary | adversary | PLAN.md, INTAKE.md, code | ADVERSARY-REVIEW.md | REVISE -> planner once more; 2nd REVISE or BLOCK -> developer decides; G3 plan approval |
-| 5 | Test (RED) | tester | PLAN.md | test files (committed), TEST-CONTRACT.md, RED-REPORT.md | Tests not RED -> STOP |
+| 2 | Workspace | workspace | INTAKE.md, RUN.md | WORKSPACE.md | Per repo: dirty / existing branch / diverged / unreachable / unknown default -> STOP |
+| 3 | Plan | planner | INTAKE.md, RUN.md, code | PLAN.md | none |
+| 4 | Adversary | adversary | PLAN.md, INTAKE.md, RUN.md, code | ADVERSARY-REVIEW.md | REVISE -> planner once more; 2nd REVISE or BLOCK -> developer decides; G3 plan approval |
+| 5 | Test (RED) | tester | PLAN.md | test files (committed), TEST-CONTRACT.md, RED-REPORT.md | Tests not RED after bounded correction -> STOP |
 | 6 | Develop (GREEN) | developer | PLAN.md, TEST-CONTRACT.md, RED-REPORT.md | code (committed), IMPLEMENTATION.md | Test-change request -> STOP for developer decision |
 | 7 | Verify | verifier | everything above, repos | VERIFICATION.md | FAIL -> developer fixes, <=2 rounds, then STOP |
 | 8 | PR draft | pr | PLAN.md, VERIFICATION.md, INTAKE.md | PR-DESCRIPTION.md | G4 publish + PR approval |
@@ -61,15 +61,15 @@ PR (pr agent) -----------------------> PR.md
 
 **0. Entry.** The `/pipeline` skill parses the comma-separated keys (whitespace-tolerant, first key primary, duplicates deduped keeping first occurrence) and the pipeline orchestrator checks whether `.pipeline/runs/<PRIMARY>/` already holds artifacts. It must not reorder keys or start any stage agent yet. It hands forward the validated key list and, on a fresh run, an empty RUN.md; on an existing run, a resume proposal.
 
-**1. Intake.** The intake agent reads Jira (bounded, read-only) and the workspace listing, produces an evidence-backed repository recommendation and a proposed branch name, and asks G1 and G2 through the orchestrator. It must not touch a terminal, write code, or promote a discovered (linked/parent/child/testing) Jira into scope. It hands forward INTAKE.md: the confirmed repository list, the confirmed branch name, and any developer context, all provenance-tagged.
+**1. Intake.** The intake agent reads Jira (bounded, read-only) and the workspace listing, produces an evidence-backed repository recommendation and a proposed branch name, and asks G1 and G2 through the orchestrator. It must not touch a terminal, write code, or promote a discovered (linked/parent/child/testing) Jira into scope. It hands forward INTAKE.md: the requested Jiras, context-only Jiras, repository recommendation, and proposed branch name, all provenance-tagged. The confirmed repository list, confirmed branch name, and developer context are recorded by the orchestrator in RUN.md at G1/G2.
 
-**2. Workspace.** The workspace agent fetches each confirmed repository, fast-forwards its default branch, and creates the feature branch with the exact name from INTAKE.md in every repository. It must not reset, clean, stash, rebase, pull, or force anything, and never reports success for a repository it has not actually prepared. It hands forward WORKSPACE.md with one status per repository (PREPARED / REUSED_EXISTING / EXCLUDED / BLOCKED / FAILED) and the base commit.
+**2. Workspace.** The workspace agent fetches each confirmed repository, fast-forwards its default branch, and creates the feature branch with the exact name from RUN.md in every repository. It must not reset, clean, stash, rebase, pull, or force anything, and never reports success for a repository it has not actually prepared. It hands forward WORKSPACE.md with one status per repository (PREPARED / REUSED_EXISTING / EXCLUDED / BLOCKED / FAILED) and the base commit.
 
-**3. Plan.** The planner reads INTAKE.md and the affected repositories' code (read-only) and produces a scope, an approach per repository, acceptance criteria as Given/When/Then, risks, and open questions. It must not touch a terminal or edit code. It hands forward PLAN.md for adversarial review.
+**3. Plan.** The planner reads INTAKE.md and RUN.md and the affected repositories' code (read-only) and produces a scope, an approach per repository, acceptance criteria as Given/When/Then, risks, and open questions. It must not touch a terminal or edit code. It hands forward PLAN.md for adversarial review.
 
 **4. Adversary.** The adversary agent reads PLAN.md and challenges it: missing acceptance criteria, untested assumptions, scope creep. It must not edit the plan or touch code; it can only render a verdict. It hands forward ADVERSARY-REVIEW.md with a verdict (APPROVE / REVISE / BLOCK) and, on APPROVE, triggers G3 so the developer sees the approved plan before testing begins.
 
-**5. Test (RED).** The tester writes acceptance tests for the plan's Given/When/Then criteria, proves they fail for the right reason (RED, not an error or a compile failure), and commits only the test files it created. It must not write production code or push. It hands forward TEST-CONTRACT.md (test paths, RED commit SHA per repository) and RED-REPORT.md (failure evidence) as the immutable definition of "done" for the developer.
+**5. Test (RED).** The tester writes acceptance tests for the plan's Given/When/Then criteria, proves they fail for the right reason (RED, not an error or a compile failure), and commits only the test files it created. A test that passes on its first run is first investigated and corrected by the tester (at most two correction attempts, RED re-proven each time) before `TESTS_NOT_RED` is raised. It must not write production code or push. It hands forward TEST-CONTRACT.md (test paths, RED commit SHA per repository) and RED-REPORT.md (failure evidence) as the immutable definition of "done" for the developer.
 
 **6. Develop (GREEN).** The developer implements against PLAN.md until the tests in TEST-CONTRACT.md pass, committing production code only. It must not edit any path listed in TEST-CONTRACT.md, and must not alter TEST-CONTRACT.md or RED-REPORT.md itself; a needed test change goes through a TEST-CHANGE-REQUEST recorded in IMPLEMENTATION.md and a STOP for the developer to decide. It hands forward IMPLEMENTATION.md with the GREEN evidence.
 
@@ -114,7 +114,7 @@ Decision needed from: <role>.
 | `WORKSPACE_DIVERGED` | The local default branch cannot fast-forward to `origin/<default>` | developer (branch from remote default, exclude repo, or abort) |
 | `WORKSPACE_REMOTE_UNREACHABLE` | `fetch` or `ls-remote` fails | developer (retry after manual fix, exclude repo, or abort) |
 | `WORKSPACE_DEFAULT_UNKNOWN` | The default branch cannot be determined from the remote | developer (name the default branch, exclude repo, or abort) |
-| `TESTS_NOT_RED` | A written acceptance test passes before any implementation exists | tester (must fix the test; pipeline halts stage 5) |
+| `TESTS_NOT_RED` | After at most two correction attempts, `tester` cannot establish legitimate RED (failure caused by the missing acceptance behavior rather than compilation, setup, or infrastructure) for an acceptance test | developer (behavior already exists, criterion is wrong, or test needs redesign; `tester` never weakens a criterion to manufacture RED) |
 | `TEST_CHANGE_REQUESTED` | The developer needs a contract test changed mid-implementation | developer (approve or reject the change request) |
 | `ADVERSARY_BLOCK` | The adversary verdict is BLOCK | developer (decide how to proceed; plan cannot advance on BLOCK alone) |
 | `ADVERSARY_REVISE_LIMIT` | A second REVISE verdict is reached (round budget exhausted) | developer (accept the plan as-is, redirect the planner manually, or abort) |
@@ -129,6 +129,7 @@ Decision needed from: <role>.
 - Adversary <-> Planner: at most two rounds. A second REVISE, or any BLOCK, escalates to the developer (`ADVERSARY_REVISE_LIMIT` / `ADVERSARY_BLOCK`) rather than looping again.
 - Verifier <-> Developer: at most two rounds. A second FAIL escalates to the developer (`VERIFIER_FAIL_LIMIT`).
 - Test-change requests are never looped automatically: each one is a single STOP and a single human decision.
+- Tester RED proof: at most two correction attempts per test before `TESTS_NOT_RED`.
 - Every other stage is linear; there is no other retry.
 
 ## Publish sequence (verified commit invariant, contract §8.1)
@@ -173,7 +174,7 @@ PR: opened PR #512 (payments-api), PR #88 (payments-web).
 | B2 | First key is primary, never reordered | `skills/pipeline/SKILL.md` (R3); `pipeline.agent.md` (R2) |
 | B3 | Primary Jira determines branch prefix | Stage 2 above; `workspace.agent.md` (R2) |
 | B4 | Bounded, provenance-tagged Jira context; discovered tickets are context only | `skills/gather-jira-context/SKILL.md` (R3); AGENT-CONTRACTS.md intake section |
-| B5 | Optional developer context stored separately | G2 above; AGENT-CONTRACTS.md INTAKE.md template |
+| B5 | Optional developer context stored separately | G2 above; AGENT-CONTRACTS.md RUN.md template |
 | B6 | Evidence-backed repository suggestion, developer confirms | `skills/discover-affected-projects/SKILL.md` (R3); G1 above |
 | B7 | Multi-repo: same branch name, per-repo status, no overstated success | Stage 2 above; AGENT-CONTRACTS.md WORKSPACE.md template |
 | B8 | Flow order Intake -> Workspace -> Planner -> Adversary -> Tester -> Developer -> Verifier -> PR | Flow diagram and Stages table above |

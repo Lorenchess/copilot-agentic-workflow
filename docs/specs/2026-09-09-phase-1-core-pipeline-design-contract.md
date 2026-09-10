@@ -172,3 +172,12 @@ Hooks hardening; quoted-path support for repository directory names; model bench
 
 1. Test runner conventions differ per repository; the tester and developer bodies will detect the runner from build files and otherwise ask. Confirm that is acceptable for the reference implementation.
 2. Whether the worked example should use a Java/Maven-style repository pair (assumed, given the Payments domain) or another stack.
+
+## 14. Amendments
+
+**2026-09-10 (owner, post-R2 consistency correction; commit follows R2 `645d637`).** Two targeted corrections, no re-scope:
+
+1. **INTAKE.md is written once and is immutable thereafter.** It holds Jira and repository evidence and the intake recommendation (including the *proposed* branch name). The G1/G2 developer decisions — confirmed repositories, confirmed branch name, optional developer context — are recorded only in RUN.md, owned by `pipeline`. `intake` is not invoked a second time to copy those decisions. Downstream agents that need the confirmed decisions (`workspace` at stage 2, `planner`, `adversary`) read INTAKE.md for evidence and RUN.md for decisions, both as immutable inputs. This amends B5's "Implemented in" column (developer context lives in RUN.md, still stored separately from Jira facts), the INTAKE.md and RUN.md templates in AGENT-CONTRACTS.md, the ownership matrix (RUN.md becomes an input for `planner` and `adversary`), and the stage 1–3 reads in §5 and FLOW.md. Ownership is unchanged: `pipeline` edits only RUN.md, `intake` edits only INTAKE.md.
+2. **`TESTS_NOT_RED` is bounded and developer-decided.** An acceptance test that passes on its first run is first investigated and corrected by `tester` within at most two correction attempts, re-proving RED each time. `tester` never weakens an acceptance criterion to manufacture RED. Only when legitimate RED (failure caused by the missing acceptance behavior, not compilation, setup, or infrastructure) cannot be established does `tester` record `TESTS_NOT_RED` for `pipeline` to raise; the decision is the developer's (behavior already exists, criterion is wrong, or the test needs redesign).
+
+Also corrected: GUARDRAILS.md no longer lists "the test runner" among the `.vscode/settings.json` forms R2 added; test/build runner commands intentionally remain non-auto-approved and prompt in Manual mode. The Copilot agent-picker smoke check remains deferred and does not block R3.
