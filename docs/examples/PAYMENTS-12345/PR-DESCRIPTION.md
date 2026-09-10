@@ -14,7 +14,7 @@ inputs: [PLAN.md, VERIFICATION.md, INTAKE.md]
 
 ## Summary
 
-Failed webhook deliveries in `payments-api` are now retried with exponential backoff up to a configured maximum number of attempts, instead of failing permanently after a single attempt [REPO]. Each retry attempt, whether it succeeds or fails, is now recorded in `payments-ledger`'s existing audit log [REPO], using the existing `audit_log` table rather than a new one [INFERENCE].
+Failed webhook deliveries in `payments-api` are now retried with exponential backoff up to a configured maximum number of attempts, instead of failing permanently after a single attempt [REPO]. Each retry attempt, whether it succeeds or fails, is now recorded in `payments-ledger`'s existing audit log [REPO], using the existing `audit_log` table rather than a new one [INFERENCE]. If the call that reports an attempt to `payments-ledger` itself fails, `payments-api` retries that call alongside the delivery's own retry schedule rather than dropping the attempt, so the audit trail cannot silently lose a record [REPO].
 
 ## Jira links
 
@@ -28,7 +28,7 @@ Failed webhook deliveries in `payments-api` are now retried with exponential bac
 
 ## Testing
 
-Acceptance tests (`WebhookRetryServiceTest`, `WebhookRetryAuditTest`) proven RED before implementation, then GREEN after; independently reverified by the verifier with each repository's full test suite (`payments-api`: 48 tests, `payments-ledger`: 22 tests), all passing, plus a test-immutability check confirming neither acceptance-test file changed since its RED commit. Result: PASS. [TOOL]
+Acceptance tests (`WebhookRetryServiceTest`, `WebhookRetryAuditTest`) classify each test as WITNESS (missing-behavior, proven RED before implementation, then GREEN after) or PRESERVATION (`alreadyDeliveredWebhookIsNeverRetried`, `existingAuditLogWriteIsUnchanged`; expected to pass, and did pass, both before and after implementation). The verifier ran two independent executions, both required for PASS: (A) the exact contract command per repository, confirming every named test was discovered, executed, not skipped, and reached its classified result; (B) each repository's full test suite (`payments-api`: 49 tests, `payments-ledger`: 23 tests), all passing, to prove no broader regression. A test-immutability check confirmed neither acceptance-test file changed since its RED commit, and an execution envelope check found the one justified `pom.xml` dependency change in `payments-api` (IMPLEMENTATION.md's Envelope changes) with no contract test excluded. Result: PASS. [TOOL]
 
 ## Verified SHA per repository
 

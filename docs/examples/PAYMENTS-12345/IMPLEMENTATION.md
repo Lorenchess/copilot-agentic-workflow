@@ -10,12 +10,12 @@ inputs: [PLAN.md, TEST-CONTRACT.md, RED-REPORT.md]
 ## Changes per repository
 
 ### `payments-api`
-- `src/main/java/com/payments/webhook/WebhookRetryService.java` (new) — computes exponential backoff, schedules retries, reports each attempt to `payments-ledger` via `LedgerClient`. [REPO]
+- `src/main/java/com/payments/webhook/WebhookRetryService.java` (new) — computes exponential backoff, schedules retries, reports each attempt to `payments-ledger` via `LedgerClient`; per PLAN.md's round-2 AC4, retries the ledger-recording call itself (bounded by the same backoff/max-attempts budget) if it fails, instead of dropping the attempt. [REPO]
 - `src/main/java/com/payments/webhook/WebhookDeliveryService.java` (edited) — calls `WebhookRetryService` on a retryable failure instead of stopping after one attempt. [REPO]
 - `src/main/resources/application.yml` (edited) — added `webhook.retry.base-delay` and `webhook.retry.max-attempts` configuration keys. [REPO]/[DEV]
 
 ### `payments-ledger`
-- `src/main/java/com/payments/ledger/WebhookRetryAuditController.java` (new) — internal `POST /internal/webhook-retries` endpoint that records a reported attempt. [REPO]
+- `src/main/java/com/payments/ledger/WebhookRetryAuditController.java` (new) — internal `POST /internal/webhook-retries` endpoint that records a reported attempt with delivery id, attempt number, and outcome. [REPO]
 - `src/main/java/com/payments/ledger/AuditLogRepository.java` (edited) — added `recordWebhookRetry(deliveryId, attemptNumber, outcome)`, writing into the existing `audit_log` table (no new table). [REPO]/[DEV]
 
 No path listed in TEST-CONTRACT.md's Test file paths per repository was edited.
@@ -30,18 +30,26 @@ No path listed in TEST-CONTRACT.md's Test file paths per repository was edited.
 `payments-api` — `mvn -q -Dtest=WebhookRetryServiceTest test`:
 ```text
 [INFO] Running com.payments.webhook.WebhookRetryServiceTest
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.389 s
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.402 s
 [INFO] BUILD SUCCESS
 ```
 
 `payments-ledger` — `mvn -q -Dtest=WebhookRetryAuditTest test`:
 ```text
 [INFO] Running com.payments.ledger.WebhookRetryAuditTest
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.187 s
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.203 s
 [INFO] BUILD SUCCESS
 ```
 
-Both runs are actual passing runs captured by this agent; GREEN is not asserted without one. [TOOL]
+Both runs are actual passing runs captured by this agent, covering both the WITNESS and PRESERVATION tests in each class; GREEN is not asserted without one. [TOOL]
+
+## Envelope changes
+
+### `payments-api`
+- `pom.xml` — added runtime dependency `org.springframework.retry:spring-retry:2.0.5`. Needed by `WebhookRetryService` to schedule delayed retry attempts; no test-scope change. No contract test was made undiscovered, skipped, or excluded by this change. [REPO]/[DEV]
+
+### `payments-ledger`
+- None. [REPO]
 
 ## Test-change requests
 

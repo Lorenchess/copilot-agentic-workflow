@@ -14,7 +14,20 @@ inputs: [PLAN.md]
 | AC1 — retry follows exponential backoff up to the configured maximum | `payments-api`: `WebhookRetryServiceTest#retriesWithExponentialBackoffUntilMaxAttempts` |
 | AC2 — no further retry, `PERMANENTLY_FAILED`, once the maximum is exceeded | `payments-api`: `WebhookRetryServiceTest#stopsRetryingAfterMaxAttemptsExceeded` |
 | AC3 — no further retry, `DELIVERED`, once a retry succeeds | `payments-api`: `WebhookRetryServiceTest#stopsRetryingAfterSuccessfulAttempt` |
-| AC4 — retry attempt recorded in the ledger audit log | `payments-ledger`: `WebhookRetryAuditTest#recordsRetryAttemptInAuditLog` |
+| AC4 — retry attempt recorded in the ledger audit log, including delivery id, attempt number, outcome | `payments-ledger`: `WebhookRetryAuditTest#recordsRetryAttemptInAuditLog` |
+| Preservation — a webhook already marked `DELIVERED` is never retried again | `payments-api`: `WebhookRetryServiceTest#alreadyDeliveredWebhookIsNeverRetried` |
+| Preservation — an existing (pre-existing, unrelated) `payments-ledger` audit-log write path is unchanged | `payments-ledger`: `WebhookRetryAuditTest#existingAuditLogWriteIsUnchanged` |
+
+## Test classification
+
+| Test | Classification |
+|---|---|
+| `payments-api`: `WebhookRetryServiceTest#retriesWithExponentialBackoffUntilMaxAttempts` | WITNESS |
+| `payments-api`: `WebhookRetryServiceTest#stopsRetryingAfterMaxAttemptsExceeded` | WITNESS |
+| `payments-api`: `WebhookRetryServiceTest#stopsRetryingAfterSuccessfulAttempt` | WITNESS |
+| `payments-api`: `WebhookRetryServiceTest#alreadyDeliveredWebhookIsNeverRetried` | PRESERVATION |
+| `payments-ledger`: `WebhookRetryAuditTest#recordsRetryAttemptInAuditLog` | WITNESS |
+| `payments-ledger`: `WebhookRetryAuditTest#existingAuditLogWriteIsUnchanged` | PRESERVATION |
 
 ## Test file paths per repository
 
@@ -28,8 +41,22 @@ inputs: [PLAN.md]
 
 ## Run command per repository
 
-- `payments-api`: `mvn -q -Dtest=WebhookRetryServiceTest test`
-- `payments-ledger`: `mvn -q -Dtest=WebhookRetryAuditTest test`
+- `payments-api`: `mvn -q -Dtest=WebhookRetryServiceTest test` (runs all four methods in the class: three WITNESS, one PRESERVATION)
+- `payments-ledger`: `mvn -q -Dtest=WebhookRetryAuditTest test` (runs both methods in the class: one WITNESS, one PRESERVATION)
+
+## Execution envelope per repository
+
+### `payments-api`
+
+- Contract command: `mvn -q -Dtest=WebhookRetryServiceTest test`
+- Build/test configuration files: `pom.xml`, `src/test/resources/application-test.yml`
+- Helper/fixture paths: `src/test/java/com/payments/webhook/support/FakeClock.java` (injectable clock the tests use to assert the scheduled delay sequence deterministically)
+
+### `payments-ledger`
+
+- Contract command: `mvn -q -Dtest=WebhookRetryAuditTest test`
+- Build/test configuration files: `pom.xml`, `src/test/resources/application-test.yml`
+- Helper/fixture paths: `src/test/java/com/payments/ledger/support/AuditLogTestFixtures.java` (builds expected audit-row fixtures used by both the new and the preservation test)
 
 ## Amendments
 
