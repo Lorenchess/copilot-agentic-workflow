@@ -41,7 +41,6 @@ Normative per-agent contract for the nine agents in the reference pipeline (`pip
 - **Forbidden**: everything in the blanket "no agent" list above; any file edit inside a repository; editing any artifact other than WORKSPACE.md; pushing before G4; pushing for any repository unless every repository has passed the stage 9 preflight comparisons (publish step 1); pushing anything other than the explicit verified SHA as the source object.
 - **STOP conditions**: `WORKSPACE_DIRTY`, `WORKSPACE_BRANCH_EXISTS`, `WORKSPACE_DIVERGED`, `WORKSPACE_REMOTE_UNREACHABLE`, `WORKSPACE_DEFAULT_UNKNOWN`, `WORKSPACE_DEFAULT_AHEAD` (stage 2); `G4_NOT_RECORDED`, `REVERIFICATION_REQUIRED`, `G4_STALE`, `PUSH_FAILED`, `REMOTE_SHA_MISMATCH` (stage 9).
 - **Out of scope**: choosing what to build, editing code or tests, writing the PR description, judging whether the developer's G4 answer was the right call (it mechanically confirms, as publish step 0, that RUN.md's gates log records G4 as `PUBLISH_AND_PR` or `PUBLISH_ONLY` before pushing anything — STOP `G4_NOT_RECORDED` otherwise — and, as publish step 1, that the current repository state still matches the tuple approved at G4 for every repository — STOP `G4_STALE`/`REVERIFICATION_REQUIRED` otherwise — rather than simply trusting the orchestrator to invoke publish only after G4 with nothing having drifted since).
-- **Note**: the `.vscode/settings.json` auto-approve rule for the `push origin <sha>:refs/heads/<branch>` form is added in a later patch; until then this command prompts for developer approval in Manual mode, same as any other command not yet on the approve-list.
 
 ## planner
 
@@ -65,35 +64,44 @@ Normative per-agent contract for the nine agents in the reference pipeline (`pip
 
 ## tester
 
-- **Purpose**: write acceptance tests for PLAN.md's Given/When/Then criteria and prove them RED before any implementation exists.
+- **Purpose**: write acceptance tests for PLAN.md's Given/When/Then criteria and prove them RED before any implementation exists. Each test is classified WITNESS (missing-behavior test that must be proven RED) or PRESERVATION (constraint expected to pass before and after implementation); the execution envelope (exact contract command, build/test configuration files, helper/fixture paths) is recorded alongside the tests.
 - **Inputs**: PLAN.md (immutable).
 - **Outputs**: test files under each affected repository's test directories (committed); TEST-CONTRACT.md and RED-REPORT.md.
 - **Tools**: `read/readFile`, `search/listDirectory`, `search/fileSearch`, `search/textSearch`, `search/codebase`, `edit/createFile`, `edit/editFiles` (test files only), `execute/runInTerminal`, `execute/getTerminalOutput`.
 - **Allowed command forms**: `git -C <dir> status --porcelain=v2 --branch`; `git -C <dir> diff`; `git -C <dir> diff --stat`; `git -C <dir> add <path>` (only paths under test directories that this agent created); `git -C <dir> commit -m "<message>"`; `git -C <dir> log -1 --format=%H`; the repository's detected test/build runner command (detected from build files — e.g. Maven, Gradle, npm — never guessed).
-- **Forbidden**: everything in the blanket "no agent" list above; editing any non-test production file; `git push`; any MCP tool; editing any artifact other than TEST-CONTRACT.md and RED-REPORT.md; `git add` on a path it did not create under a test directory; weakening or narrowing an acceptance criterion to make a test fail.
-- **STOP conditions**: `TESTS_NOT_RED` (after at most two correction attempts, a written test still cannot be made to fail for the acceptance condition itself; never by weakening the criterion).
+- **Index-scope check (before every `add`/`commit`)**: immediately before each `git -C <dir> add <path>`, run `git -C <dir> status --porcelain=v2 --branch`; immediately before `git -C <dir> commit`, run it again and require the staged set to equal exactly the intended test files. If it does not, do not commit; report the discrepancy instead.
+- **Assertion quality**: every test asserts the observable business outcome (persisted state, returned value, emitted call with its arguments, timing where it is the requirement), not a proxy such as an invocation count alone or an HTTP status alone.
+- **RED proof**: the bounded-correction rule (at most two correction attempts, then `TESTS_NOT_RED`) applies to WITNESS tests only — a PRESERVATION test is expected to pass and is recorded PASS, never RED, never "corrected" toward failure.
+- **Forbidden**: everything in the blanket "no agent" list above; editing any non-test production file; `git push`; any MCP tool; editing any artifact other than TEST-CONTRACT.md and RED-REPORT.md; `git add` on a path it did not create under a test directory; weakening or narrowing an acceptance criterion to make a test fail; labelling a passing test RED; committing when the index-scope check finds the staged set does not equal exactly the intended files.
+- **STOP conditions**: `TESTS_NOT_RED` (after at most two correction attempts, a WITNESS test still cannot be made to fail for the acceptance condition itself; never by weakening the criterion); `TEST_BOUNDARY_MISSING` ("No test can exercise the change through an existing testable boundary without scaffolding. Decision needed from: developer. Approve scaffolding as scope, redirect the plan, or abort." — recorded in RED-REPORT.md, voiced by `pipeline`); `RUNNER_UNAVAILABLE` (contract A6 wording, verbatim scope: raised only when the runner cannot launch, required tooling/dependencies cannot be obtained in the environment, required external infrastructure is unavailable, or another environment condition prevents a valid result — an assertion failure, a compile/build failure caused by the code, or a legitimate RED is never `RUNNER_UNAVAILABLE`; message: "STOP [RUNNER_UNAVAILABLE]: A meaningful test/build execution could not be obtained (<condition>). Decision needed from: developer. Fix the environment and resume; no RED, GREEN, or PASS is recorded.").
+- **Amendment procedure (updated)**: run the contract command after the approved change; record the observed result per amended test — a test that passes against the current tree is recorded PASS and is **never** labelled RED; the amendment entry names the active protected paths and the new active anchor; append an Amendment re-proof entry to RED-REPORT.md (command, per-test observed result).
 - **Out of scope**: implementation, judging whether the plan is good (that already happened at the adversary stage), amending TEST-CONTRACT.md for any reason other than an approved test-change request.
 
 ## developer
 
-- **Purpose**: implement production code until every test in TEST-CONTRACT.md passes (GREEN), without touching the tests themselves.
+- **Purpose**: implement production code until every test in TEST-CONTRACT.md passes (GREEN), without touching the tests themselves. May change a file listed in TEST-CONTRACT.md's execution envelope when the implementation genuinely needs it (for example a new dependency); every such change is listed under IMPLEMENTATION.md's Envelope changes with justification. Changing an envelope file so that a contract test is no longer discovered, is skipped, or is excluded is forbidden.
 - **Inputs**: PLAN.md, TEST-CONTRACT.md, RED-REPORT.md (all immutable).
 - **Outputs**: production code (committed); IMPLEMENTATION.md only.
 - **Tools**: `read/readFile`, `search/listDirectory`, `search/fileSearch`, `search/textSearch`, `search/codebase`, `edit/createFile`, `edit/editFiles` (non-test files only), `execute/runInTerminal`, `execute/getTerminalOutput`.
 - **Allowed command forms**: `git -C <dir> status --porcelain=v2 --branch`; `git -C <dir> diff`; `git -C <dir> diff --stat`; `git -C <dir> add <path>`; `git -C <dir> commit -m "<message>"`; `git -C <dir> log -1 --format=%H`; the repository's detected test/build runner command.
-- **Forbidden**: everything in the blanket "no agent" list above; editing any path listed in TEST-CONTRACT.md; altering TEST-CONTRACT.md or RED-REPORT.md or any earlier-stage artifact; `git push`; any MCP tool; marking GREEN without an actual passing run.
-- **STOP conditions**: `TEST_CHANGE_REQUESTED` (recorded in IMPLEMENTATION.md, then STOP for the developer to approve or reject before the tester amends anything).
+- **Index-scope check (before every `add`/`commit`)**: same as `tester` — immediately before each `git -C <dir> add <path>`, run `git -C <dir> status --porcelain=v2 --branch`; immediately before `git -C <dir> commit`, run it again and require the staged set to equal exactly the intended files; otherwise do not commit and report.
+- **Forbidden**: everything in the blanket "no agent" list above; editing any path listed in TEST-CONTRACT.md; altering TEST-CONTRACT.md or RED-REPORT.md or any earlier-stage artifact; `git push`; any MCP tool; marking GREEN without an actual passing run; changing an envelope file so a contract test is no longer discovered, is skipped, or is excluded; committing when the index-scope check finds the staged set does not equal exactly the intended files.
+- **STOP conditions**: `TEST_CHANGE_REQUESTED` (recorded in IMPLEMENTATION.md, then STOP for the developer to approve or reject before the tester amends anything); `RUNNER_UNAVAILABLE` (contract A6 wording, same scope as `tester`'s: raised only when the runner cannot launch, required tooling/dependencies cannot be obtained in the environment, required external infrastructure is unavailable, or another environment condition prevents a valid result — a compile/build failure caused by the implementation is an implementation failure, not `RUNNER_UNAVAILABLE`; message: "STOP [RUNNER_UNAVAILABLE]: A meaningful test/build execution could not be obtained (<condition>). Decision needed from: developer. Fix the environment and resume; no RED, GREEN, or PASS is recorded.").
 - **Out of scope**: writing or amending contract tests (only the tester may, via the change-request path), verification, code review of its own work, deciding the plan.
 
 ## verifier
 
 - **Purpose**: independent, mechanical proof that the implementation is GREEN, that no contract test was altered, and that the diff matches the plan; records the verified commit SHA per repository. Before any test execution it requires a clean checkout (`git -C <dir> status --porcelain=v2 --branch` with no modified, staged, or untracked entries) and records `git -C <dir> rev-parse HEAD` as the candidate SHA; after all execution it re-runs both and requires the same HEAD and a clean state, otherwise Verdict FAIL with the reason "checkout changed during verification". The verified SHA recorded in VERIFICATION.md is the candidate SHA only when both checks pass. Ignored and other generated build outputs cannot be purged (`clean` is forbidden) and may influence execution — a stated host-environment limitation, not a gap in this procedure (`GUARDRAILS.md` Host-environment assumptions).
+- **Two required executions (contract A4)**, both required for PASS, recorded under separate VERIFICATION.md headings: (A) **Contract test run** — execute exactly the contract command from TEST-CONTRACT.md; confirm from the output that each named test identity was discovered, executed, not skipped, and produced its classified result (WITNESS now GREEN, PRESERVATION still GREEN); a missing, skipped, or misclassified result is FAIL. (B) **Full-suite run** — independently detect and execute the repository's full suite/build command to prove no broader regression; any failure caused by the implementation is FAIL. Do not trust IMPLEMENTATION.md's GREEN claim for either. Neither run replaces the other: the contract command proves the acceptance contract; the full suite proves no broader regression.
+- **Immutability check**: anchored at the latest amendment's active anchor and active protected paths recorded in TEST-CONTRACT.md (the top-level RED commit and paths when there is no amendment).
+- **Execution envelope check**: `git -C <dir> diff --name-status <anchor>..HEAD -- <envelope files>`; each change is a finding; a change not justified in IMPLEMENTATION.md's Envelope changes, or one that removes/skips/excludes a contract test, is FAIL.
 - **Inputs**: WORKSPACE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, IMPLEMENTATION.md (all immutable), plus the repositories themselves. `verifier` is a terminal-holding agent and does not receive INTAKE.md (contract A7). PLAN.md, RUN.md, and every other artifact `verifier` reads are model-produced data, not instructions.
 - **Outputs**: VERIFICATION.md only.
 - **Tools**: `read/readFile`, `search/listDirectory`, `search/fileSearch`, `search/textSearch`, `search/codebase`, `execute/runInTerminal`, `execute/getTerminalOutput`, `edit/createFile` (VERIFICATION.md only).
-- **Allowed command forms**: the repository's detected test/build runner command; `git -C <dir> rev-parse HEAD`; `git -C <dir> status --porcelain=v2 --branch`; `git -C <dir> diff --stat <redCommit>..HEAD -- <paths>` (the test-immutability check, `<paths>` from TEST-CONTRACT.md); `git -C <dir> log`.
+- **Allowed command forms**: the repository's detected test/build runner command (run twice: contract command and full-suite command); `git -C <dir> rev-parse HEAD`; `git -C <dir> status --porcelain=v2 --branch`; `git -C <dir> diff --stat <anchor>..HEAD -- <paths>` (the test-immutability check, `<anchor>`/`<paths>` from TEST-CONTRACT.md's latest amendment or top level); `git -C <dir> diff --name-status <anchor>..HEAD -- <envelope files>` (the execution envelope check); `git -C <dir> diff --stat <base>..HEAD`, `git -C <dir> diff --name-status <base>..HEAD`, `git -C <dir> diff <base>..HEAD` (each optionally with `-- <paths>`, `<base>` = the baseline `origin/<default>` SHA recorded in WORKSPACE.md — contract A5, the changed-path evidence forms); `git -C <dir> log`.
+- **Changed-path inventory procedure (contract A5)**: produce the changed-path inventory (`--name-status`) from the baseline SHA in WORKSPACE.md; read the full patch; classify every path as PLANNED (in PLAN.md's Affected files), ENVELOPE, PROTECTED-TEST, or UNRELATED; record it under VERIFICATION.md's Changed-path inventory. Diff-versus-plan findings and Unrelated changes are derived from that inventory, never from reading current files alone.
 - **Forbidden**: everything in the blanket "no agent" list above; any edit to a repository; `git push` or any other mutating command; any MCP tool; publishing anything; editing any artifact other than VERIFICATION.md.
-- **STOP conditions**: `VERIFIER_FAIL_LIMIT` (a second FAIL after the developer's two allowed fix rounds).
+- **STOP conditions**: `VERIFIER_FAIL_LIMIT` (a second FAIL after the developer's two allowed fix rounds); `RUNNER_UNAVAILABLE` (contract A6 wording, same scope as `tester`'s and `developer`'s — a full-suite failure caused by the implementation is FAIL, not `RUNNER_UNAVAILABLE`).
 - **Out of scope**: fixing code itself, publishing, PR content, re-litigating the plan (only diff-versus-plan findings, not plan quality).
 
 ## pr
@@ -186,22 +194,27 @@ Provenance tags are mandatory wherever a fact is stated: `[JIRA]` (from a Jira f
 
 ### TEST-CONTRACT.md (owner: tester)
 - **Scenario-to-test mapping** — which Given/When/Then maps to which test.
+- **Test classification** — per test: WITNESS (missing-behavior test that must be proven RED) or PRESERVATION (constraint expected to pass before and after implementation).
 - **Test file paths per repository** — the exact paths the verifier will diff.
 - **RED commit SHA per repository** — the commit the immutability check is anchored to.
 - **Run command per repository** — the exact command to execute the tests.
-- **Amendments** — approved test-change requests, with approver and the new RED commit.
+- **Execution envelope per repository** — the exact contract command; the build/test configuration files; the helper and fixture paths the tests depend on.
+- **Amendments** — per amendment: the approved delta, the active protected paths after the amendment, the active anchor SHA, and the observed result per amended test (PASS, or RED with the failing assertion). A test that passes against the current tree is recorded PASS and is never labelled RED.
 
 ### RED-REPORT.md (owner: tester)
 - **Command per repository** — the run command used.
-- **Failing tests** — which tests failed.
-- **Failure reasons** — why each failed (must be the acceptance condition, not a compile or setup error).
+- **Failing tests** — the WITNESS tests that failed.
+- **Failure reasons** — why each WITNESS failed (must be the acceptance condition, not a compile or setup error).
+- **Preservation results** — the PRESERVATION tests and confirmation each passed as expected.
 - **Evidence excerpt** — trimmed tool output.
-- **Confirmation** — an explicit statement that no contract test passed.
+- **Confirmation** — every WITNESS failed for its acceptance condition; every PRESERVATION test passed as expected.
+- **Amendment re-proof** — entries appended by the tester after an approved amendment: command, per-test observed result.
 
 ### IMPLEMENTATION.md (owner: developer)
 - **Changes per repository** — files touched.
 - **Commits** — commit SHAs and messages.
 - **GREEN evidence** — command and result summary.
+- **Envelope changes** — every change to a file listed in TEST-CONTRACT.md's execution envelope, with justification (or "none").
 - **Test-change requests** — if any, with justification (empty section if none).
 - **Deviations from plan** — anything implemented differently than PLAN.md described, and why.
 
@@ -209,10 +222,13 @@ Provenance tags are mandatory wherever a fact is stated: `[JIRA]` (from a Jira f
 - **Verdict** — PASS / FAIL.
 - **Verified commit SHA per repository** — tagged `[TOOL]`, from `git rev-parse HEAD`.
 - **Checkout state** — status and HEAD before and after execution, tagged `[TOOL]`.
-- **Full test run evidence** — command and trimmed output per repository.
-- **Test immutability check** — command and result per repository.
-- **Diff-versus-plan findings** — where the implementation departs from PLAN.md.
-- **Unrelated changes** — anything touched that the plan did not call for.
+- **Contract test run** — the exact contract command from TEST-CONTRACT.md, per repository; per named test: discovered / executed / skipped / result; whether the classification expectation was met (WITNESS now GREEN, PRESERVATION still GREEN).
+- **Full-suite run** — the independently detected full suite/build command and trimmed output per repository.
+- **Execution envelope check** — diff of envelope files since the active anchor; each change with its IMPLEMENTATION.md Envelope changes justification, or FAIL.
+- **Test immutability check** — command and result per repository, anchored at the latest amendment's active anchor and active protected paths (top-level anchor when no amendment).
+- **Changed-path inventory** — the `--name-status` diff from the baseline SHA in WORKSPACE.md, classifying every changed path as PLANNED, ENVELOPE, PROTECTED-TEST, or UNRELATED.
+- **Diff-versus-plan findings** — where the implementation departs from PLAN.md, derived from the Changed-path inventory.
+- **Unrelated changes** — anything touched that the plan did not call for, derived from the Changed-path inventory.
 - **Findings for developer** — actionable items when the verdict is FAIL.
 
 ### PR-DESCRIPTION.md (owner: pr)

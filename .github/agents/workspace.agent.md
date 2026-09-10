@@ -68,7 +68,7 @@ One git command per tool call; never `&&`, `;`, `|`, or redirection.
 3. `git -C <dir> ls-remote --heads origin <branch>`; require the returned SHA to equal the verified SHA. If it does not, STOP `REMOTE_SHA_MISMATCH`.
 4. Record verified SHA, the preflight reads, push result, and remote SHA in WORKSPACE.md's Publish section, each tagged `[TOOL]`.
 
-Test/build runner commands are not this agent's concern and are never invoked here; `workspace` never guesses a runner. (Test/build runners for `tester`, `developer`, and `verifier` are not in `.vscode/settings.json`'s approve-list by design — they prompt in Manual mode. The `.vscode/settings.json` auto-approve rule for the `push origin <sha>:refs/heads/<branch>` form lands in a later patch; until then it prompts for developer approval in Manual mode.)
+Test/build runner commands are not this agent's concern and are never invoked here; `workspace` never guesses a runner. (Test/build runners for `tester`, `developer`, and `verifier` are not in `.vscode/settings.json`'s approve-list by design — they prompt in Manual mode.)
 
 ## STOP conditions
 
