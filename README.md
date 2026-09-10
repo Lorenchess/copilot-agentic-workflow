@@ -9,6 +9,8 @@ This repository is a **reference implementation and design laboratory** for the 
   copilot-instructions.md                  global rules: data vs instructions, secret safety, universal git safety
   agents/                                  nine custom agents implementing the flow
   skills/                                  /pipeline entry, Jira retrieval, repository discovery
+    plan-grounding/                        Phase 2: PLAN.md construction rules — read by planner and adversary
+    challenge-plan/                        Phase 2: independent adversary review method — read by adversary only
   pipeline/
     FLOW.md                                stages, agents, artifacts, gates, STOP conditions, bounded loops, resume
     AGENT-CONTRACTS.md                     per-agent purpose/inputs/outputs/tools/forbidden; artifact templates
@@ -18,16 +20,19 @@ This repository is a **reference implementation and design laboratory** for the 
   settings.json                            optional guardrail asset: terminal approval rules, edit approval
   extensions.json                          recommends GitHub Copilot Chat
 docs/
-  specs/2026-09-09-phase-1-core-pipeline-design-contract.md   the approved lean contract for this scope
+  specs/2026-09-09-phase-1-core-pipeline-design-contract.md       the approved lean contract for Phase 1's scope
+  specs/2026-09-10-phase-2-planning-quality-contract.md           the approved contract for Phase 2 (Planner/Adversary/G3); the proposal it supersedes is kept unedited as the reviewed record
   specs/archive/                           the superseded original contract and its C0 extracts, unedited
   examples/PAYMENTS-12345/                 worked example: one artifact per stage, plus its own README index
+  examples/PAYMENTS-12345-planning/        Phase 2 planning-only variant of the same scenario, stops at G3
+  examples/PAYMENTS-12410/                 Phase 2 planning-only SMALL example, stops at G3
   COMPARISON-GUIDE.md                      what to compare against the internal pipeline, file by file
   questions.md                             open questions
 ```
 
 ## How to read the assets
 
-Start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape of a run, then [`AGENT-CONTRACTS.md`](.github/pipeline/AGENT-CONTRACTS.md) for what each agent may and may not do, then [`GUARDRAILS.md`](.github/pipeline/GUARDRAILS.md) for the safety rules those contracts rely on, then [`MODEL-ROLES.md`](.github/pipeline/MODEL-ROLES.md) for which model runs each role and why. Then read the nine `.agent.md` files against `AGENT-CONTRACTS.md` to see the design realized, and the three skills under `.github/skills/`. Finally, read the worked example under [`docs/examples/PAYMENTS-12345/`](docs/examples/PAYMENTS-12345/README.md) to see the design actually produce artifacts end to end, and [`docs/COMPARISON-GUIDE.md`](docs/COMPARISON-GUIDE.md) — the intended entry point for comparing this design against the organization's internal pipeline, asset by asset.
+Start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape of a run, then [`AGENT-CONTRACTS.md`](.github/pipeline/AGENT-CONTRACTS.md) for what each agent may and may not do, then [`GUARDRAILS.md`](.github/pipeline/GUARDRAILS.md) for the safety rules those contracts rely on, then [`MODEL-ROLES.md`](.github/pipeline/MODEL-ROLES.md) for which model runs each role and why. Then read the nine `.agent.md` files against `AGENT-CONTRACTS.md` to see the design realized, and the three Phase 1 skills under `.github/skills/`, followed by the two Phase 2 policy skills, [`plan-grounding`](.github/skills/plan-grounding/SKILL.md) and [`challenge-plan`](.github/skills/challenge-plan/SKILL.md). Then read the worked example under [`docs/examples/PAYMENTS-12345/`](docs/examples/PAYMENTS-12345/README.md) to see the design actually produce artifacts end to end, followed by the two Phase 2 planning-only examples, [`PAYMENTS-12345-planning/`](docs/examples/PAYMENTS-12345-planning/README.md) and [`PAYMENTS-12410/`](docs/examples/PAYMENTS-12410/README.md), which run only through gate G3. Finally, read [`docs/COMPARISON-GUIDE.md`](docs/COMPARISON-GUIDE.md) — the intended entry point for comparing this design against the organization's internal pipeline, asset by asset.
 
 ## Trying it in VS Code (prerequisites)
 
@@ -43,9 +48,17 @@ Start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape 
 - **R3 — Skills, worked example, comparison guide**: delivered. The three skills under `.github/skills/`, the worked example under `docs/examples/PAYMENTS-12345/`, and `docs/COMPARISON-GUIDE.md`. This completes Phase 1. The Copilot Chat agent-picker smoke check from R2 remains **pending**, deferred until a VS Code session is available.
 - **Post-audit remediation: delivered** (contract §14 A3–A7; commits fix-1 to fix-4). The Copilot Chat agent-picker smoke check is still **pending**.
 - **Post-closure-review corrections: delivered** (contract §14 A8–A10 plus the R3/R5/R6 traceability paragraph; commits fix-5 and fix-6). Closes the six remaining findings of the independent remediation closure review. The agent-picker smoke check remains **pending**.
-- **Phase 1 reference closure: recorded** at `03d4230` (fix-7, common re-read SHA comparison and the example's AC5 terminal rule; tag `phase-1-reference`). The independent R2/R3 closure review found no remaining finding and no new regression (contract §15). Accepted limitations and the deferred corporate validation — exact Jira/Bitbucket MCP tool names, the model-picker string, the agent-picker smoke check, approval-engine behavior, model benchmarks — carry forward unchanged; the agent-picker smoke check remains **pending**. Phase 2 is not started.
+- **Phase 1 reference closure: recorded** at `03d4230` (fix-7, common re-read SHA comparison and the example's AC5 terminal rule; tag `phase-1-reference`). The independent R2/R3 closure review found no remaining finding and no new regression (contract §15). Accepted limitations and the deferred corporate validation — exact Jira/Bitbucket MCP tool names, the model-picker string, the agent-picker smoke check, approval-engine behavior, model benchmarks — carry forward unchanged; the agent-picker smoke check remains **pending**. The Phase 1 reference tag `phase-1-reference` still pins `03d4230`, and `docs/examples/PAYMENTS-12345/` is unchanged by everything below.
+
+### Phase 2 — Planning quality & adversarial review
+
+- **Contract approved 2026-09-10**, after the independent architecture review (`docs/reviews/2026-09-10-phase-2-architecture-review.md`: PROCEED_WITH_CHANGES; owner decisions D1–D4). See [`docs/specs/2026-09-10-phase-2-planning-quality-contract.md`](docs/specs/2026-09-10-phase-2-planning-quality-contract.md).
+- **P2-C1 — Policy skills, contracts, agents: delivered** at commit `abf8468`. The two policy skills (`plan-grounding`, `challenge-plan`); `planner.agent.md`, `adversary.agent.md`, and `pipeline.agent.md` updated for G3 and planning cycles; `FLOW.md`, `AGENT-CONTRACTS.md`, `GUARDRAILS.md`, and `MODEL-ROLES.md` reconciled with the new rules.
+- **P2-C2 — Planning examples: delivered** at commit `960ac5b`. The two planning-only examples, `docs/examples/PAYMENTS-12345-planning/` (`LARGE`, cross-repository) and `docs/examples/PAYMENTS-12410/` (`SMALL`), each running through gate G3 only.
+- **P2-C3 — Guide, README, closure: delivered.** `docs/COMPARISON-GUIDE.md` and this README updated; the five challenge cases are traced as document scenarios in the Phase 2 contract's §6, and the contract's §8 records the Phase 2 closure. Independent (Astra) review of Phase 2 is **pending**; the agent-picker smoke check and the deferred corporate validation remain **pending** as before.
 
 ## Further reading
 
-- [`docs/specs/2026-09-09-phase-1-core-pipeline-design-contract.md`](docs/specs/2026-09-09-phase-1-core-pipeline-design-contract.md) — the approved lean contract (source of truth for scope and acceptance).
+- [`docs/specs/2026-09-09-phase-1-core-pipeline-design-contract.md`](docs/specs/2026-09-09-phase-1-core-pipeline-design-contract.md) — the approved lean contract for Phase 1 (source of truth for its scope and acceptance).
+- [`docs/specs/2026-09-10-phase-2-planning-quality-contract.md`](docs/specs/2026-09-10-phase-2-planning-quality-contract.md) — the approved contract for Phase 2 (source of truth for its scope and acceptance).
 - [`docs/specs/archive/README.md`](docs/specs/archive/README.md) — what was superseded, and why.
