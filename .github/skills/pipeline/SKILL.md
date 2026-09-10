@@ -1,0 +1,86 @@
+---
+name: pipeline
+description: Entry point for the reference pipeline. Parses one or more comma-separated Jira keys, validates them, and hands off to the pipeline orchestrator agent to run FLOW.md stage 0 onward.
+argument-hint: "KEY-1[, KEY-2, ...]"
+user-invocable: true
+disable-model-invocation: true
+---
+
+# `/pipeline` — entry skill
+
+This is the `/pipeline KEY-1[, KEY-2, ...]` entry point. It defines how the raw argument text is parsed into a validated, ordered key list before the `pipeline` orchestrator agent (`.github/agents/pipeline.agent.md`) begins `FLOW.md` stage 0. It does not repeat the gate wording or the conditional STOP catalogue — those are normative in `FLOW.md` and `pipeline.agent.md`; this skill covers parsing and resume only.
+
+## Role check
+
+This skill only does anything inside the `pipeline` custom agent. If the currently active agent is not `pipeline`, tell the developer to select the **pipeline** agent (and **Sonnet-5** in the model picker) and stop — do nothing else: do not parse, do not read `.pipeline/runs/`, do not invoke any subagent.
+
+Also remind the developer, before proceeding, that the reference implementation assumes:
+- Session target **Local** (not Agent Host or Cloud).
+- Permission mode **Manual** (no global auto-approve setting active).
+
+These are prerequisites recorded in the repository README, not something this skill can verify from inside a chat turn — state them as a reminder, then continue.
+
+## Parsing rules
+
+Applied to the raw text typed after `/pipeline`, in this order (archived contract §7.1):
+
+1. Split the argument text on commas.
+2. Trim leading and trailing whitespace from each resulting token.
+3. Keep the tokens in their original order — **never sort, deduplicate-and-reorder, or alphabetize**.
+4. A token is a **valid key** only if it matches `^[A-Z][A-Z0-9_]*-[0-9]+$` (uppercase project key, then a hyphen, then a numeric part).
+5. If any token does not match that shape, STOP `INVALID_KEY`, naming the offending token, using the message shape from `FLOW.md`:
+   ```text
+   STOP [INVALID_KEY]: A comma-separated token does not match a valid Jira key shape.
+   Decision needed from: developer.
+   Re-run with corrected keys.
+   ```
+   Do not invoke any stage agent when this STOP fires.
+6. An **empty argument list** (nothing typed, or the text trims to nothing) is treated exactly like an invalid token: STOP `INVALID_KEY`.
+7. **Duplicates**: if the same key appears more than once after trimming, keep only the first occurrence, in its original position, and add a warning to RUN.md noting the duplicate and which occurrence was dropped.
+8. **Primary rule**: the first valid key in the (deduplicated, trimmed) list is the primary Jira, no matter its lexical or numeric relationship to the other keys. It is never reordered — not to sort ticket numbers, not to put "the biggest scope" first, not for any reason.
+
+## Examples
+
+| Input | Outcome |
+|---|---|
+| `PAYMENTS-12345` | Valid. Single key; primary = `PAYMENTS-12345`. |
+| `PAYMENTS-12345, PAYMENTS-12351` | Valid. Primary = `PAYMENTS-12345` (first given); secondary = `PAYMENTS-12351`; order preserved. |
+| ` PAYMENTS-12345 ,PAYMENTS-12351 ` | Valid — whitespace around each token is trimmed before validation; same result as the row above. |
+| `PAYMENTS-12345, PAYMENTS-12345` | Valid — duplicate token; first occurrence kept, second dropped; RUN.md records a duplicate-key warning. |
+| `PAYMENTS-12351, PAYMENTS-12345` | Valid — **primary rule**: primary = `PAYMENTS-12351` because it was given first. `PAYMENTS-12345` is the secondary requested key. The list is never reordered, even though `12345` is numerically smaller. |
+| `payments-12345` | Invalid. STOP `INVALID_KEY` naming `payments-12345` — lowercase does not match `^[A-Z][A-Z0-9_]*-[0-9]+$`. |
+| `PAYMENTS-12345, 12351` | Invalid. STOP `INVALID_KEY` naming `12351` — no project-key prefix before the hyphen. |
+| `PAYMENTS12345` | Invalid. STOP `INVALID_KEY` naming `PAYMENTS12345` — no hyphen separating the project key from the numeric part. |
+| *(empty)* | Invalid. STOP `INVALID_KEY` — an empty argument list is treated the same as an invalid token. |
+
+## Resume by artifact
+
+There is no separate run-state machine (`FLOW.md`, "Resume by artifact"). Resumability comes entirely from which of the eleven artifacts already exist on disk under `.pipeline/runs/<PRIMARY>/`, in this stage order:
+
+1. RUN.md (stage 0, pipeline)
+2. INTAKE.md (stage 1, intake)
+3. WORKSPACE.md (stage 2 prepare, workspace)
+4. PLAN.md (stage 3, planner)
+5. ADVERSARY-REVIEW.md (stage 4, adversary)
+6. TEST-CONTRACT.md and RED-REPORT.md (stage 5, tester)
+7. IMPLEMENTATION.md (stage 6, developer)
+8. VERIFICATION.md (stage 7, verifier)
+9. PR-DESCRIPTION.md (stage 8, pr)
+10. WORKSPACE.md Publish section (stage 9, workspace)
+11. PR.md (stage 10, pr)
+
+After parsing succeeds, check whether `.pipeline/runs/<PRIMARY>/` already holds artifacts:
+
+- **If it does**, STOP `RUN_EXISTS`:
+  ```text
+  STOP [RUN_EXISTS]: .pipeline/runs/<PRIMARY>/ already has artifacts.
+  Decision needed from: developer.
+  Choose where to resume, or start over.
+  ```
+  Read RUN.md and list which of the eleven artifacts above are present, missing, or recorded as failed. Propose resuming at the **first missing or failed artifact** — never at an arbitrary later stage. The developer confirms that proposal or chooses to start the run over. An existing artifact is always treated as an immutable input unless the developer explicitly asks for it to be redone; that decision, if made, is recorded in RUN.md by `pipeline`, not by this skill.
+  A stage agent is **never** re-invoked to silently regenerate an artifact that already exists.
+- **If it does not**, create an empty RUN.md for the new run and proceed.
+
+## Hand-off
+
+Once parsing (and, on an existing run, the resume decision) is settled, the `pipeline` agent proceeds with `FLOW.md` stage 0 → stage 1 (Intake) using the validated, ordered key list. This skill does not itself invoke any subagent, voice any gate, or duplicate the gate wording or the STOP catalogue — those live in `FLOW.md` and `.github/agents/pipeline.agent.md`, which are normative.

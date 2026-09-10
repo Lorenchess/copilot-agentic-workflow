@@ -1,14 +1,14 @@
 # copilot-agentic-workflow
 
-This repository is a **reference implementation and design laboratory** for the organization's existing internal AI pipeline. It is not a standalone executable pipeline, and it does not reproduce infrastructure the organization already has elsewhere (runtime state machinery, MCP server configuration, recovery simulation, end-to-end test harnesses). Its purpose is to give a team member a coherent, inspectable set of GitHub Copilot-native files they can open at work and compare directly against the internal pipeline: agent definitions, skills, flow, agent contracts, guardrails, model roles, and (once delivered) a worked example and a comparison guide.
+This repository is a **reference implementation and design laboratory** for the organization's existing internal AI pipeline. It is not a standalone executable pipeline, and it does not reproduce infrastructure the organization already has elsewhere (runtime state machinery, MCP server configuration, recovery simulation, end-to-end test harnesses). Its purpose is to give a team member a coherent, inspectable set of GitHub Copilot-native files they can open at work and compare directly against the internal pipeline: agent definitions, skills, flow, agent contracts, guardrails, model roles, a worked example, and a comparison guide.
 
 ## Asset tree
 
 ```text
 .github/
   copilot-instructions.md                  global rules: data vs instructions, secret safety, universal git safety
-  agents/                                  nine custom agents implementing the flow (R2)
-  skills/                                  /pipeline entry, Jira retrieval, repository discovery (R3)
+  agents/                                  nine custom agents implementing the flow
+  skills/                                  /pipeline entry, Jira retrieval, repository discovery
   pipeline/
     FLOW.md                                stages, agents, artifacts, gates, STOP conditions, bounded loops, resume
     AGENT-CONTRACTS.md                     per-agent purpose/inputs/outputs/tools/forbidden; artifact templates
@@ -20,14 +20,14 @@ This repository is a **reference implementation and design laboratory** for the 
 docs/
   specs/2026-09-09-phase-1-core-pipeline-design-contract.md   the approved lean contract for this scope
   specs/archive/                           the superseded original contract and its C0 extracts, unedited
-  examples/PAYMENTS-12345/                 worked example: one artifact per stage (R3)
-  COMPARISON-GUIDE.md                      what to compare against the internal pipeline, file by file (R3)
+  examples/PAYMENTS-12345/                 worked example: one artifact per stage, plus its own README index
+  COMPARISON-GUIDE.md                      what to compare against the internal pipeline, file by file
   questions.md                             open questions
 ```
 
 ## How to read the assets
 
-Start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape of a run, then [`AGENT-CONTRACTS.md`](.github/pipeline/AGENT-CONTRACTS.md) for what each agent may and may not do, then [`GUARDRAILS.md`](.github/pipeline/GUARDRAILS.md) for the safety rules those contracts rely on, then [`MODEL-ROLES.md`](.github/pipeline/MODEL-ROLES.md) for which model runs each role and why. Once R2 lands, read the nine `.agent.md` files against `AGENT-CONTRACTS.md` to see the design realized; once R3 lands, read the three skills, the worked example under `docs/examples/`, and finally `docs/COMPARISON-GUIDE.md`, which is the intended entry point for comparing this design against the organization's internal pipeline.
+Start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape of a run, then [`AGENT-CONTRACTS.md`](.github/pipeline/AGENT-CONTRACTS.md) for what each agent may and may not do, then [`GUARDRAILS.md`](.github/pipeline/GUARDRAILS.md) for the safety rules those contracts rely on, then [`MODEL-ROLES.md`](.github/pipeline/MODEL-ROLES.md) for which model runs each role and why. Then read the nine `.agent.md` files against `AGENT-CONTRACTS.md` to see the design realized, and the three skills under `.github/skills/`. Finally, read the worked example under [`docs/examples/PAYMENTS-12345/`](docs/examples/PAYMENTS-12345/README.md) to see the design actually produce artifacts end to end, and [`docs/COMPARISON-GUIDE.md`](docs/COMPARISON-GUIDE.md) — the intended entry point for comparing this design against the organization's internal pipeline, asset by asset.
 
 ## Trying it in VS Code (prerequisites)
 
@@ -40,7 +40,7 @@ Start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape 
 
 - **R1 — Design documents and housekeeping**: delivered. `FLOW.md`, `AGENT-CONTRACTS.md`, `GUARDRAILS.md`, `MODEL-ROLES.md`, `.github/copilot-instructions.md`, the archive, and this README.
 - **R2 — Agents**: delivered. The nine `.agent.md` files under `.github/agents/` and the `.vscode/settings.json` extensions for the tester/developer/publish git forms. The Copilot Chat agent-picker smoke check (agents appear and are selectable in VS Code) is **pending** — no VS Code session is available in this environment.
-- **R3 — Skills, worked example, comparison guide**: pending.
+- **R3 — Skills, worked example, comparison guide**: delivered. The three skills under `.github/skills/`, the worked example under `docs/examples/PAYMENTS-12345/`, and `docs/COMPARISON-GUIDE.md`. This completes Phase 1. The Copilot Chat agent-picker smoke check from R2 remains **pending**, deferred until a VS Code session is available.
 
 ## Further reading
 
