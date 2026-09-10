@@ -8,11 +8,11 @@ This directory holds one artifact per pipeline stage for a single fictional run 
 
 Read the eleven artifacts in pipeline stage order — each is the immutable input to the ones after it:
 
-1. `RUN.md` — keys, repositories (recommended vs. selected), branch, developer context, stage status with a round column, Artifact history (which version of each artifact is ACTIVE vs. SUPERSEDED), gates log with the full G4 publish tuple per repository (owner: `pipeline`)
+1. `RUN.md` — keys, repositories (recommended vs. selected), branch, developer context, stage status with a round column, Artifact history (which version of each artifact is ACTIVE vs. SUPERSEDED), gates log with the full G4 publish tuple per repository and each gate's basis (the artifact revision(s) reviewed) and `CURRENT`/`STALE` status (owner: `pipeline`)
 2. `INTAKE.md` — Jira facts, context-only Jiras, repository recommendation, proposed branch, suspicious content (owner: `intake`)
 3. `WORKSPACE.md` — branch preparation and baseline SHA per repository (stage 2), and, later, the publish sequence's full preflight and explicit-object push (stage 9) (owner: `workspace`)
-4. `PLAN.md` — scope, Requested scope disposition per Jira key, approach, acceptance criteria (each with a source class), risks; this is the **round-2** plan — round 1 was reviewed and sent back (owner: `planner`)
-5. `ADVERSARY-REVIEW.md` — verdict, findings (including the round-1 finding this round-2 review records as resolved), challenged assumptions; this is the **round-2** review (owner: `adversary`)
+4. `PLAN.md` — scope, Requested scope disposition per Jira key, approach, acceptance criteria (each with a source class), risks; this is the **round-2** plan — round 1 was reviewed and sent back, and round 2 resolves that gap with AC5's explicit, tested terminal outcome rather than an unsupported promise (owner: `planner`)
+5. `ADVERSARY-REVIEW.md` — verdict, findings (including the round-1 finding this round-2 review records as resolved by that explicit, tested terminal outcome), challenged assumptions; this is the **round-2** review (owner: `adversary`)
 6. `TEST-CONTRACT.md` — scenario mapping, WITNESS/PRESERVATION test classification, test paths, RED commit SHAs, run commands, execution envelope per repository (owner: `tester`)
 7. `RED-REPORT.md` — the RED proof for WITNESS tests, the PRESERVATION results, and why (owner: `tester`)
 8. `IMPLEMENTATION.md` — the GREEN proof: what changed, how, and any execution-envelope changes with justification (owner: `developer`)

@@ -37,10 +37,12 @@ Both repositories: clean before and after, identical HEAD, so the candidate SHA 
 | `retriesWithExponentialBackoffUntilMaxAttempts` | yes | yes | no | GREEN | yes (WITNESS now GREEN) |
 | `stopsRetryingAfterMaxAttemptsExceeded` | yes | yes | no | GREEN | yes (WITNESS now GREEN) |
 | `stopsRetryingAfterSuccessfulAttempt` | yes | yes | no | GREEN | yes (WITNESS now GREEN) |
+| `reReportsUnreportedLedgerAttemptOnNextDeliveryAttempt` | yes | yes | no | GREEN | yes (WITNESS now GREEN) |
+| `marksDeliveryUnreportedWhenLedgerReportBudgetExhausted` | yes | yes | no | GREEN | yes (WITNESS now GREEN) |
 | `alreadyDeliveredWebhookIsNeverRetried` | yes | yes | no | GREEN | yes (PRESERVATION still GREEN) |
 
 ```text
-[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
@@ -62,7 +64,7 @@ Not trusting IMPLEMENTATION.md's GREEN claim: both runs above were independently
 
 `payments-api` — `mvn -q test` (independently detected full suite, distinct from the contract command above):
 ```text
-[INFO] Tests run: 49, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 51, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
@@ -72,7 +74,7 @@ Not trusting IMPLEMENTATION.md's GREEN claim: both runs above were independently
 [INFO] BUILD SUCCESS
 ```
 
-Both counts include the four contract-run tests for `payments-api` (49 = 45 pre-existing + 4 new: 3 WITNESS, 1 PRESERVATION) and the two for `payments-ledger` (23 = 21 pre-existing + 2 new: 1 WITNESS, 1 PRESERVATION), plus every pre-existing test in each repository; nothing pre-existing regressed. The contract command proves the acceptance contract; this full-suite run proves no broader regression — neither replaces the other. [TOOL]
+Both counts include the six contract-run tests for `payments-api` (51 = 45 pre-existing + 6 new: 5 WITNESS, 1 PRESERVATION) and the two for `payments-ledger` (23 = 21 pre-existing + 2 new: 1 WITNESS, 1 PRESERVATION), plus every pre-existing test in each repository; nothing pre-existing regressed. The contract command proves the acceptance contract; this full-suite run proves no broader regression — neither replaces the other. [TOOL]
 
 ## Execution envelope check
 
@@ -115,6 +117,7 @@ Produced from the baseline SHA recorded in WORKSPACE.md (`payments-api`: `000011
 | `src/main/java/com/payments/webhook/WebhookRetryService.java` | PLANNED |
 | `src/main/java/com/payments/webhook/WebhookDeliveryService.java` | PLANNED |
 | `src/main/resources/application.yml` | PLANNED |
+| `src/main/java/com/payments/webhook/WebhookDelivery.java` | PLANNED |
 | `pom.xml` | ENVELOPE |
 | `src/test/resources/application-test.yml` | ENVELOPE |
 | `src/test/java/com/payments/webhook/support/FakeClock.java` | ENVELOPE |

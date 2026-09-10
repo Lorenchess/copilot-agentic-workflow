@@ -69,15 +69,15 @@ Round is the attempt counter for the stage: adversary/planner round for stages 3
 | WORKSPACE.md | 9 | 1 | ACTIVE | workspace |
 | PR.md | 10 | 1 | ACTIVE | pr |
 
-Round-1 PLAN.md and ADVERSARY-REVIEW.md (adversary verdict REVISE, on the audit-delivery semantics contradiction described below) are recorded here as SUPERSEDED; only the round-2, ACTIVE versions are kept as this run's PLAN.md and ADVERSARY-REVIEW.md. No artifact in this run was used as an input by any agent after being marked SUPERSEDED.
+Round-1 PLAN.md and ADVERSARY-REVIEW.md (adversary verdict REVISE, on the audit-delivery semantics contradiction described below) are recorded here as SUPERSEDED; only the round-2, ACTIVE versions are kept as this run's PLAN.md and ADVERSARY-REVIEW.md. No artifact in this run was used as an input by any agent after being marked SUPERSEDED. No gate answer became STALE in this run: G3 was first asked after the round-2 plan, so no G3 answer existed when the round-1 PLAN.md and ADVERSARY-REVIEW.md were superseded.
 
 ## Gates log
 
-**G1 — Repositories.** Asked: "Which repositories does this work affect? Recommended: `payments-api` (HIGH, Jira Components match + `WebhookDeliveryService` found in code), `payments-ledger` (HIGH, Jira Components match + `AuditLogRepository` found in code), `payments-web` (LOW, name similarity only). Select the repositories to include." Answered [DEV]: select `payments-api`, `payments-ledger`; exclude `payments-web`. Both selected repositories were agent-recommended.
+**G1 — Repositories.** Asked: "Which repositories does this work affect? Recommended: `payments-api` (HIGH, Jira Components match + `WebhookDeliveryService` found in code), `payments-ledger` (HIGH, Jira Components match + `AuditLogRepository` found in code), `payments-web` (LOW, name similarity only). Select the repositories to include." Answered [DEV]: select `payments-api`, `payments-ledger`; exclude `payments-web`. Both selected repositories were agent-recommended. Basis: INTAKE.md round 1 — Status: CURRENT.
 
-**G2 — Branch and context.** Asked: "Proposed branch name: `PAYMENTS-12345-webhook-retry-backoff`. Accept or provide a replacement slug. Optionally add context (constraints, known files, things to avoid, discussion with another developer) — or continue without adding context." Answered [DEV]: accept proposed slug unchanged; context provided (see Developer context above).
+**G2 — Branch and context.** Asked: "Proposed branch name: `PAYMENTS-12345-webhook-retry-backoff`. Accept or provide a replacement slug. Optionally add context (constraints, known files, things to avoid, discussion with another developer) — or continue without adding context." Answered [DEV]: accept proposed slug unchanged; context provided (see Developer context above). Basis: INTAKE.md round 1 — Status: CURRENT.
 
-**G3 — Plan approval.** Asked, round 1: adversary returned REVISE (audit-delivery semantics contradiction — see ADVERSARY-REVIEW.md), so G3 was not yet asked; the planner produced a round-2 plan instead. Asked, round 2: "The plan for `PAYMENTS-12345` has been reviewed (`APPROVE`). Approve this plan to proceed to test authoring? Requested scope: `PAYMENTS-12345`: IMPLEMENTED, `PAYMENTS-12351`: IMPLEMENTED. Proposed decisions requiring your confirmation: AC4 — a failed `payments-ledger` call is retried with the delivery and the attempt is never lost (PROPOSED)." Answered [DEV]: Approve (round 2); confirmed AC4's PROPOSED decision; acknowledged both requested keys' disposition as IMPLEMENTED.
+**G3 — Plan approval.** Asked, round 1: adversary returned REVISE (audit-delivery semantics contradiction — see ADVERSARY-REVIEW.md), so G3 was not yet asked; the planner produced a round-2 plan instead. Asked, round 2: "The plan for `PAYMENTS-12345` has been reviewed (`APPROVE`). Approve this plan to proceed to test authoring? Requested scope: `PAYMENTS-12345`: IMPLEMENTED, `PAYMENTS-12351`: IMPLEMENTED. Proposed decisions requiring your confirmation: AC5 — a failed `payments-ledger` call is re-reported on the delivery's next attempt within its own retry budget, and the delivery is persisted with `ledgerReportStatus = UNREPORTED` if that budget is exhausted before the attempt is reported (PROPOSED)." Answered [DEV]: Approve (round 2); confirmed AC5's PROPOSED decision; acknowledged both requested keys' disposition as IMPLEMENTED. Basis: PLAN.md round 2, ADVERSARY-REVIEW.md round 2 — Status: CURRENT.
 
 **G4 — Publish and PR.** Asked: "Verification passed for `payments-api`, `payments-ledger` at `cccc3333dddd4444eeee5555aaaa1111bbbb2222`, `dddd4444eeee5555aaaa1111bbbb2222cccc3333`. Publish these branches and open the pull request(s)?" Shown, per repository, the approved tuple:
 
@@ -86,7 +86,7 @@ Round-1 PLAN.md and ADVERSARY-REVIEW.md (adversary verdict REVISE, on the audit-
 | `payments-api` | `https://bitbucket.example.com/scm/pay/payments-api.git` | `PAYMENTS-12345-webhook-retry-backoff` | `cccc3333dddd4444eeee5555aaaa1111bbbb2222` | `main` | `PUBLISH_AND_PR` |
 | `payments-ledger` | `https://bitbucket.example.com/scm/pay/payments-ledger.git` | `PAYMENTS-12345-webhook-retry-backoff` | `dddd4444eeee5555aaaa1111bbbb2222cccc3333` | `main` | `PUBLISH_AND_PR` |
 
-Answered [DEV]: `PUBLISH_AND_PR` — approved the tuple shown for both repositories, unchanged from what was displayed.
+Answered [DEV]: `PUBLISH_AND_PR` — approved the tuple shown for both repositories, unchanged from what was displayed. Basis: VERIFICATION.md round 1, PR-DESCRIPTION.md round 1, plus the tuple above — Status: CURRENT.
 
 ## Resume notes
 
