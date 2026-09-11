@@ -45,6 +45,14 @@ Planner and Adversary are the roles whose value depends on independence, and the
 
 Tester (contract construction) and the Adversary's test-review mode (stage 5b) are benchmark candidates alongside Planner/Adversary, scored on four dimensions: **assertion-target correctness** (does the test's assertion target the clause's outcome at Observed at, not a proxy), **boundary/doubles** (is the responsible component real, is a double used only to observe or supply a Given), **RED validity** (does the six-line evidence and its validity rules hold), and **incorrect-behavior discrimination** (would a plausible wrong implementation still pass). As with Planner/Adversary (R12), the test-review's independence is **procedural**: outcome-first derivation from PLAN.md before test source is inspected, a distinct catalogue (`test-contract`'s Challenge section, read only in that mode), and no re-use of a prior plan-review verdict as evidence — not a blind review, a faithful read order, or independent model errors, since Sonnet-5 sits on both sides of stage 5 and stage 5b. "Compact pass on a SMALL contract", "rare STOP" (`TEST_REVIEW_REVISE_LIMIT`), and "marginal value of the extra review" are **hypotheses to measure** against the benchmark protocol above, not results this phase claims. No model change: `adversary` now runs in two modes per run (stage 4 and stage 5b) on the same Sonnet-5 assignment; the deferred benchmark protocol gains this row when it is run.
 
+## Developer and Verifier as benchmark candidates (IQ16)
+
+Sonnet 5 remains the model for every role; this is documentation only, and no model change follows from it. `developer` and `verifier` are named as benchmark candidates alongside Planner/Adversary (R12) and Tester/test-review (T16), scored on:
+- **Developer:** iterations and runner executions to GREEN; scope precision (declared `PLAN-TRACED`/`ENVELOPE` classifications versus what the Verifier detects); agreement between declared and detected deviations; incidence of contract-gaming patterns (`implementation-quality` skill IQ2).
+- **Verifier:** detection of seeded wrong-but-test-passing implementations and seeded `DEFECT`s; the false-FAIL rate on legitimate traced edits; consistency across rounds (same finding, same classification, on re-verification).
+
+As with Planner/Adversary and Tester/test-review, these are **hypotheses to measure** against the deferred benchmark protocol above, not results this phase claims. There is no model change.
+
 ## Change control
 
 No model change happens without a new owner decision. No agent, and no implementer, self-authorizes a model change.
