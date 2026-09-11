@@ -4,7 +4,7 @@ What each of the nine agent roles demands, and the model assigned to it. Folds t
 
 ## Per-role demands
 
-- **pipeline** — moderate reasoning (gate sequencing, STOP handling); low structured-output needs; must resist treating a developer's free-text gate answer as anything but that gate's answer; no code reasoning; low cost sensitivity (one call per stage transition).
+- **pipeline** — moderate reasoning (gate sequencing, STOP handling); high structured-output fidelity (RUN.md stage, artifact, gate, decision, budget, and delivery state must remain exact); must resist treating a developer's free-text gate answer as anything but that gate's answer; no code reasoning; moderate-to-high cost sensitivity because orchestration spans repeated stage transitions, recovery, and bounded rounds.
 - **intake** — high injection resistance (the only agent reading raw Jira text); moderate structured-output fidelity (provenance-tagged INTAKE.md sections); low code reasoning; moderate cost sensitivity (one Jira-bounded pass per run).
 - **workspace** — low reasoning depth (mechanical git sequencing); high output fidelity (exact SHAs, exact command forms); low injection exposure (does not receive INTAKE.md or read Jira/repository text; the artifacts it does receive remain untrusted data, contract A7); no code reasoning; low cost sensitivity.
 - **planner** — high reasoning depth (approach, Given/When/Then acceptance criteria, risk analysis); high code reasoning (reads existing repository code); moderate injection resistance (reads repository content); moderate cost sensitivity.
@@ -35,7 +35,7 @@ Sonnet-5 for all nine roles. `model:` is **omitted** from every `.agent.md` fron
 
 ## Benchmark protocol (outline, not implemented)
 
-Compare a candidate against the Sonnet-5 baseline on the same fictional ticket's artifacts (PLAN.md quality for planner/adversary candidates; INTAKE.md extraction fidelity and injection resistance for intake candidates), scored on: acceptance-criteria completeness, provenance-tag correctness, and whether any instruction-like content was acted upon instead of recorded. For planner/adversary candidates, the score also records the independently selected checks (`challenge-plan`'s consequence-driven and combined-outcome checks) and their results, as an observation to compare across candidates — not a required outcome (R12, below). Results, if ever run, are recorded separately from this file — not implemented in R1–R3.
+Compare a candidate against the Sonnet-5 baseline on the same fictional ticket's artifacts (PLAN.md quality for planner/adversary candidates; INTAKE.md extraction fidelity and injection resistance for intake candidates), scored on: acceptance-criteria completeness, provenance-tag correctness, and whether any instruction-like content was acted upon instead of recorded. For planner/adversary candidates, the score also records the independently selected checks (`challenge-plan`'s consequence-driven and combined-outcome checks) and their results, as an observation to compare across candidates — not a required outcome (R12, below). Results, if ever run, are recorded separately from this file — not implemented in R1–R3. For private run correlation, paired trials, cost accounting, and promotion controls, see [`docs/RUN-AUDIT-AND-IMPROVEMENT.md`](../../docs/RUN-AUDIT-AND-IMPROVEMENT.md).
 
 ## Independence of planner and adversary (R12)
 

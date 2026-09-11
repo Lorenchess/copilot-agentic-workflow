@@ -69,16 +69,22 @@ direct evidence from owner statements and inference.
 
 ## Reference reading order
 
-Read the following as the finished reference baseline:
+Record the exact repository revision used for every comparison. Read the locked
+Phase 5 baseline at its accepted revision separately from later tracked material;
+a locked review does not validate current working-tree changes or later guidance.
+Use this order:
 
 1. `README.md` for the repository boundary and reference status.
 2. `docs/END-TO-END-REFERENCE-TRACE.md` for stage, recovery, and delivery
    reasoning.
 3. `docs/COMPARISON-GUIDE.md` for candidate comparison dimensions.
 4. `docs/CORPORATE-ADOPTION.md` for the reference's unverified host checks.
-5. `docs/reviews/2026-09-11-phase-5-final-review.md` for the latest final
+5. `docs/RUN-AUDIT-AND-IMPROVEMENT.md` as current forward guidance, outside the
+   locked Phase 5 reference, for proposed private evidence, snapshot,
+   multi-developer ownership, and controlled improvement.
+6. `docs/reviews/2026-09-11-phase-5-final-review.md` for the latest final
    assessment and its limitations.
-6. Relevant actual files under `.github/agents/`, `.github/skills/`, and
+7. Relevant actual files under `.github/agents/`, `.github/skills/`, and
    `.github/pipeline/` only when a comparison needs their operative detail.
 
 The accepted Phase 5 reference baseline is

@@ -85,7 +85,7 @@ Resuming after an activated mid-round amendment continues the same round with it
 | Handoff attempts | 2 |
 
 **Units.**
-- A **contract iteration** (`C<n>`) is one contract-command run after an edit batch, in the inner loop. **Progress** means the failing set of contract and relied-on identities shrinks, or stays the same while at least one failing identity fails later or differently in a way the edit explains.
+- A **contract iteration** (`C<n>`) is one contract-command run after an edit batch, in the inner loop. **Progress** means the failing set of contract and relied-on identities shrinks, or stays the same while observed evidence shows at least one failing identity moved toward the approved behavior in a way the edit explains. Changed failure text alone, or cycling back to an earlier failure, is not progress.
 - A **diagnostic run** (`D<n>`) is a compile goal or a scoped subset. It is never GREEN evidence.
 - A **handoff attempt** (`H<n>`) is the bracketed IQ2 execution set: one contract run, one full suite, and any required scoped relied-on runs. One attempt id is shared by all of its component executions (logged `H<n>.1`, `H<n>.2`, …); the handoff counter counts attempts, never component rows.
 - The **suite baseline** is at most one full-suite run per run, in round 1 before the first edit, at the active anchor, with a clean checkout and a passing controlled-path check. It is optional and used for diagnosis only (IQ4, D3(c)).
@@ -102,7 +102,8 @@ Resuming after an activated mid-round amendment continues the same round with it
 **Log, persistence, resume.**
 - At round start Developer writes IMPLEMENTATION.md with `status: IN_PROGRESS` and the round id.
 - **Before** launching any runner execution, Developer appends that execution's Iteration log line with `result: pending`, which reserves it.
-- After the execution, it records the result on the same line: `<id> · <repo> · <edit or purpose, one line> · failing: <ids | none> (Δ) · class`, with ids `BASELINE`, `C<n>`, `D<n>`, `H<n>.<k>`.
+- For diagnostic or retry work, the one-line `edit or purpose` states a brief hypothesis, the discriminating check and expected observation, and the intended next edit if supported. This is an operational summary, not a reasoning transcript, and adds no execution requirement.
+- After the execution, it records the result on the same line: `<id> · <repo> · <edit or purpose, one line> · failing: <ids | none> (Δ) · class`, with ids `BASELINE`, `C<n>`, `D<n>`, `H<n>.<k>`. Diagnostic/retry results cite the observed evidence and mark the hypothesis `supported`, `refuted`, or `unresolved`.
 - The counters are derived from the log's reservations.
 - An interrupted round (IMPLEMENTATION.md `IN_PROGRESS`) resumes at stage 6 in the **same** round, with the allowance its log leaves. A reservation without a result is recorded `UNKNOWN` and counts as consumed; an interrupted handoff attempt is a failed attempt.
 - Generic resume never renews an allowance.
@@ -235,9 +236,9 @@ This section is the Verifier's method for stage 7, read after the rule sections 
 
 **Reading order: obligations first, claims last.**
 1. From PLAN.md, RUN.md's `CURRENT` G3 entry, and the Decision log — before reading the diff or IMPLEMENTATION.md — derive: the expected change set; the obligation list (`C` rows, `Q` answers, `I` facets, Out of scope, and `NOT_VERIFIED` clauses); the recorded human commits (T13 prerequisites, restorations).
-2. Run the unchanged mechanical checks.
+2. Run the mechanical checks in `verifier.agent.md`'s fail-fast order: current review/activation and exception basis, checkout/candidate, and both committed and working-tree controlled-path and envelope eligibility before any runner. A repository that fails this preflight has runner checks `NOT_RUN`, no verified SHA, and no G4 eligibility; safe read-only diagnosis may continue.
 3. Build the five-class inventory (IQ5) and do the hunk review of the full `<base>..HEAD` patch.
-4. Only then read IMPLEMENTATION.md, and reconcile its classifications, deviations, and Obligations map against what was found.
+4. Only then read IMPLEMENTATION.md in full, and reconcile its classifications, deviations, and Obligations map against what was found. The verifier's earlier bounded read of only the Envelope changes section, when an ordinary-envelope preflight needs a claimed justification, is the sole exception and remains subordinate to independent content evidence.
 
 **Obligation values:**
 - `HONORED` — with `path:line` evidence.
@@ -301,6 +302,7 @@ This is not a mandate for a comprehensive audit. If resolving the defect require
 | Condition | Record | Effect |
 |---|---|---|
 | Runner or environment unavailable (stage 6 or 7) | `RUNNER_UNAVAILABLE` (unchanged) | No GREEN, no PASS |
+| Verifier preflight fails before execution | Actual routed finding; runner checks `NOT_RUN` | No verified SHA, no PASS, no G4 |
 | Required clause `NOT_VERIFIED` | `INCOMPLETE` (unchanged) | Never G4; recovery through stage 5 |
 | Developer cannot reach GREEN | IMPLEMENTATION.md `BLOCKED` → `IMPLEMENTATION_BLOCKED` | No handoff; nothing published |
 | A full-suite identity is failing (D3(c)) | Blocking; the baseline is diagnostic only; cause stated only where evidenced | Never PASS. **At stage 6** it is classified by IQ4: a `REGRESSION` is repaired within the remaining allowance and re-tested by the next handoff attempt; a `BASELINE_FAILURE` takes its STOP; with no allowance left for the next needed step, `BUDGET_EXHAUSTED`. The failed candidate is never handed off. **At stage 7:** FAIL for every failing identity |
