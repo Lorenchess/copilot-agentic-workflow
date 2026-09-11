@@ -2,9 +2,9 @@
 artifact: RUN.md
 run: PAYMENTS-12410
 primaryJira: PAYMENTS-12410
-status: TESTED
+status: VERIFIED
 producedBy: pipeline
-inputs: [INTAKE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, TEST-REVIEW.md]
+inputs: [INTAKE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, TEST-REVIEW.md, IMPLEMENTATION.md, VERIFICATION.md]
 ```
 
 ## Keys
@@ -40,13 +40,13 @@ provided: false
 | 4 | Adversary | adversary | ADVERSARY-REVIEW.md | COMPLETE — APPROVE | 1.1 |
 | 5 | Test (RED) | tester | TEST-CONTRACT.md, RED-REPORT.md | COMPLETE — the one WITNESS test (AC1) RED, both PRESERVATION tests (AC2, P1) PASS, on both runs | 1 |
 | 5b | Test review | adversary (test-review mode) | TEST-REVIEW.md | COMPLETE — ACCEPT | 1 |
-| 6 | Develop (GREEN) | developer | IMPLEMENTATION.md | NOT RUN — this example stops at stage 5b (see README.md) | — |
-| 7 | Verify | verifier | VERIFICATION.md | NOT RUN — this example stops at stage 5b (see README.md) | — |
-| 8 | PR draft | pr | PR-DESCRIPTION.md | NOT RUN — this example stops at stage 5b (see README.md) | — |
-| 9 | Publish | workspace | WORKSPACE.md (Publish section) | NOT RUN — this example stops at stage 5b (see README.md) | — |
-| 10 | PR | pr | PR.md | NOT RUN — this example stops at stage 5b (see README.md) | — |
+| 6 | Develop (GREEN) | developer | IMPLEMENTATION.md | COMPLETE — `payments-api` GREEN, one round, compact handoff (`C 1/6 · D 0/6 · H 1/2`) | 1 |
+| 7 | Verify | verifier | VERIFICATION.md | COMPLETE — PASS, one-pass review, zero blocking findings | 1 |
+| 8 | PR draft | pr | PR-DESCRIPTION.md | NOT RUN — this example stops at stage 7 by design (see README.md) | — |
+| 9 | Publish | workspace | WORKSPACE.md (Publish section) | NOT RUN — this example stops at stage 7 by design (see README.md) | — |
+| 10 | PR | pr | PR.md | NOT RUN — this example stops at stage 7 by design (see README.md) | — |
 
-Stage 5 was invoked on the `CURRENT` `APPROVE` recorded at G3 below; this example stops after stage 5b (see README.md) — stages 6–10 are not run and produce no artifacts in this directory.
+Stage 5 was invoked on the `CURRENT` `APPROVE` recorded at G3 below; this example stops after stage 7 by design (see README.md) — stages 8–10 are not run and produce no artifacts in this directory.
 
 ## Artifact history
 
@@ -58,8 +58,10 @@ Stage 5 was invoked on the `CURRENT` `APPROVE` recorded at G3 below; this exampl
 | TEST-CONTRACT.md | 5 | 1 | ACTIVE | tester |
 | RED-REPORT.md | 5 | 1 | ACTIVE | tester |
 | TEST-REVIEW.md | 5b | 1 | ACTIVE | adversary |
+| IMPLEMENTATION.md | 6 | 1 | ACTIVE (GREEN) | developer |
+| VERIFICATION.md | 7 | 1 | ACTIVE (PASS) | verifier |
 
-A genuinely small, correct change with no unresolved material choice needed only one planning round: PLAN.md and ADVERSARY-REVIEW.md are both ACTIVE at round `1.1` — no REVISE, no second round, no planning cycle beyond cycle 1. TEST-CONTRACT.md, RED-REPORT.md, and TEST-REVIEW.md are each ACTIVE at round `1` — no correction round, no amendment, no coverage gap.
+A genuinely small, correct change with no unresolved material choice needed only one planning round: PLAN.md and ADVERSARY-REVIEW.md are both ACTIVE at round `1.1` — no REVISE, no second round, no planning cycle beyond cycle 1. TEST-CONTRACT.md, RED-REPORT.md, and TEST-REVIEW.md are each ACTIVE at round `1` — no correction round, no amendment, no coverage gap. IMPLEMENTATION.md and VERIFICATION.md are likewise ACTIVE at round `1` — one compact handoff, one PASS, zero blocking findings; no fix round, no directed round.
 
 ## Gates log
 
@@ -73,11 +75,11 @@ A genuinely small, correct change with no unresolved material choice needed only
 
 Answered [DEV]: **APPROVE**. Material choices: none. Exclusions acknowledged: none (none were displayed). Basis: PLAN.md `1.1`, ADVERSARY-REVIEW.md `1.1` — Status: CURRENT.
 
-This `CURRENT` `APPROVE` answer authorized stage 5, which was invoked (see the Stage status table); this example stops after stage 5b (see README.md) — stages 6–10 are not run.
+This `CURRENT` `APPROVE` answer authorized stage 5, which was invoked (see the Stage status table); this example stops after stage 7 by design (see README.md) — stages 8–10 are not run; no G4 is asked here.
 
 ## Decision log
 
-none — no non-gate decision was needed.
+none — no non-gate decision was needed. No Phase 4 `IMPLEMENTATION_BLOCKED` STOP occurred at stage 6/7 either: one round, one handoff attempt, one PASS — no `BUDGET_EXHAUSTED`, `MATERIAL_DEVIATION`, `CONTROLLED_PATH_CHANGED`, or `BASELINE_FAILURE` reason arose, so there is no new Decision log entry for stage 6/7.
 
 ## Resume notes
 

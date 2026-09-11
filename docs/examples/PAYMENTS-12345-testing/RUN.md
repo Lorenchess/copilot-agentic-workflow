@@ -2,9 +2,9 @@
 artifact: RUN.md
 run: PAYMENTS-12345
 primaryJira: PAYMENTS-12345
-status: TESTED
+status: VERIFIED
 producedBy: pipeline
-inputs: [INTAKE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, TEST-REVIEW.md]
+inputs: [INTAKE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, TEST-REVIEW.md, IMPLEMENTATION.md, VERIFICATION.md]
 ```
 
 ## Keys
@@ -46,13 +46,13 @@ Identical to `docs/examples/PAYMENTS-12345-planning/RUN.md`.
 | 4 | Adversary | adversary | ADVERSARY-REVIEW.md | COMPLETE — APPROVE | 1.2 |
 | 5 | Test (RED) | tester | TEST-CONTRACT.md, RED-REPORT.md | COMPLETE (round 2 — one correction round) | 2 |
 | 5b | Test review | adversary (test-review mode) | TEST-REVIEW.md | COMPLETE — ACCEPT (round 2) | 2 |
-| 6 | Develop (GREEN) | developer | IMPLEMENTATION.md | NOT RUN — this example stops at stage 5b by design | — |
-| 7 | Verify | verifier | VERIFICATION.md | NOT RUN — this example stops at stage 5b by design | — |
-| 8 | PR draft | pr | PR-DESCRIPTION.md | NOT RUN — this example stops at stage 5b by design | — |
-| 9 | Publish | workspace | WORKSPACE.md (Publish section) | NOT RUN — this example stops at stage 5b by design | — |
-| 10 | PR | pr | PR.md | NOT RUN — this example stops at stage 5b by design | — |
+| 6 | Develop (GREEN) | developer | IMPLEMENTATION.md | COMPLETE — both repositories GREEN, round 2 (round 1 handed off GREEN in both repositories but is superseded — see Artifact history) | 2 |
+| 7 | Verify | verifier | VERIFICATION.md | COMPLETE — PASS, round 2 (round 1 FAIL — `payments-api`: C1 VIOLATED, Finding F1; `payments-ledger` PASS — see Artifact history and VERIFICATION.md's Prior findings) | 2 |
+| 8 | PR draft | pr | PR-DESCRIPTION.md | NOT RUN — this example stops at stage 7 by design | — |
+| 9 | Publish | workspace | WORKSPACE.md (Publish section) | NOT RUN — this example stops at stage 7 by design | — |
+| 10 | PR | pr | PR.md | NOT RUN — this example stops at stage 7 by design | — |
 
-This run stops at stage 5b by design (see README.md); stages 6–10 are not run and produce no artifacts in this directory.
+This run stops at stage 7 by design (see README.md); stages 8–10 are not run and produce no artifacts in this directory.
 
 ## Artifact history
 
@@ -69,8 +69,14 @@ This run stops at stage 5b by design (see README.md); stages 6–10 are not run 
 | TEST-CONTRACT.md | 5 | 2 | ACTIVE | tester |
 | RED-REPORT.md | 5 | 2 | ACTIVE | tester |
 | TEST-REVIEW.md | 5b | 2 | ACTIVE (ACCEPT) | adversary |
+| IMPLEMENTATION.md | 6 | 1 | SUPERSEDED | developer |
+| VERIFICATION.md | 7 | 1 | SUPERSEDED (FAIL) | verifier |
+| IMPLEMENTATION.md | 6 | 2 | ACTIVE (GREEN) | developer |
+| VERIFICATION.md | 7 | 2 | ACTIVE (PASS) | verifier |
 
 Round-`1.1` PLAN.md and ADVERSARY-REVIEW.md are carried unchanged from `docs/examples/PAYMENTS-12345-planning/RUN.md`'s own Artifact history (recorded there as SUPERSEDED for the same reason: the ordinary bounded planner/adversary loop within cycle 1, no developer-directed new planning cycle). Round-1 TEST-CONTRACT.md and RED-REPORT.md are the initial stage-5 evidence package, containing the stage-5 Tester-origin adoption (see Decision log) and the round-1 version of the AC4 test that doubled `AuditLogRepository` with a recorder; round-1 TEST-REVIEW.md recorded `REVISE` (finding F1, HIGH — see TEST-REVIEW.md's Findings, which records F1 as resolved by the correction round rather than reproducing the round-1 review as a separate file). The round-2 correction touched only `payments-ledger`; `payments-api`'s TEST-CONTRACT.md anchor entry for that repository is unchanged between round 1 and round 2 (see TEST-CONTRACT.md's Correction rounds). This is the one automatic Tester correction round the stage-5b loop allows (contract T11) — no `TEST_REVIEW_REVISE_LIMIT` was reached.
+
+Stage-6 round 1's IMPLEMENTATION.md handed off GREEN in both repositories, but `payments-api`'s `RetryBackoffPolicy.java` hard-coded the retry base delay instead of reading it from `application.yml` — every contract identity nonetheless passed, since the proof-relevant `application-test.yml` also fixes `base-delay: 1s` and no test varies it. Stage-7 round 1's VERIFICATION.md found this obligation (C1) `VIOLATED` (Finding F1, BLOCKING; `payments-api` FAIL, `payments-ledger` PASS; overall FAIL) and is superseded — its full finding is reproduced in round-2 VERIFICATION.md's Prior findings, marked `CLOSED`. Stage-6 round 2 is the one scoped fix round `pipeline` invoked on that FAIL, bounded to F1's fix scope (`RetryBackoffPolicy.java` only); `payments-ledger`'s HEAD is unchanged between rounds, but IQ13 requires its GREEN evidence to be regenerated in the same round, which round-2 IMPLEMENTATION.md records via a fresh bracketed handoff attempt. Stage-7 round 2 is the one re-verification the FAIL authorized; it found every obligation `HONORED` or `ROLLOUT` and rendered PASS — the unchanged Verifier/developer budget allows one initial verification plus **up to two** fix rounds, and this run used **one** of them (`VERIFIER_FAIL_LIMIT` is never reached, since round 2 already PASSes).
 
 ## Gates log
 
@@ -84,7 +90,7 @@ Round-`1.1` PLAN.md and ADVERSARY-REVIEW.md are carried unchanged from `docs/exa
 
 Answered [DEV]: **APPROVE**. Each material choice's answer: Q1 — accept recommendation (`maxAttempts = 5`, `baseDelay = 1s`); Q2 — accept recommendation (synchronous); Q3 — accept recommendation (expose `PERMANENTLY_FAILED`, not `ledgerReportStatus`); Q6 — accept recommendation (persist `ledgerReportStatus = UNREPORTED`, no further report attempted). Exclusions acknowledged: none (none were displayed). Basis: PLAN.md `1.2`, ADVERSARY-REVIEW.md `1.2` — Status: CURRENT.
 
-This CURRENT APPROVE authorized stage 5, which this directory runs; no G4 is asked here because stages 6–8 are not run (see README.md).
+This CURRENT APPROVE authorized stage 5, which this directory runs; no G4 is asked here because stages 8–10 are not run (see README.md) — stages 6 and 7 ran (Develop GREEN, Verify), but G4 is a stage-9/10 gate this run never reaches.
 
 ## Decision log
 
@@ -94,6 +100,8 @@ Stage 5's Tester-origin conflict paused stage 5 before any RED run or commit: Te
 
 No authorized exceptions were recorded in this run — no coverage gap and no `TEST_REVIEW_REVISE_LIMIT` occurred (see TEST-CONTRACT.md's Coverage gaps: `none`).
 
+No new Decision log entry was recorded for stage 6/7: the round-2 fix round followed automatically from Verifier round 1's FAIL, within the unchanged fix budget (skill IQ12/IQ13) — no Phase 4 `IMPLEMENTATION_BLOCKED` STOP occurred, so there is no `BUDGET_EXHAUSTED`/`MATERIAL_DEVIATION`/`CONTROLLED_PATH_CHANGED`/`BASELINE_FAILURE` reason, no directed-round guidance, and no restoration to record.
+
 ## Resume notes
 
-None — this run has not been interrupted; it stops at stage 5b by design.
+None — this run has not been interrupted; it stops at stage 7 by design.
