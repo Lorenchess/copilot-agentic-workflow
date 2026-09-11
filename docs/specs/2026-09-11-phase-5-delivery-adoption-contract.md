@@ -181,3 +181,26 @@ Astra owns the Phase 5 architecture and accepted P5-C1/P5-C2. All repository aut
 The stages 8–10 continuation is explicitly hypothetical. The existing example still stops at stage 7 and records no G4, draft, push, PR, or rollout. The scenario preserves its three distinct order facts: Developer's ledger-then-API implementation choice, RUN's API-then-ledger publication order, and the ledger-before-API-enable rollout obligation. It illustrates partial publication, human-confirmed same-basis continuation, already-A reuse without push, known-PR reconciliation, and unknown-create reconciliation without claiming execution or adding an artifact.
 
 The final reuse assessment copies portable evidence and safety rules, adapts templates and numeric bounds to existing internal infrastructure, and keeps Copilot packaging and host controls platform-specific. It preserves Phase 4 debt N1–N3, states the shared-model and procedural-control limits, and links the corporate checklist where every result remains `NOT VERIFIED`. Under the owner's existing authorization, P5-C3 acceptance, final assembled review, and all closure/publication prerequisites remain pending Astra review; this record does not claim they have completed.
+
+## 9. Final acceptance and administrative closure record
+
+The pending entries in §7 record the state when P5-C3 was drafted. This final record supersedes those historical statuses without rewriting them.
+
+| Checkpoint | Accepted revision | Result and correction record |
+|---|---|---|
+| P5-C1 | `f3aa9d425868fa48d934a065872c32b367015cba` | **PASS** after one ordinary correction round; two material findings were closed: RUN/WORKSPACE history ownership and accurate disclosure of preflight versus later same-attempt effects. Mandatory post-create read wording was aligned in the same bounded round. |
+| P5-C2 | `54b900b748d80aff48300e845016c359d7c0b702` | **PASS** after one ordinary correction round; one material agent-picker/frontmatter finding was closed, with the bounded protected-edit preview, connector-cardinality, and link corrections. |
+| P5-C3 | `b9216f99fcb183f71fdd47f6084eb784d821cc14` | **PASS** after two ordinary correction rounds; the missing indirect Developer-to-approved-G3 failure case was added, then its over-restrictive Verifier repair routing was corrected to permit a bounded plan-restoring fix before `MATERIAL_DEVIATION`. |
+| Final assembled reference | P5-C3 revision above | **PASS**; Astra found no unresolved material finding or material regression. |
+
+The accepted target for `phase-5-reference` is the reviewed P5-C3 revision `b9216f99fcb183f71fdd47f6084eb784d821cc14`, not the later administrative-closure commit. The local untracked [`phase-5-final-review.md`](../reviews/2026-09-11-phase-5-final-review.md) is the audit record for Astra's independent assembled review; the tracked [`END-TO-END-REFERENCE-TRACE.md`](../END-TO-END-REFERENCE-TRACE.md) is the public readable assessment. The audit file is not required as a public source.
+
+Platform evidence identifies GPT-5.6 Sol as the author of every Phase 5 implementation, correction, and administrative edit under Astra's architecture and delegation. Astra performed the actual-file reviews and Git operations. The intended Sonnet-5 runtime for all nine reference roles remains a distinct corporate assignment and was not validated by Sol authoring.
+
+At final review, all 93 pre-existing frozen files retained their starting SHA-256 hashes. The four earlier reference tags and targets were unchanged: Phase 1 `03d4230e9398a80586a4b8be47ed522638bf77d8`, Phase 2 `5a46eb7a6bb951308742975bd8f9f51f77a6aca9`, Phase 3 `20939cc9ff00a9091042f0e3fb3c74194c7e583b`, and Phase 4 `9a7e704cf328b161b08cc0e903a883ef340d4368`.
+
+Accepted maintenance debt remains: N1 duplicates detailed implementation rules; N2 leaves third-FAIL versus special-STOP wording precedence ambiguous but grants no extra round; N3's envelope-template summary is less precise than the operative routing. Agent compliance, artifact integrity, source attribution, proof judgment, host hooks and generated or ignored effects remain trust boundaries. External reads do not remove races, multi-repository publication remains sequential and non-atomic, and no exactly-once guarantee exists. The numeric budgets, role-review value, and shared-model blind spots remain unbenchmarked.
+
+All 20 corporate-adoption checks remain **NOT VERIFIED**. No corporate Jira, Bitbucket, Git-host, agent-routing, approval, container, database, Kafka, PR, or other connector behavior was executed by this phase.
+
+The owner's explicit Phase 5 instruction authorizes publication after the contract criteria are met; Astra's PASS is review evidence, not publication authority. This record is time-neutral and does not claim that a commit, tag, or push has occurred. After publication, live reads must separately confirm remote `main`, `phase-5-reference`, and all four earlier immutable tags. Stop after Phase 5 publication confirmation; there is no Phase 6 or optional cleanup.
