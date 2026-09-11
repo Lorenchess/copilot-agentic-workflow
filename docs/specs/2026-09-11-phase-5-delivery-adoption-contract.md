@@ -159,3 +159,25 @@ Publication procedure:
 6. report final revisions, checkpoint SHAs, review result, Sol provenance, reusable patterns, debt, corporate status, working-tree state, and untracked-review status.
 
 After Phase 5 closure, STOP. There is no Phase 6 or optional cleanup in this authorization.
+
+## 7. Checkpoint record
+
+| Checkpoint | Reviewed revision | Status | Correction record |
+|---|---|---|---|
+| P5-C1 — delivery and PR integration | `f3aa9d425868fa48d934a065872c32b367015cba` | **PASS — accepted by Astra** | One ordinary correction round: RUN/WORKSPACE history ownership, preflight-versus-later partial-effect reporting, and mandatory post-create read wording. |
+| P5-C2 — corporate adoption checklist | `54b900b748d80aff48300e845016c359d7c0b702` | **PASS — accepted by Astra** | One ordinary correction round: hidden stage-agent picker behavior, protected-edit preview evidence, connector capability-to-tool cardinality, and link validation. Every corporate result remains `NOT VERIFIED`. |
+| P5-C3 — trace, guide, README, contract appendices | pending reviewed implementation revision | **PENDING ASTRA REVIEW** | No checkpoint PASS is claimed by this implementation record. |
+| Final assembled review | pending | **PENDING ASTRA REVIEW** | Must cover the whole pipeline and find no unresolved material issue before closure. |
+| Administrative closure, `phase-5-reference`, and publication | pending | **PENDING ASTRA ACCEPTANCE AND COMPLETION PREREQUISITES** | The owner has already authorized Phase 5 and publication after the contract criteria are satisfied. The reviewed P5-C3 revision must remain distinct from the later closure commit; nothing here claims a tag or push. |
+
+Astra owns the Phase 5 architecture and accepted P5-C1/P5-C2. All repository authoring and correction edits were performed by platform-verified GPT-5.6 Sol under that delegation. This authoring provenance is distinct from the reference pipeline's intended Sonnet-5 runtime for all nine roles and is not corporate model-routing evidence.
+
+## 8. End-to-end trace record
+
+[`docs/END-TO-END-REFERENCE-TRACE.md`](../END-TO-END-REFERENCE-TRACE.md) traces current stages 0–10, gates and basis handoffs, planning revision, test review/amendment/activation, GREEN and verification outcomes, durable publication/PR recovery, all twenty owner cases, and the three Phase 5 endpoint/unknown-create/post-create-read cases. It distinguishes current rules, values inspected in the existing fictional Phase 4 LARGE artifacts, reasoned scenario steps, and corporate evidence.
+
+**Accepted C1 delivery-reporting clarification.** Section 3 D1's zero-new-push contextual sentence applies to an all-repository preflight failure, which occurs before any effect in that attempt. A later per-repository recheck or effect failure must disclose both prior-attempt publications and every same-attempt effect already recorded; it must not report zero new pushes when an earlier repository was pushed in that attempt. Existing STOP text remains unchanged.
+
+The stages 8–10 continuation is explicitly hypothetical. The existing example still stops at stage 7 and records no G4, draft, push, PR, or rollout. The scenario preserves its three distinct order facts: Developer's ledger-then-API implementation choice, RUN's API-then-ledger publication order, and the ledger-before-API-enable rollout obligation. It illustrates partial publication, human-confirmed same-basis continuation, already-A reuse without push, known-PR reconciliation, and unknown-create reconciliation without claiming execution or adding an artifact.
+
+The final reuse assessment copies portable evidence and safety rules, adapts templates and numeric bounds to existing internal infrastructure, and keeps Copilot packaging and host controls platform-specific. It preserves Phase 4 debt N1–N3, states the shared-model and procedural-control limits, and links the corporate checklist where every result remains `NOT VERIFIED`. Under the owner's existing authorization, P5-C3 acceptance, final assembled review, and all closure/publication prerequisites remain pending Astra review; this record does not claim they have completed.
