@@ -67,7 +67,7 @@ No enabling-refactoring commit occurred in either repository (no refactor-under-
 | `H1.2` | `payments-ledger` | full suite, `mvn -q test` | none (Δ unchanged) | — |
 | `H1.3` | `payments-ledger` | scoped relied-on run, `mvn -q -Dtest=AuditLogRepositoryTest#persistsPaymentCapturedEventPayload test` (full-suite output is aggregate-only, `mvn -q`) | none (Δ unchanged) | — |
 
-Controlled-path check (both halves) passed at round-2 start and again before `H1` — committed half diffs from the **active anchor** in TEST-CONTRACT.md's Anchor per repository (`e3e3e3e3f4f4f4f4a5a5a5a5c1c1c1c1d2d2d2d2`), never the Developer's own commit: `git -C payments-ledger diff --stat e3e3e3e3f4f4f4f4a5a5a5a5c1c1c1c1d2d2d2d2..HEAD -- <protected paths>` — empty; `git -C payments-ledger diff --name-status e3e3e3e3f4f4f4f4a5a5a5a5c1c1c1c1d2d2d2d2..HEAD -- src/test/resources/application-test.yml src/test/java/com/payments/ledger/AuditLogRepositoryTest.java` (proof-relevant envelope file and relied-on test, skill IQ2) — lists nothing; working-tree half: `git -C payments-ledger status --porcelain=v2 --branch` — clean, no controlled-path entry [TOOL].
+Controlled-path check (both halves) passed at round-2 start and again before `H1` — committed half diffs from the **active anchor** in TEST-CONTRACT.md's Anchor per repository (`e3e3e3e3f4f4f4f4a5a5a5a5c1c1c1c1d2d2d2d2`), never the Developer's own commit: `git -C payments-ledger diff --stat e3e3e3e3f4f4f4f4a5a5a5a5c1c1c1c1d2d2d2d2..HEAD -- <protected paths>` — empty; `git -C payments-ledger diff --name-status e3e3e3e3f4f4f4f4a5a5a5a5c1c1c1c1d2d2d2d2..HEAD -- pom.xml src/test/resources/application-test.yml src/test/java/com/payments/ledger/AuditLogRepositoryTest.java` (proof-relevant envelope files and relied-on test, skill IQ2) — lists nothing; working-tree half: `git -C payments-ledger status --porcelain=v2 --branch` — clean, no controlled-path entry [TOOL].
 
 `payments-api` — one contract iteration applies and re-verifies the fix, then a fresh handoff attempt:
 
@@ -79,7 +79,7 @@ Controlled-path check (both halves) passed at round-2 start and again before `H1
 
 No `D<n>` diagnostic runs were needed in either repository this round; no relied-on identity applies to `payments-api` (TEST-CONTRACT.md's Relied-on existing tests names only `payments-ledger`'s).
 
-Controlled-path check (both halves) passed at round-2 start and again before `C1` and before `H1`: `git -C payments-api diff --stat c1c1c1c1d2d2d2d2e3e3e3e3f4f4f4f4a5a5a5a5..HEAD -- <protected paths>` — empty; `git -C payments-api status --porcelain=v2 --branch` — clean, no controlled-path entry [TOOL].
+Controlled-path check (both halves) passed at round-2 start and again before `C1` and before `H1`: `git -C payments-api diff --stat c1c1c1c1d2d2d2d2e3e3e3e3f4f4f4f4a5a5a5a5..HEAD -- <protected paths>` — empty; `git -C payments-api diff --name-status c1c1c1c1d2d2d2d2e3e3e3e3f4f4f4f4a5a5a5a5..HEAD -- src/test/resources/application-test.yml` — no output (proof-relevant envelope file); `git -C payments-api status --porcelain=v2 --branch` — clean, no controlled-path entry [TOOL].
 
 **Bracketed handoff attempts (round 2):**
 

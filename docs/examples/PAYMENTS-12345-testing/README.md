@@ -2,7 +2,7 @@
 
 This directory is a **Phase 4 implementation-quality example** for the same fictional scenario `docs/examples/PAYMENTS-12345-planning/` planned: retrying a failed webhook delivery in `payments-api` with exponential backoff, and recording every retry attempt in `payments-ledger`'s existing audit log, per the plan's `I1` interface. It runs stages 0 through 7 of `.github/pipeline/FLOW.md` (Entry, Intake, Workspace, Plan, Adversary, Test RED, Test review, Develop GREEN, Verify) and stops at stage 7 **by design** — this is a boundary the example deliberately draws, not a failure. Stages 8–10 (PR draft, Publish, PR) are **not run** and produce no artifacts in this directory.
 
-The stage-5b version of this directory, stopping before Develop GREEN, is the one recorded at tag `phase-3-reference` (`20939cc`); this directory extends it in place through stage 7 under the Phase 4 contract (`docs/specs/2026-09-11-phase-4-implementation-quality-contract.md`).
+The stage-5b version of this directory, stopping before Develop GREEN, is the one recorded at tag [`phase-3-reference`](https://github.com/Lorenchess/copilot-agentic-workflow/tree/phase-3-reference/docs/examples/PAYMENTS-12345-testing) (`20939cc`); this directory extends it in place through stage 7 under the Phase 4 contract (`docs/specs/2026-09-11-phase-4-implementation-quality-contract.md`).
 
 **Everything in this directory is fictional.** Every Jira key, repository name, file path, class, identifier, git SHA (40-hex placeholders, distinct from those used in `docs/examples/PAYMENTS-12345/`), and tool output line is invented for illustration. Where a fenced block presents tool output, it is captioned "fictional tool output" — no example in this directory claims that any command was actually executed.
 
