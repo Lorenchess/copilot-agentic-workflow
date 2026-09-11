@@ -2,9 +2,9 @@
 artifact: RUN.md
 run: PAYMENTS-12410
 primaryJira: PAYMENTS-12410
-status: PLANNED
+status: TESTED
 producedBy: pipeline
-inputs: [INTAKE.md, PLAN.md, ADVERSARY-REVIEW.md]
+inputs: [INTAKE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, TEST-REVIEW.md]
 ```
 
 ## Keys
@@ -38,14 +38,15 @@ provided: false
 | 2 | Workspace (prepare) | workspace | WORKSPACE.md | COMPLETE — `payments-api` PREPARED [INFERENCE] (not reproduced as a separate file in this planning-only example) | — |
 | 3 | Plan | planner | PLAN.md | COMPLETE | 1.1 |
 | 4 | Adversary | adversary | ADVERSARY-REVIEW.md | COMPLETE — APPROVE | 1.1 |
-| 5 | Test (RED) | tester | TEST-CONTRACT.md, RED-REPORT.md | NOT RUN — planning-only demonstration | — |
-| 6 | Develop (GREEN) | developer | IMPLEMENTATION.md | NOT RUN — planning-only demonstration | — |
-| 7 | Verify | verifier | VERIFICATION.md | NOT RUN — planning-only demonstration | — |
-| 8 | PR draft | pr | PR-DESCRIPTION.md | NOT RUN — planning-only demonstration | — |
-| 9 | Publish | workspace | WORKSPACE.md (Publish section) | NOT RUN — planning-only demonstration | — |
-| 10 | PR | pr | PR.md | NOT RUN — planning-only demonstration | — |
+| 5 | Test (RED) | tester | TEST-CONTRACT.md, RED-REPORT.md | COMPLETE — the one WITNESS test (AC1) RED, both PRESERVATION tests (AC2, P1) PASS, on both runs | 1 |
+| 5b | Test review | adversary (test-review mode) | TEST-REVIEW.md | COMPLETE — ACCEPT | 1 |
+| 6 | Develop (GREEN) | developer | IMPLEMENTATION.md | NOT RUN — this example stops at stage 5b (see README.md) | — |
+| 7 | Verify | verifier | VERIFICATION.md | NOT RUN — this example stops at stage 5b (see README.md) | — |
+| 8 | PR draft | pr | PR-DESCRIPTION.md | NOT RUN — this example stops at stage 5b (see README.md) | — |
+| 9 | Publish | workspace | WORKSPACE.md (Publish section) | NOT RUN — this example stops at stage 5b (see README.md) | — |
+| 10 | PR | pr | PR.md | NOT RUN — this example stops at stage 5b (see README.md) | — |
 
-This run stops at G3 by design (see README.md).
+Stage 5 was invoked on the `CURRENT` `APPROVE` recorded at G3 below; this example stops after stage 5b (see README.md) — stages 6–10 are not run and produce no artifacts in this directory.
 
 ## Artifact history
 
@@ -54,8 +55,11 @@ This run stops at G3 by design (see README.md).
 | INTAKE.md | 1 | 1 | ACTIVE | intake |
 | PLAN.md | 3 | 1.1 | ACTIVE | planner |
 | ADVERSARY-REVIEW.md | 4 | 1.1 | ACTIVE | adversary |
+| TEST-CONTRACT.md | 5 | 1 | ACTIVE | tester |
+| RED-REPORT.md | 5 | 1 | ACTIVE | tester |
+| TEST-REVIEW.md | 5b | 1 | ACTIVE | adversary |
 
-A genuinely small, correct change with no unresolved material choice needed only one planning round: PLAN.md and ADVERSARY-REVIEW.md are both ACTIVE at round `1.1` — no REVISE, no second round, no planning cycle beyond cycle 1.
+A genuinely small, correct change with no unresolved material choice needed only one planning round: PLAN.md and ADVERSARY-REVIEW.md are both ACTIVE at round `1.1` — no REVISE, no second round, no planning cycle beyond cycle 1. TEST-CONTRACT.md, RED-REPORT.md, and TEST-REVIEW.md are each ACTIVE at round `1` — no correction round, no amendment, no coverage gap.
 
 ## Gates log
 
@@ -69,7 +73,11 @@ A genuinely small, correct change with no unresolved material choice needed only
 
 Answered [DEV]: **APPROVE**. Material choices: none. Exclusions acknowledged: none (none were displayed). Basis: PLAN.md `1.1`, ADVERSARY-REVIEW.md `1.1` — Status: CURRENT.
 
-Only a `CURRENT` `APPROVE` answer authorizes stage 5; this run stops here by design (see README.md) — stage 5 (Test) is not invoked.
+This `CURRENT` `APPROVE` answer authorized stage 5, which was invoked (see the Stage status table); this example stops after stage 5b (see README.md) — stages 6–10 are not run.
+
+## Decision log
+
+none — no non-gate decision was needed.
 
 ## Resume notes
 
