@@ -202,6 +202,8 @@ Prefer repairing the authoritative source or clarifying an existing rule over ap
 
 No policy changes from a mid-run diagnosis, no automatic ingestion of traces, and a lesson never grants permission by existing in the ledger.
 
+An optional `lesson:`/`lesson class:` note on a RUN.md Decision-log entry is the in-run origin of a candidate lesson. It stays in that run's private record until a human generalizes it, reviews it for disclosure, and writes the ledger row.
+
 ## Prove auditability before claiming it
 
 In an owner-approved disposable corporate environment, validate that the

@@ -183,7 +183,7 @@ The guarantee is stated exactly: the pushed object is the verified commit; prote
 
 ## Resume by artifact
 
-There is no separate run-state machine: resumability comes entirely from the artifacts already on disk, tracked in RUN.md's Artifact history. On `/pipeline <KEYS>` with an existing run directory, the orchestrator reads RUN.md and lists which of the **twelve** artifacts (INTAKE.md, WORKSPACE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, TEST-REVIEW.md, IMPLEMENTATION.md, VERIFICATION.md, PR-DESCRIPTION.md, PR.md, plus RUN.md itself) are present, missing, incomplete, or recorded as failed. The requested key list must equal RUN.md's Keys, otherwise:
+There is no separate run-state machine: resumability comes entirely from the artifacts already on disk, tracked in RUN.md's Artifact history. On `/pipeline <KEYS>` with an existing run directory, the orchestrator reads RUN.md and lists which of the **twelve** artifacts (INTAKE.md, WORKSPACE.md, PLAN.md, ADVERSARY-REVIEW.md, TEST-CONTRACT.md, RED-REPORT.md, TEST-REVIEW.md, IMPLEMENTATION.md, VERIFICATION.md, PR-DESCRIPTION.md, PR.md, plus RUN.md itself) are present, missing, incomplete, or recorded as failed. When Resume notes carries a `Summary (derived; not authority)` block, it is read as a derived hint only — the rules below still decide the resume point, and a disagreement between the block and those rules is recorded under Resume notes before proceeding. The requested key list must equal RUN.md's Keys, otherwise:
 
 ```text
 STOP [RUN_KEYS_MISMATCH]: The requested Jira keys differ from the keys recorded in RUN.md for this run.
