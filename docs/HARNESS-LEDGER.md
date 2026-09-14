@@ -1,0 +1,21 @@
+# Harness ledger
+
+Reviewed, generalized reference lessons for this pipeline design. **Owner:** repository owner. **Review trigger:** every reference batch review, and before any corporate pilot. **Not** a run artifact, not an agent input, and never written during a run — RUN.md and the other eleven run artifacts remain the only run-time records. Exactly one active ledger exists; do not create a second one.
+
+**Privacy.** No run IDs, ticket keys, repository/branch names from corporate use, paths, URLs, or logs ever enter this file. A corporate validation reference is recorded here only after the owner approves its disclosure; until then a row's `validation` stays `NOT_VALIDATED` or cites a review already tracked in this repository.
+
+## Columns
+
+`id` · `date` · `source` (review/spec file + finding id) · `lesson` (generalized weakness) · `responsibility` (Contract/Context/Tools/State/Evidence/Recovery, or `UNRESOLVED`) · `target change` · `change status` (`OPEN`, optionally with a short parenthetical qualifier as `OPEN (<qualifier>)` · `CHANGED at <commit>` · `DECLINED (<reason>)` · `SUPERSEDED by <id>` · `RETIRED (<reason>)`) · `validation` (`NOT_VALIDATED` · `DOCUMENT_SCENARIO_REVIEWED (<review>)` · `EXECUTION_OBSERVED (<where>)` · `OPERATIONAL_OUTCOME_MEASURED (<approved reference>)`) · `review trigger`.
+
+`change status` and `validation` are independent axes: a lesson can be `CHANGED` while still only `DOCUMENT_SCENARIO_REVIEWED`, and a later, stronger validation accumulates onto the same row without erasing the limits an earlier one already recorded.
+
+## Lessons
+
+| id | date | source | lesson | responsibility | target change | change status | validation | review trigger |
+|---|---|---|---|---|---|---|---|---|
+| L-001 | 2026-09-10 | `docs/reviews/2026-09-10-phase-2-implementation-review.md` F1 | A repository added by a G3 redirect lost its preparation prerequisite on resume. | Recovery/State | WORKSPACE.md is incomplete whenever a CURRENT-G1 repository lacks PREPARED/REUSED_EXISTING ([FLOW Resume by artifact](../.github/pipeline/FLOW.md#resume-by-artifact)) | CHANGED at `5a46eb7` | DOCUMENT_SCENARIO_REVIEWED (`docs/reviews/2026-09-10-phase-2-targeted-correction-review.md`) | Every reference batch review; before any corporate pilot |
+| L-002 | 2026-09-10 | `docs/reviews/2026-09-10-phase-3-c1-implementation-review.md` C1-I2 | An accepted candidate anchor had no explicit owner to make it active. | State/Evidence | Tester activation mode (`tester.agent.md`; pipeline step 6) | CHANGED at `9b78efb` | DOCUMENT_SCENARIO_REVIEWED (`docs/reviews/2026-09-10-phase-3-c1-correction-review.md`) | Every reference batch review; before any corporate pilot |
+| L-003 | 2026-09-11 | `docs/reviews/2026-09-11-phase-4-contract-review.md` C3 | The controlled-path restoration check covered committed content but not working-tree corruption. | Evidence | Two-half controlled-path check (`implementation-quality/SKILL.md` IQ2) | CHANGED at `d525456` (contract rev 2 `c84898f`) | DOCUMENT_SCENARIO_REVIEWED (`docs/reviews/2026-09-11-phase-4-contract-revision-2-review.md`, `docs/reviews/2026-09-11-phase-4-p4-c1-implementation-review.md`) | Every reference batch review; before any corporate pilot |
+| L-004 | 2026-09-11 | `docs/reviews/2026-09-11-reference-efficiency-and-audit-review.md` "Verifier eligibility before runners" | Verifier executed two expensive runs before checking review basis, anchor, and controlled paths. | Evidence/Tools | Fail-fast preflight, `NOT_RUN` for dependent executions (`verifier.agent.md` Procedure steps 3–7) | CHANGED at `7794093` | DOCUMENT_SCENARIO_REVIEWED (same review, Scenario review table) | Every reference batch review; before any corporate pilot |
+| L-005 | 2026-09-14 | `docs/reviews/2026-09-14-harness-alignment-analysis-and-implementation-plan.md` §6D / GUARDRAILS Git safety | Runner execution prompts on every run; whether to change that is a deferred owner decision, not a defect. | Tools | None proposed; see [GUARDRAILS "Action classes and their actual controls"](../.github/pipeline/GUARDRAILS.md#action-classes-and-their-actual-controls) | OPEN (deferred owner decision) | NOT_VALIDATED (n/a) | CA-17/CA-18 results available |

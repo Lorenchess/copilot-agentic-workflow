@@ -42,6 +42,48 @@ Status values are **PASS** (the manual steps were observed and the expected resu
 | Jira/Bitbucket server IDs, tool schemas and pagination, repository layout, Git configuration, containers, networks, packages, databases, and Kafka | Corporate host-specific dependency | Record exact observed values and limits. Do not fill placeholders from public examples or this authoring environment. |
 | Manual exports, human PR creation, human publication, manually selected models, or external CI evidence | Scoped fallback | Use only with an explicit boundary and handoff. Never present it as equivalent validation of the automated corporate flow. |
 
+## Common practice and team-owned adaptation
+
+The goal for other teams is consistent decisions and evidence, with team-specific execution. Nine roles, twelve filenames, Jira keys, the current budget values, and one model assignment are this reference workflow's own choices, not the part meant to be copied literally.
+
+| Common practice | Team-owned adaptation |
+|---|---|
+| Explicit goal, permitted scope, exclusions, material decisions, completion evidence and escalation | Work-item source, terminology, repository structure and domain authority |
+| Source-linked requirements; assumptions distinguished from facts and approved decisions | Existing product specifications, architecture records, service contracts and responsible owners |
+| Least necessary capabilities; external actions authorized for their actual target and effect | Corporate tools, runner/CI, credentials, approval engine and deployment controls |
+| Evidence that observes the required outcome; independent challenge where it adds value | Test frameworks, persistence/transport/UI proof facilities and existing review process |
+| Current evidence and approval bases; known state, remaining allowance and honest recovery | Existing host sessions, artifact storage, checkpoints and operational handoff mechanisms |
+| Reviewed, versioned improvement with measured results | Private telemetry backend, retention policy and team adoption/release process |
+
+A team adopting this reference records a short **team setup record**, as a checklist, not a new machine-readable profile, dispatcher, or central policy service:
+
+- authority/domain entry points;
+- allowed repositories and tools;
+- proof routes and prerequisites;
+- approval owners and effect boundaries;
+- private evidence/storage policy;
+- adopted reference version (tag or commit) and any documented deviations.
+
+Use the team's existing corporate configuration and documents to fill this in. This is onboarding guidance, not infrastructure this repository runs or hosts.
+
+## Team context and proof-route entries
+
+For an adopted target repository, a team records a compact entry per domain question it needs to answer repeatedly: **domain question · authoritative source and revision · component owner · proof route (existing test, command, or inspection) · prerequisites · known limits of the resulting evidence.**
+
+Real entries live in the team's own approved location — never in this reference repository. A map only locates evidence; Planner still has to inspect it, resolve contradictions, and disclose uncertainty (`plan-grounding/SKILL.md` R3, repository evidence; R5, Observed at). Two one-line examples of the discrimination a proof-route entry should preserve, not resolve for every case: a validator's local return value is not the same evidence as the actual endpoint's status, serialized field name, and error body; an intended save call is not the same evidence as observed mapping/storage behavior. Only the entry shape belongs in this reference: no business facts from its fictional examples and no corporate names.
+
+## Proportionate use across daily work
+
+| Work | Appropriate use of the reference |
+|---|---|
+| Research, incident investigation, design analysis or code review | Scope, source evidence, uncertainty, useful findings and a clear handoff. No invented RED/GREEN cycle or publication gate for a read-only assignment. |
+| Documentation-only change | Verify the actual documentation outcome and links as authorized; do not manufacture executable business tests merely to populate artifacts. |
+| Small behavior change or bug fix | Concise requirements and material decisions, meaningful business proof, bounded implementation and independent verification/review appropriate to the adopted workflow. Small size does not excuse weak evidence. |
+| Cross-component or cross-repository change | Explicit interfaces, compatibility assumptions, ownership, order where material, and evidence on both sides of changed boundaries. |
+| Release, merge, deployment or production operation | Use the organization's existing authorized delivery procedure. This reference's push/PR procedure does not implement merge or deployment. |
+
+This table guides selective corporate adaptation. It does not authorize a current `/pipeline` run to skip its prescribed stages, exempt SMALL from existing review, or change G3/G4.
+
 ## Staged adoption using existing infrastructure
 
 1. Complete CA-01 through CA-06 in a disposable local workspace; do not enable connector or publication effects yet.

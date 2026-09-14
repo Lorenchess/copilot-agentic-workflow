@@ -16,4 +16,4 @@ Never run `git reset --hard`, `git clean`, a force push, a branch deletion, or `
 
 ## Structured multi-repository work
 
-For work that follows this workspace's structured, multi-repository development flow, see `.github/pipeline/FLOW.md` and `.github/pipeline/GUARDRAILS.md`.
+For work that follows this workspace's structured, multi-repository development flow, see `.github/pipeline/FLOW.md` and `.github/pipeline/GUARDRAILS.md`. `.github/pipeline/HARNESS.md` maps where each rule lives; consulting it is optional and it grants no permission or additional input to any agent or mode.

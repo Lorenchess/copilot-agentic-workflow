@@ -2,6 +2,8 @@
 
 This repository is a **reference implementation and design laboratory** for the organization's existing internal AI pipeline. It is not a standalone executable pipeline, and it does not reproduce infrastructure the organization already has elsewhere (runtime state machinery, MCP server configuration, recovery simulation, end-to-end test harnesses). Its purpose is to give a team member a coherent, inspectable set of GitHub Copilot-native files they can open at work and compare directly against the internal pipeline: agent definitions, skills, flow from Jira intake through guarded PR delivery, agent contracts, guardrails, model roles, worked examples, an end-to-end reference trace, a corporate-adoption checklist, and a comparison guide.
 
+For a map of where each rule actually lives, see [`.github/pipeline/HARNESS.md`](.github/pipeline/HARNESS.md) — an index of this reference's six harness responsibilities and its authority model; reading it is optional and it grants no permission.
+
 ## Asset tree
 
 ```text
@@ -18,6 +20,7 @@ This repository is a **reference implementation and design laboratory** for the 
     AGENT-CONTRACTS.md                     per-agent purpose/inputs/outputs/tools/forbidden; artifact templates
     GUARDRAILS.md                          trust boundaries, least-privilege table, git safety, test immutability
     MODEL-ROLES.md                         model per role, reasoning; benchmark candidates (deferred)
+    HARNESS.md                             responsibility/authority map; optional reading, grants no permission
 .vscode/
   settings.json                            optional guardrail asset: terminal approval rules, edit approval
   extensions.json                          recommends GitHub Copilot Chat
@@ -36,12 +39,13 @@ docs/
   CORPORATE-ADOPTION.md                    manual corporate-host validation matrix; all current results NOT VERIFIED
   END-TO-END-REFERENCE-TRACE.md            stages 0–10, failure transitions, hypothetical delivery, reuse assessment
   RUN-AUDIT-AND-IMPROVEMENT.md             post-Phase-5 private run-evidence and measured-improvement guidance
+  HARNESS-LEDGER.md                        reviewed, generalized reference lessons; not a run artifact
   questions.md                             open questions
 ```
 
 ## How to read the assets
 
-Start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape of a run, then [`AGENT-CONTRACTS.md`](.github/pipeline/AGENT-CONTRACTS.md) for what each agent may and may not do, then [`GUARDRAILS.md`](.github/pipeline/GUARDRAILS.md) for the safety rules those contracts rely on, then [`MODEL-ROLES.md`](.github/pipeline/MODEL-ROLES.md) for which model runs each role and why. Read the nine `.agent.md` files against `AGENT-CONTRACTS.md`, followed by the three Phase 1 skills; the Phase 2 [`plan-grounding`](.github/skills/plan-grounding/SKILL.md) and [`challenge-plan`](.github/skills/challenge-plan/SKILL.md) policies; the Phase 3 [`test-contract`](.github/skills/test-contract/SKILL.md) policy read by `tester` and `adversary` in test-review mode; and the Phase 4 [`implementation-quality`](.github/skills/implementation-quality/SKILL.md) policy read by `developer` and `verifier`. Then read the completed Phase 1 example under [`docs/examples/PAYMENTS-12345/`](docs/examples/PAYMENTS-12345/README.md), the Phase 2 planning view under [`PAYMENTS-12345-planning/`](docs/examples/PAYMENTS-12345-planning/README.md), and the tagged earlier views plus current stage-7 versions of [`PAYMENTS-12345-testing/`](docs/examples/PAYMENTS-12345-testing/README.md) (LARGE) and [`PAYMENTS-12410/`](docs/examples/PAYMENTS-12410/README.md) (SMALL). Use [`END-TO-END-REFERENCE-TRACE.md`](docs/END-TO-END-REFERENCE-TRACE.md) for the assembled stage 0–10 and failure trace, [`CORPORATE-ADOPTION.md`](docs/CORPORATE-ADOPTION.md) for the still-unverified host checks, [`RUN-AUDIT-AND-IMPROVEMENT.md`](docs/RUN-AUDIT-AND-IMPROVEMENT.md) for private run evidence and controlled improvement trials, and [`COMPARISON-GUIDE.md`](docs/COMPARISON-GUIDE.md) to compare the design against the internal pipeline asset by asset.
+For task-oriented navigation instead of a full read-through, see [`.github/pipeline/HARNESS.md`](.github/pipeline/HARNESS.md) first. To read the assets in order, start with [`.github/pipeline/FLOW.md`](.github/pipeline/FLOW.md) for the shape of a run, then [`AGENT-CONTRACTS.md`](.github/pipeline/AGENT-CONTRACTS.md) for what each agent may and may not do, then [`GUARDRAILS.md`](.github/pipeline/GUARDRAILS.md) for the safety rules those contracts rely on, then [`MODEL-ROLES.md`](.github/pipeline/MODEL-ROLES.md) for which model runs each role and why. Read the nine `.agent.md` files against `AGENT-CONTRACTS.md`, followed by the three Phase 1 skills; the Phase 2 [`plan-grounding`](.github/skills/plan-grounding/SKILL.md) and [`challenge-plan`](.github/skills/challenge-plan/SKILL.md) policies; the Phase 3 [`test-contract`](.github/skills/test-contract/SKILL.md) policy read by `tester` and `adversary` in test-review mode; and the Phase 4 [`implementation-quality`](.github/skills/implementation-quality/SKILL.md) policy read by `developer` and `verifier`. Then read the completed Phase 1 example under [`docs/examples/PAYMENTS-12345/`](docs/examples/PAYMENTS-12345/README.md), the Phase 2 planning view under [`PAYMENTS-12345-planning/`](docs/examples/PAYMENTS-12345-planning/README.md), and the tagged earlier views plus current stage-7 versions of [`PAYMENTS-12345-testing/`](docs/examples/PAYMENTS-12345-testing/README.md) (LARGE) and [`PAYMENTS-12410/`](docs/examples/PAYMENTS-12410/README.md) (SMALL). Use [`END-TO-END-REFERENCE-TRACE.md`](docs/END-TO-END-REFERENCE-TRACE.md) for the assembled stage 0–10 and failure trace, [`CORPORATE-ADOPTION.md`](docs/CORPORATE-ADOPTION.md) for the still-unverified host checks, [`RUN-AUDIT-AND-IMPROVEMENT.md`](docs/RUN-AUDIT-AND-IMPROVEMENT.md) for private run evidence and controlled improvement trials, and [`COMPARISON-GUIDE.md`](docs/COMPARISON-GUIDE.md) to compare the design against the internal pipeline asset by asset.
 
 ## Trying it in VS Code (prerequisites)
 

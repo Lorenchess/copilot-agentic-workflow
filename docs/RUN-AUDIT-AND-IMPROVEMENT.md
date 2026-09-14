@@ -188,6 +188,20 @@ use the data, and deidentified, curated, independently checked outcomes. Never
 fine-tune automatically from unverified logs. This guide creates no schedule or
 automation.
 
+## From incident to reviewed lesson
+
+A candidate lesson names: the failure evidence; the proposed responsible responsibility/layer (Contract/Context/Tools/State/Evidence/Recovery) or `UNRESOLVED`; the affected reference version; the target change; a reproduction case; a neighboring valid case that must keep passing; an owner; a validation status; and a review trigger.
+
+Run-linked corporate incidents and their identifiers stay in the approved private record. Only the generalized, disclosure-reviewed lesson is written to `docs/HARNESS-LEDGER.md`.
+
+Prioritize candidates by consequence, recurrence, human burden, and strength of evidence together — never by frequency alone.
+
+A change commit is recorded separately from its validation level: `DOCUMENT_SCENARIO_REVIEWED`, `EXECUTION_OBSERVED`, or `OPERATIONAL_OUTCOME_MEASURED` each says something different, and a later, stronger validation accumulates onto the same lesson without erasing what an earlier one already established.
+
+Prefer repairing the authoritative source or clarifying an existing rule over appending another global prohibition. Supersede or retire a stale lesson through owner review; never delete its history.
+
+No policy changes from a mid-run diagnosis, no automatic ingestion of traces, and a lesson never grants permission by existing in the ledger.
+
 ## Prove auditability before claiming it
 
 In an owner-approved disposable corporate environment, validate that the
