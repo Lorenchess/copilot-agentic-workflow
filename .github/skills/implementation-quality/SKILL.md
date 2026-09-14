@@ -11,7 +11,7 @@ This skill is the normative implementation-quality and verification-depth policy
 
 It states what counts as GREEN, how the bounded implementation round is accounted, how a failure is classified and routed, what a Developer may and may not touch, and how the Verifier derives obligations, classifies findings, and renders a verdict. It does **not** state stage sequencing, STOP wording, the loop-budget sentence's routing, artifact ownership, or template headings — those are normative in `developer.agent.md`, `verifier.agent.md`, `pipeline.agent.md`, `FLOW.md`, and `AGENT-CONTRACTS.md`.
 
-Historically sourced from `docs/specs/2026-09-11-phase-4-implementation-quality-contract.md` §3 IQ1–IQ16, which remain the normative text if this skill and the contract ever appear to diverge.
+Historically sourced from `docs/specs/2026-09-11-phase-4-implementation-quality-contract.md` §3 IQ1–IQ16, which remain the normative text if this skill and the contract ever appear to diverge. The observation-state bullets in IQ3 and IQ4, the IQ14 row for a lost or incomplete execution, and IQ13's lost-or-incomplete-execution paragraph are sourced from `docs/specs/2026-09-14-harness-execution-observation-amendment.md`, which supersedes only the clauses its §6 names and is read together with the Phase 4 contract.
 
 ## IQ1 — Inputs and the use of PLAN.md and TEST-CONTRACT.md
 
@@ -108,6 +108,7 @@ Resuming after an activated mid-round amendment continues the same round with it
 - An interrupted round (IMPLEMENTATION.md `IN_PROGRESS`) resumes at stage 6 in the **same** round, with the allowance its log leaves. A reservation without a result is recorded `UNKNOWN` and counts as consumed; an interrupted handoff attempt is a failed attempt.
 - Generic resume never renews an allowance.
 - An IMPLEMENTATION.md `BLOCKED` without a `CURRENT` Decision-log answer is re-voiced as `IMPLEMENTATION_BLOCKED`; `developer` is not invoked.
+- Each Iteration log row also carries the execution's observation state (`OBSERVED` / `OBSERVATION_LOST` / `ENDED_INCOMPLETE`). A row whose observation is lost or whose process ended with incomplete output is `UNKNOWN`, consumed exactly as any other reservation without a result (unchanged), and additionally records the handle or identity the host exposed, the partial output, and the observed host timeout. Developer returns control to `pipeline` for the execution reconciliation decision rather than relaunching. If an existing allowed read (the same execution's handle, a report file already on disk, or output the host retained) retrieves the original terminal result, it is reconciled onto that same row as that execution — no new reservation. A replacement execution instead takes its own reservation from the round's remaining allowance; the reconciliation decision renews nothing. A second lost observation on a replacement returns to the same hold.
 
 **Disclosed cost.** Per repository per round, the limits allow at most `16 + 2R` runner executions, plus one optional baseline per run: 6 contract iterations; 6 diagnostic runs; 2 handoff attempts of `2 + R` executions each. `R` is the number of scoped relied-on runs a handoff needs: zero when the contract or full-suite output already names every relied-on identity; it comes from TEST-CONTRACT.md. Each execution prompts in Manual mode. A typical run uses far fewer; the limits bound the worst case, not the average.
 
@@ -129,6 +130,7 @@ Resuming after an activated mid-round amendment continues the same round with it
 - A failed handoff attempt means only that *this candidate* cannot be handed off. The round continues while its next needed step has allowance; only the STOP reasons end a round.
 - A matching baseline symptom proves neither the cause of the failure nor that a repair would be out of scope. The `BASELINE_FAILURE` STOP presents the evidence, and the human may direct a round if they judge the failure attributable to the change.
 - Without a recorded baseline, no failure is `BASELINE_FAILURE`.
+- An unresolved execution (observation lost, or ended with incomplete output) classifies nothing: the classes above apply only to a terminal, attributable result. A hang that reproduces on the changed code is diagnostic evidence for classification once a terminal result exists — it is never automatic proof of `NONDETERMINISTIC` on its own.
 
 **BLOCKED procedure.**
 1. Report first: record `status: BLOCKED`, the reason, per-repository status, and the `[TOOL]` status output. The report never waits for cleanup.
@@ -297,6 +299,8 @@ This is not a mandate for a comprehensive audit. If resolving the defect require
 
 **Re-verification.** Every check, in every repository, every round. The bracket and the G4 basis are per round. **Prior findings** records each earlier id as `CLOSED` or `OPEN`. A new blocking finding on a hunk unchanged since the prior round is labelled "new on unchanged code".
 
+**Lost or incomplete execution.** A lost contract run, full-suite run, or scoped relied-on run is recorded `UNRESOLVED (<state>)` under its heading; no verdict is rendered for that repository. The round is not a FAIL round for `VERIFIER_FAIL_LIMIT`. After the execution reconciliation decision, the named replacement executes inside the **same** verification round, and the existing bracket rule applies unchanged — the post-execution status must be clean and HEAD unchanged, otherwise FAIL "checkout changed during verification". The Verifier never checks out another revision to diagnose a hang, and never assumes Developer's diagnostic role.
+
 ### IQ14 — Could not verify ≠ failed ≠ passed
 
 | Condition | Record | Effect |
@@ -310,6 +314,7 @@ This is not a mandate for a comprehensive audit. If resolving the defect require
 | Rollout-only obligation | `ROLLOUT` disclosure | PASS allowed; shown under Disclosures, in the PR testing/rollout account, and at G4 |
 | A full-suite subset needs unavailable infrastructure | `RUNNER_UNAVAILABLE` (unchanged) | No PASS; a qualified scope is deferred |
 | Interrupted stage 6 | `IN_PROGRESS` → same round; a reservation without a result is `UNKNOWN` and consumed. `BLOCKED` without a decision → re-voice the STOP | No reset; commits stand |
+| Execution observation lost or ended incomplete (stage 5, 6 or 7) | `OBSERVATION_LOST`/`ENDED_INCOMPLETE` recorded in the owning artifact | The stage is held: no RED, GREEN, PASS, FAIL, or verified SHA from that execution; the execution reconciliation decision runs before any replacement; it is never a Verifier FAIL round; no automatic retry budget exists |
 
 ## Mapping to IMPLEMENTATION.md / VERIFICATION.md
 
