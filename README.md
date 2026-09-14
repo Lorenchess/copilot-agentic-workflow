@@ -40,6 +40,7 @@ docs/
   END-TO-END-REFERENCE-TRACE.md            stages 0–10, failure transitions, hypothetical delivery, reuse assessment
   RUN-AUDIT-AND-IMPROVEMENT.md             post-Phase-5 private run-evidence and measured-improvement guidance
   HARNESS-LEDGER.md                        reviewed, generalized reference lessons; not a run artifact
+  HARNESS-ALIGNMENT-SUMMARY.md             record of the 2026-09-13/14 harness-alignment sequence: origin, changes, reviews, open items
   questions.md                             open questions
 ```
 
@@ -95,6 +96,10 @@ For task-oriented navigation instead of a full read-through, see [`.github/pipel
 - **P5-C2 — Corporate adoption checklist: accepted** at `54b900b748d80aff48300e845016c359d7c0b702` after one correction round. Every corporate result remains **NOT VERIFIED**; no corporate Jira, Bitbucket, Git, model-routing, approval-engine, container, database, or Kafka behavior is claimed validated.
 - **P5-C3 — End-to-end trace and final reuse assessment: accepted** at `b9216f99fcb183f71fdd47f6084eb784d821cc14` after two bounded correction rounds. The trace is a document/scenario analysis; it does not extend the fictional stage-7 examples, execute stages 8–10, or claim publication.
 - **Phase 5 assembled acceptance: PASS.** Astra's final review found no unresolved material finding or material regression. The five-phase reference design is complete, and the accepted `phase-5-reference` target is the reviewed P5-C3 revision `b9216f99fcb183f71fdd47f6084eb784d821cc14`, not the later administrative-closure commit. Publication is confirmed separately by live reads of `main`, the new tag, and the four earlier tags after the authorized push; no push is claimed here.
+
+### Harness alignment (post-Phase-5 forward batches, 2026-09-13/14)
+
+- **Published on `main`** as six reviewed commits on top of the Phase 5 baseline: `2634e71` (A — map, action-class controls, team adaptation, lesson lifecycle, ledger), `0c2468b` (B — execution observation states, `HELD` hold, bounded reconciliation), `a0f8dad` (C — derived run summary, optional lesson note), `3a8d186` (review records), `f2b4868` (B1/B2 correction, amendment revision 2), `b48e849` (closure report). Astra's targeted-correction review: B1 CLOSED, B2 CLOSED, no material regressions, READY_TO_PUBLISH_AS_REFERENCE. No new agent, gate, STOP code, artifact, tool, budget, model, or permission; no reference tag created or moved. Summary and reading order: [`docs/HARNESS-ALIGNMENT-SUMMARY.md`](docs/HARNESS-ALIGNMENT-SUMMARY.md). Corporate validation remains **NOT VERIFIED**.
 
 ## Further reading
 
