@@ -188,6 +188,46 @@ use the data, and deidentified, curated, independently checked outcomes. Never
 fine-tune automatically from unverified logs. This guide creates no schedule or
 automation.
 
+## Discovery effort and total effort
+
+Before any source-map or knowledge work is considered, measure what
+repository rediscovery and total effort cost in the current, unchanged
+pipeline. This section defines what to observe and how to label it. It
+adds no collector, schedule, automation, telemetry setting, artifact, or
+field, and it authorizes no run.
+
+| Measure | Where it is observed | Source label | What it is not |
+|---|---|---|---|
+| Repository discovery effort at intake | Host tool traces when exposed; otherwise INTAKE.md's recorded identifiers searched, `NOT_EVALUATED` entries, and budget-exhaustion notes | `OBSERVED` when host traces are exposed; otherwise `AGENT_REPORTED` as a recorded proxy; exact search/read counts `UNAVAILABLE` unless the host exposes them | An exact tool-call count |
+| Planning evidence effort | PLAN.md Repository evidence row count, `NOT_FOUND` rows, and the "Searched:" terms per repository | `AGENT_REPORTED`; reads performed `UNAVAILABLE` | A measure of plan quality |
+| Runner and test-layout detection | TEST-CONTRACT.md's contract command and envelope entries; VERIFICATION.md's independently detected commands | `AGENT_REPORTED`; reads needed to detect them `UNAVAILABLE` | Proof the detected command is correct |
+| Developer diagnostic and contract runs | IMPLEMENTATION.md Iteration log reservations (`C<n>`, `D<n>`, `H<n>`) with `[TOOL]` excerpts | `OBSERVED` for the excerpted result; `AGENT_REPORTED` for the log line | A count of edits |
+| Repeated human context | RUN.md Developer context lines and G3 answers, compared by a human against earlier runs' private records | `AGENT_REPORTED` for the artifact lines; the repetition judgement is a human classification recorded `INFERRED`; `UNAVAILABLE` when earlier runs were not retained | An automatic classification |
+| Repeated verifier finding | VERIFICATION.md Findings, compared by a human for the same mechanism across runs | `AGENT_REPORTED` for the finding text; the same-mechanism judgement is a human classification recorded `INFERRED`; `UNAVAILABLE` when earlier runs were not retained | A text match |
+| Total effort | Elapsed time, tokens, tool calls, and active human minutes from host usage fields and the private scorecard where available (see CA-21) | `OBSERVED` for host-provided usage fields and for active human time actually measured and recorded by the human in the private scorecard; `UNAVAILABLE` when unmeasured; never estimated | An estimate |
+
+Every value carries its source label. A missing value is `UNAVAILABLE`,
+never zero and never estimated. Search terms and exhausted budgets are
+recorded proxies, not exact tool-call counts. A dry run of this table
+against the fictional examples under `docs/examples/` must show which
+measures an artifact can supply and which it cannot; the table is
+defective if it implies every measure can be recovered from artifacts.
+
+When separately authorized, the owner runs three representative tasks on
+the current pipeline, unchanged, after the existing prerequisites for the
+exercised stages and the private evidence policy are met. Failed and
+aborted attempts and manual assistance are preserved. Values go to the
+private scorecard; no corporate content enters this repository. The
+evidence that would justify any later step: a recurring navigation or
+constraint problem visible in those runs; current sources a small map
+could locate; measured discovery and human effort; an approved private
+owner and location for maintained material and measurements. Where
+authoritative team documentation already exists, improving its
+discoverability comes before duplicating its content.
+
+The draft investigation [`docs/specs/2026-09-14-persistent-knowledge-layer-architecture-investigation.md`](specs/2026-09-14-persistent-knowledge-layer-architecture-investigation.md)
+records the design questions a later step would have to answer; it is a draft record, not authority, and grants nothing.
+
 ## From incident to reviewed lesson
 
 A candidate lesson names: the failure evidence; the proposed responsible responsibility/layer (Contract/Context/Tools/State/Evidence/Recovery) or `UNRESOLVED`; the affected reference version; the target change; a reproduction case; a neighboring valid case that must keep passing; an owner; a validation status; and a review trigger.
