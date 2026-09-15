@@ -41,6 +41,7 @@ docs/
   RUN-AUDIT-AND-IMPROVEMENT.md             post-Phase-5 private run-evidence and measured-improvement guidance
   HARNESS-LEDGER.md                        reviewed, generalized reference lessons; not a run artifact
   HARNESS-ALIGNMENT-SUMMARY.md             record of the 2026-09-13/14 harness-alignment sequence: origin, changes, reviews, open items
+  KNOWLEDGE-LAYER-SUMMARY.md               record of the 2026-09-14 persistent-knowledge-layer investigation and K0: origin, decision, changes, reviews, open items, corporate study guide
   questions.md                             open questions
 ```
 
@@ -100,6 +101,10 @@ For task-oriented navigation instead of a full read-through, see [`.github/pipel
 ### Harness alignment (post-Phase-5 forward batches, 2026-09-13/14)
 
 - **Published on `main`** as six reviewed commits on top of the Phase 5 baseline: `2634e71` (A — map, action-class controls, team adaptation, lesson lifecycle, ledger), `0c2468b` (B — execution observation states, `HELD` hold, bounded reconciliation), `a0f8dad` (C — derived run summary, optional lesson note), `3a8d186` (review records), `f2b4868` (B1/B2 correction, amendment revision 2), `b48e849` (closure report). Astra's targeted-correction review: B1 CLOSED, B2 CLOSED, no material regressions, READY_TO_PUBLISH_AS_REFERENCE. No new agent, gate, STOP code, artifact, tool, budget, model, or permission; no reference tag created or moved. Summary and reading order: [`docs/HARNESS-ALIGNMENT-SUMMARY.md`](docs/HARNESS-ALIGNMENT-SUMMARY.md). Corporate validation remains **NOT VERIFIED**.
+
+### Persistent knowledge layer (investigation and K0, 2026-09-14)
+
+- **Published on `main`** as three reviewed commits: `fb6527c` (the investigation, revision 2 — INVESTIGATION DRAFT, NOT APPROVED; disposition DEFER PENDING BASELINE EVIDENCE), `0a6984c` (the published-page record), `80c810b` (K0: discovery-effort measures in RUN-AUDIT and rows CA-23/CA-24 in CORPORATE-ADOPTION, documentation only). Independent review closed after three correction rounds, the last owner-authorized. No agent, skill, setting, store, run artifact, gate, STOP, tool, budget, model, or permission changed; no reference tag created or moved. Baseline execution and every later phase remain separately authorized. Summary and corporate study guide: [`docs/KNOWLEDGE-LAYER-SUMMARY.md`](docs/KNOWLEDGE-LAYER-SUMMARY.md). Corporate validation remains **NOT VERIFIED**.
 
 ## Further reading
 
