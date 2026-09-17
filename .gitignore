@@ -44,3 +44,11 @@ scratch/
 !/.github/
 !/.vscode/
 !/docs/
+
+# rstack reference work: publish documents only; keep images and other files ignored.
+!/rstack-pipeline/
+/rstack-pipeline/**
+!/rstack-pipeline/**/
+!/rstack-pipeline/**/*.md
+!/rstack-pipeline/**/*.txt
+!/rstack-pipeline/.gitattributes

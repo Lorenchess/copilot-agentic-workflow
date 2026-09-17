@@ -1,0 +1,4 @@
+# Preserve reviewed document bytes and recorded hashes across checkouts.
+*.md -text
+*.txt -text
+.gitattributes -text

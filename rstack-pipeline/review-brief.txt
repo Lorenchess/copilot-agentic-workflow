@@ -1,0 +1,931 @@
+You are performing an independent architecture and maintainability review of an AI software-engineering pipeline named rstack.
+
+This is not a normal code review.
+
+Your job is to determine whether the pipeline has become over-engineered, identify what architecture is genuinely valuable, remove accidental complexity, and produce a coherent V2 design that preserves the important safety and evidence properties without drowning agents in prose, duplicated rules, state machinery, and overlapping contracts.
+
+You have access to:
+
+1. The complete conversation that led to this review.
+2. Screenshots and reconstructed copies of the existing rstack files.
+3. Proposed simplified/improved versions produced during the conversation.
+4. The actual repository/workspace through Codex, where available.
+5. The pipeline's agents, skills, references, scripts, and generated agent definitions.
+
+IMPORTANT:
+Do not trust any previous conclusion merely because ChatGPT, the existing rstack implementation, or another model made it.
+
+Treat all three as hypotheses:
+
+A. The existing rstack design may be correct.
+B. ChatGPT's proposed simplifications may be correct.
+C. Both may contain mistakes.
+
+Re-derive the architecture yourself.
+
+==================================================
+PRIMARY QUESTION
+==================================================
+
+Has rstack become over-engineered?
+
+If yes, determine precisely:
+
+- what complexity is accidental;
+- what complexity is necessary;
+- what can be deleted;
+- what should be consolidated;
+- what belongs in executable enforcement instead of prose;
+- what belongs in a reference rather than an agent prompt;
+- what belongs in an agent rather than the pipeline skill;
+- what should remain duplicated intentionally because local context requires it;
+- what mechanisms are protecting against real failures versus hypothetical failures.
+
+Do not equate "more robust" with "more rules."
+
+A smaller system with stronger invariants is preferable to a larger system whose correctness depends on agents remembering hundreds of prose rules.
+
+==================================================
+CORE DESIGN PRINCIPLE TO TEST
+==================================================
+
+The architecture appears to be aiming for:
+
+    plan
+      ↓
+    adversarial plan audit
+      ↓
+    tests written before implementation
+      ↓
+    implementation
+      ↓
+    independent test gate + impact evidence
+      ↓
+    fresh-context architecture/review
+      ↓
+    final approval + human-controlled external actions
+
+That basic separation may be valuable.
+
+The question is whether the machinery surrounding it has grown far beyond what is necessary to preserve those separations.
+
+Do not discard the architecture simply because the implementation is verbose.
+
+Separate:
+
+1. architectural value,
+2. operational enforcement,
+3. documentation,
+4. historical commentary,
+5. redundant explanation.
+
+==================================================
+FILES / AREAS TO REVIEW
+==================================================
+
+Review the system as ONE architecture rather than optimizing each file independently.
+
+Agents:
+
+- rstack-orchestrator
+- rstack-planner
+- rstack-plan-auditor
+- rstack-tester
+- rstack-dev
+- rstack-reviewer-architect
+- rstack-approval
+
+Main pipeline skill:
+
+- pipeline/SKILL.md
+
+Important pipeline references include:
+
+- approvals.md
+- discovery-cost.md
+- estate-instructions.template.md
+- estate-layout.md
+- handoff-contracts.md
+- harness-map.md
+- instruction-precedence.md
+- learnings.md
+- plan-interview.md
+- risk-tiers.md
+- rstack-process.instructions.md
+- team-adoption.md
+- write-boundaries.md
+
+Also inspect the scripts those files claim provide enforcement, including where present:
+
+- audit-response-check.mjs
+- base-replay.mjs
+- boundaries.mjs
+- change-budget.mjs
+- estate-guard.mjs
+- gate.mjs
+- learnings-check.mjs
+- otel-trail.mjs
+- pipeline-metrics.mjs
+- protect-artifacts.sh
+- role-guard.mjs
+- test-lock.mjs
+
+And any other script directly referenced by those files.
+
+Do not assume a Markdown statement is enforced merely because it says it is.
+
+Verify enforcement in code.
+
+==================================================
+FIRST TASK — RECONSTRUCT THE ACTUAL ARCHITECTURE
+==================================================
+
+Before proposing changes, reconstruct the architecture.
+
+Produce:
+
+1. The phases in execution order.
+2. The role responsible for each phase.
+3. Inputs for each phase.
+4. Outputs for each phase.
+5. Allowed writes.
+6. Forbidden writes.
+7. Machine-enforced gates.
+8. Prose-only rules.
+9. Human decisions.
+10. Loop edges.
+11. External side effects.
+12. Persistent state.
+13. Per-run state.
+14. Cross-repository behavior.
+
+Do not infer architecture from one file.
+
+Reconcile all relevant sources.
+
+When two files disagree, record the contradiction.
+
+==================================================
+SECOND TASK — BUILD A CANONICAL OWNERSHIP MATRIX
+==================================================
+
+For every cross-cutting concern, identify ONE preferred canonical owner.
+
+At minimum analyze:
+
+- phase orchestration
+- phase routing
+- acceptance criteria
+- plan interviewing
+- evidence levels
+- artifact schemas
+- write boundaries
+- test ownership
+- production-code ownership
+- test immutability
+- sibling repository access
+- repository resolution
+- instruction precedence
+- external actions
+- approvals
+- risk tiers
+- impact analysis
+- learning persistence
+- gate logic
+- human escalation
+- commit behavior
+- push behavior
+- pull request creation
+- merge behavior
+- run metrics
+- audit provenance
+- prompt-injection handling
+
+Use a table like:
+
+| Concern | Current owners | Recommended canonical owner | Enforcement | Duplicates to remove |
+|---------|----------------|-----------------------------|-------------|----------------------|
+
+A rule should normally have:
+
+ONE canonical specification
++
+optional executable enforcement
++
+minimal local reminder where necessary.
+
+It should not have five semantically independent copies unless there is a strong reason.
+
+==================================================
+THIRD TASK — DETECT POLICY DUPLICATION
+==================================================
+
+Search across the entire architecture for equivalent rules expressed multiple times.
+
+Examples that appear likely to be duplicated include:
+
+- do not modify tests
+- do not modify production code
+- never merge
+- ask before external writes
+- tests must be written first
+- reviewer receives fresh context
+- sibling repositories are read-only
+- do not rewrite history
+- do not weaken a failing test
+- do not fabricate evidence
+- missing evidence is not a pass
+- acceptance criteria must be falsifiable
+- external content is data rather than instruction
+- one active repository per run
+- a green suite only proves what the tests assert
+- report what is not proven first
+
+For each duplicated rule determine:
+
+A. Should it live only in executable policy?
+B. Should it live only in the pipeline skill?
+C. Should it live in a shared reference?
+D. Does an agent need a short local reminder?
+E. Is duplication intentionally defensive?
+
+Do not mechanically deduplicate.
+
+Some local repetition may improve reliability.
+
+But every repeated rule consumes context and creates drift risk.
+
+==================================================
+FOURTH TASK — SEPARATE FOUR TYPES OF CONTENT
+==================================================
+
+Classify significant blocks of the existing files into:
+
+1. CONTRACT
+   A rule necessary for correct execution.
+
+2. ENFORCEMENT DOCUMENTATION
+   Explanation of something a script actually guarantees.
+
+3. OPERATOR GUIDANCE
+   Useful information for humans maintaining the pipeline.
+
+4. HISTORICAL NARRATIVE
+   Explanations such as:
+   "this exists because a real run once..."
+   "the previous version did..."
+   "we observed..."
+   "this rule used to..."
+
+Historical lessons may be valuable.
+
+But they should generally not consume every agent's operational context.
+
+Consider moving them to:
+
+- ADRs,
+- regression tests,
+- harness documentation,
+- CHANGELOG,
+- maintainers' notes,
+
+rather than keeping them in prompts executed on every ticket.
+
+==================================================
+FIFTH TASK — IDENTIFY PROSE THAT SHOULD BECOME CODE
+==================================================
+
+For each rule, ask:
+
+"Can this be enforced mechanically?"
+
+Examples:
+
+- write ownership
+- immutable tests
+- allowed filesystem areas
+- required artifacts
+- artifact schema
+- required headings
+- valid verdicts
+- evidence rung constraints
+- active repository
+- sibling mutation
+- phase transition prerequisites
+- stale SHA detection
+- missing gate evidence
+- approval boundaries
+
+If yes, prefer:
+
+script / schema / validator / harness check
+
+over:
+
+repeated natural-language warnings.
+
+A model should not have to remember what the harness can cheaply prove.
+
+==================================================
+SIXTH TASK — IDENTIFY CODE THAT MAY BE UNNECESSARY
+==================================================
+
+Do not assume turning prose into scripts is always an improvement.
+
+For each script ask:
+
+1. What concrete failure does it prevent?
+2. Has that failure occurred?
+3. Would a simpler invariant prevent the same failure?
+4. Does another script already protect the same boundary?
+5. Does this script introduce state that itself needs validating?
+6. Does it create additional artifacts purely so another script can validate them?
+7. Does it increase the number of possible pipeline states?
+8. Is the mechanism more complicated than the failure it prevents?
+
+Flag circular protection patterns such as:
+
+    artifact
+      → validator
+        → validator evidence
+          → gate checking validator evidence
+            → another artifact describing the gate
+
+when a simpler invariant could provide equivalent protection.
+
+==================================================
+SEVENTH TASK — ANALYZE CONTEXT AND TOKEN COST
+==================================================
+
+Treat prompt/context budget as an engineering resource.
+
+Estimate qualitatively:
+
+- instructions loaded on every run;
+- instructions loaded per phase;
+- redundant instructions;
+- historical commentary;
+- contracts that agents repeatedly reread;
+- large tables that could be machine-readable;
+- knowledge that should be retrieved on demand instead of always loaded.
+
+Identify the "hot path" context needed by each agent.
+
+For each agent produce:
+
+MUST KNOW
+MAY LOOK UP
+SHOULD NOT RECEIVE
+
+The goal is not merely shorter files.
+
+The goal is less irrelevant context per decision.
+
+==================================================
+EIGHTH TASK — REVIEW EVERY AGENT
+==================================================
+
+For each agent answer:
+
+1. What is this agent uniquely responsible for?
+2. What capabilities does it need?
+3. What capabilities must it not have?
+4. What inputs are essential?
+5. What outputs are essential?
+6. What rules currently in its prompt belong elsewhere?
+7. What sections can disappear?
+8. What protections would be lost if those sections disappear?
+9. Could this role merge with another without creating self-review?
+10. Is the agent model allocation justified?
+
+Pay particular attention to separation between:
+
+Planner
+Plan Auditor
+Tester
+Developer
+Reviewer/Architect
+Approval
+Orchestrator
+
+Do not merge roles merely to reduce count.
+
+The most important separation to preserve is independent verification.
+
+==================================================
+NINTH TASK — REVIEW THE ORCHESTRATOR
+==================================================
+
+Determine whether the orchestrator is:
+
+A. a lightweight state machine,
+or
+B. another highly intelligent agent reasoning about every decision.
+
+Prefer A unless B is genuinely required.
+
+The orchestrator should ideally know:
+
+- current phase,
+- artifact locations,
+- gate verdict,
+- next transition,
+- retry/loop count,
+- human decision points.
+
+It should not need to reinterpret the entire engineering problem.
+
+Identify every place where orchestration could become deterministic.
+
+==================================================
+TENTH TASK — REVIEW THE ARTIFACT MODEL
+==================================================
+
+Map all .rstack artifacts.
+
+For each artifact ask:
+
+- Who writes it?
+- Who reads it?
+- What decision depends on it?
+- Is it source-of-truth or a cache?
+- Can it be regenerated?
+- Is it redundant with another artifact?
+- Is it only present to prove another phase did work?
+- Does it survive the run?
+- Does it need to survive the run?
+
+Pay special attention to:
+
+ac.tsv
+ticket.md
+plan.md
+plan-audit.md
+plan-audit-response.md
+test-report.md
+impact.md
+review.md
+approval.md
+run-log.tsv
+learnings.md
+waiver files
+pin/baseline files
+
+Apply this rule:
+
+Every persistent artifact must justify both:
+
+WHY IT EXISTS
+and
+WHO MAKES A DECISION FROM IT.
+
+If nobody consumes it to make a decision, strongly consider removing it.
+
+==================================================
+ELEVENTH TASK — REVIEW THE LEARNINGS SYSTEM
+==================================================
+
+The system contains repository-level learning/memory.
+
+Determine whether it is actually valuable or whether it creates:
+
+- stale knowledge,
+- prompt contamination,
+- duplicated repository documentation,
+- confirmation bias,
+- another maintenance system.
+
+If retained, define:
+
+- what qualifies as a learning;
+- who writes one;
+- who may read it;
+- how it expires;
+- how it is revalidated;
+- why it cannot simply live in repository documentation or tests.
+
+Do not preserve memory merely because agentic systems are fashionable.
+
+==================================================
+TWELFTH TASK — REVIEW THE RISK TIER SYSTEM
+==================================================
+
+The current design appears to have evolved so all phases run regardless of tier and tier only changes depth.
+
+Evaluate whether LOW / MEDIUM / HIGH still adds enough value to justify:
+
+- classification,
+- promotion logic,
+- documentation,
+- metrics,
+- cross-file references.
+
+If a tier no longer changes meaningful behavior, recommend removing or simplifying it.
+
+==================================================
+THIRTEENTH TASK — REVIEW MULTI-REPOSITORY SUPPORT
+==================================================
+
+Determine whether the estate-root / active-repo / sibling-repo architecture is:
+
+- core to the real use case,
+- useful but too general,
+- or premature generalization.
+
+Evaluate:
+
+- repository resolution,
+- read/write boundaries,
+- cross-repo tickets,
+- estate pinning,
+- sibling verification,
+- multi-ticket batching.
+
+Especially challenge mechanisms built for rare combinations:
+
+multi-repository
++
+multi-ticket
++
+dirty working trees
++
+stale branches
++
+cross-repository impact
++
+partial evidence.
+
+If a mechanism exists mainly for a rare theoretical combination, call that out.
+
+==================================================
+FOURTEENTH TASK — REVIEW HUMAN-IN-THE-LOOP BOUNDARIES
+==================================================
+
+Preserve strong human control over irreversible/external actions.
+
+Review separately:
+
+- local edits
+- local branch creation
+- local test execution
+- local commits
+- pushes
+- pull requests
+- Jira writes
+- deployment
+- shared environment writes
+- merge
+
+Avoid approval fatigue.
+
+A human should not be repeatedly asked to approve actions that are:
+
+local,
+reversible,
+and already constrained.
+
+But external/shared operations should remain explicit.
+
+==================================================
+FIFTEENTH TASK — LOOK FOR SELF-REFERENTIAL COMPLEXITY
+==================================================
+
+Specifically detect mechanisms whose primary purpose is maintaining the pipeline itself rather than delivering the ticket.
+
+Examples:
+
+- checks that exist mainly because another pipeline artifact exists;
+- validators validating validators;
+- historical compatibility with earlier pipeline versions;
+- migration logic for artifacts nobody needs;
+- metrics measuring pipeline ceremonies rather than engineering outcomes;
+- rules protecting against agent behavior already prevented by tool restrictions.
+
+Call this:
+
+PIPELINE TAX
+
+Estimate qualitatively whether each piece is:
+
+LOW
+MEDIUM
+HIGH
+
+pipeline tax.
+
+==================================================
+SIXTEENTH TASK — TEST THE SIMPLIFIED ARCHITECTURE
+==================================================
+
+Try to design the smallest system that preserves these invariants:
+
+1. Human intent becomes explicit acceptance criteria.
+2. The implementation does not grade its own requirements.
+3. Tests are authored independently from production code.
+4. Tests cannot silently be weakened to make implementation pass.
+5. Production changes are tested before review.
+6. Review happens from a fresh context.
+7. Review examines more than whether tests are green.
+8. Evidence cannot be fabricated or silently upgraded.
+9. External writes require explicit human authorization.
+10. A human can tell what is still unproven.
+11. Multi-repository writes cannot accidentally escape the intended repository.
+12. The pipeline cannot claim completion merely because the implementing agent says it is complete.
+
+Design the minimum architecture that satisfies those invariants.
+
+Then compare it against current rstack.
+
+==================================================
+DO NOT DO THIS
+==================================================
+
+Do not:
+
+- praise complexity because it is sophisticated;
+- prefer a rewrite merely because it is shorter;
+- delete a mechanism whose failure mode you have not understood;
+- preserve a mechanism merely because it came from a real incident;
+- optimize each file independently;
+- treat Markdown as enforcement;
+- treat scripts as automatically superior to Markdown;
+- use "best practices" as evidence without explaining the mechanism;
+- invent requirements not present in the system;
+- normalize contradictions silently.
+
+==================================================
+REQUIRED OUTPUT
+==================================================
+
+Create a document named:
+
+RSTACK-V2-ARCHITECTURE-REVIEW.md
+
+Use the following sections.
+
+# 1. Executive assessment
+
+Answer:
+
+Has rstack become over-engineered?
+
+Use one of:
+
+- No
+- Partially
+- Significantly
+
+Explain precisely what kind of complexity is excessive.
+
+Do not use a vague verdict.
+
+# 2. What is genuinely strong
+
+Identify architectural ideas worth preserving.
+
+# 3. What is accidental complexity
+
+List mechanisms that can be removed or simplified.
+
+# 4. Canonical responsibility map
+
+One owner per cross-cutting concern.
+
+# 5. Enforcement map
+
+For every important rule:
+
+- prose-only
+- script-enforced
+- harness-enforced
+- human-enforced
+
+Flag any documentation claiming stronger enforcement than actually exists.
+
+# 6. Duplicate-rule map
+
+Show important rules appearing in multiple files.
+
+For each:
+
+KEEP IN
+REMOVE FROM
+OPTIONAL LOCAL REMINDER
+
+# 7. Artifact inventory
+
+For every .rstack artifact:
+
+KEEP
+MERGE
+DERIVE
+DELETE
+
+with reasoning.
+
+# 8. Agent-by-agent redesign
+
+For every agent:
+
+CURRENT RESPONSIBILITY
+RECOMMENDED RESPONSIBILITY
+REMOVE
+KEEP
+ADD
+
+# 9. Pipeline skill redesign
+
+Describe what pipeline/SKILL.md should contain after simplification.
+
+It should ideally describe orchestration, not repeat every agent's operating manual.
+
+# 10. Reference redesign
+
+Classify every reference file as:
+
+KEEP
+MERGE
+ARCHIVE
+DELETE
+
+# 11. Script redesign
+
+Classify each enforcement script similarly.
+
+# 12. Context budget
+
+Estimate where unnecessary model context is being spent.
+
+# 13. Pipeline tax
+
+Identify machinery whose main purpose is maintaining rstack rather than delivering software.
+
+# 14. Simplified V2 architecture
+
+Show the complete proposed flow.
+
+Use a diagram.
+
+# 15. Before vs after
+
+Compare approximately:
+
+agents
+phases
+reference files
+scripts
+run artifacts
+mandatory reads
+cross-file rules
+human prompts
+validation steps
+
+Do not optimize for the smallest numeric result.
+Optimize for minimum sufficient complexity.
+
+# 16. Migration plan
+
+Give an ordered migration that keeps the pipeline usable during refactoring.
+
+Each step must say:
+
+CHANGE
+WHY
+RISK
+VALIDATION
+ROLLBACK
+
+# 17. Files to change
+
+Exact repository paths.
+
+# 18. Files to delete or archive
+
+Exact paths and reasons.
+
+# 19. Regression invariants
+
+List the behaviors that must still hold after simplification.
+
+# 20. Open questions
+
+Only questions that genuinely require a human decision.
+
+==================================================
+SECOND DELIVERABLE — FILE-LEVEL CHANGE PLAN
+==================================================
+
+Create:
+
+RSTACK-V2-FILE-PLAN.md
+
+For every existing agent, skill, reference and relevant script provide:
+
+FILE
+CURRENT PURPOSE
+PROBLEM
+RECOMMENDED ACTION
+DEPENDENCIES
+EXPECTED SIZE/COMPLEXITY REDUCTION
+BEHAVIOR THAT MUST NOT CHANGE
+
+Do not rewrite the files yet.
+
+==================================================
+THIRD DELIVERABLE — PROPOSED SOURCE TREE
+==================================================
+
+Create:
+
+RSTACK-V2-TREE.md
+
+Show exactly what the pipeline directory should look like after the refactor.
+
+Mark:
+
+[KEEP]
+[NEW]
+[MERGED]
+[DELETE]
+[ARCHIVE]
+
+==================================================
+FOURTH DELIVERABLE — DECISION LOG
+==================================================
+
+Create:
+
+RSTACK-V2-DECISIONS.md
+
+Use short ADR-style entries:
+
+Decision
+Context
+Options
+Chosen direction
+Why
+What becomes simpler
+What protection remains
+
+The purpose is to prevent future contributors from reintroducing complexity whose reason for removal has been forgotten.
+
+==================================================
+IMPORTANT IMPLEMENTATION BOUNDARY
+==================================================
+
+Do NOT immediately rewrite the repository.
+
+Architecture review happens first.
+
+After the four documents above are complete, stop.
+
+I will review the recommendations.
+
+Only after explicit approval should Codex implement the refactor.
+
+==================================================
+WHEN CODEX IMPLEMENTS IT
+==================================================
+
+After approval, use Codex to implement the accepted design in small batches.
+
+For every batch:
+
+1. state which architecture decision it implements;
+2. identify canonical sources being changed;
+3. remove obsolete duplicates;
+4. update references;
+5. update or remove validators;
+6. run existing regression/invariant checks;
+7. add tests for any newly centralized enforcement;
+8. show the diff;
+9. verify no behavior was weakened silently.
+
+Do not leave old prose around "for safety" after the canonical rule moves.
+
+That is exactly how the duplication accumulated.
+
+==================================================
+FINAL REVIEW AFTER CODEX
+==================================================
+
+After Codex finishes, perform a second independent Astra review.
+
+This review must answer:
+
+1. Does implementation match RSTACK-V2-ARCHITECTURE-REVIEW.md?
+2. Are any old rules still duplicated?
+3. Are any references now stale?
+4. Does any Markdown claim enforcement that does not exist?
+5. Has any safety invariant weakened?
+6. Did context size materially decrease?
+7. Did the state machine become easier to understand?
+8. Could a new engineer explain the pipeline from the main skill without reading twenty files?
+9. Does each remaining artifact justify its existence?
+10. Is there anything left whose primary purpose is maintaining rstack rather than delivering software?
+
+End with:
+
+REMAINING ESSENTIAL COMPLEXITY
+REMAINING ACCIDENTAL COMPLEXITY
+NEXT SIMPLIFICATION, IF ANY
