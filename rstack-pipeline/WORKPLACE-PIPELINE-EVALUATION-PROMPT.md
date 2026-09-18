@@ -184,9 +184,9 @@ Do not copy this entire evaluation prompt into agent definitions. The evaluator'
 
 ## 8. Evaluate model assignments and model-sensitive instructions
 
-Record actual host routing before drawing conclusions. At preparation, RSTACK V2 frontmatter declares Opus 5 for Orchestrator, Plan Auditor, Developer and Reviewer, and Sonnet 5 for Planner, Tester and Approval. The separate Copilot example documents a Sonnet baseline with omitted model pins. Neither declaration proves what the workplace runs.
+Record actual host routing before drawing conclusions. On 2026-09-18, the owner selected Configuration B for the RSTACK V2 trial: Sonnet 5 Orchestrator, Opus 5 Planner, and GPT-5.6 Sol Plan Auditor. Those three candidate model fields are updated. Developer and Reviewer remain Opus 5; Tester and Approval remain Sonnet 5. The separate Copilot example retains its Sonnet baseline with omitted model pins. Neither declaration proves what the workplace runs.
 
-The model-allocation analyses recommend experiments, not an approved replacement policy. Do not silently apply the proposed Sonnet Orchestrator / Opus Planner / Sol Auditor allocation while adopting other improvements.
+**TEST THE ALTERNATIVE:** follow the [model-allocation trial handoff](MODEL-ALLOCATION-TRIAL.md) for the analysis, comparison groups, host/conformance prerequisites, measurements and decision criteria. The owner has authorized the candidate configuration change; comparative evaluation and workplace validation remain pending. Preserve the dated analyses as historical reasoning. Do not treat the selected trial as a demonstrated improvement or mix model experiments with unrelated workplace changes.
 
 | Role demand | What to evaluate in the actual model and host |
 |---|---|

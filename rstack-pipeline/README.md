@@ -6,6 +6,7 @@ Give the workplace agent [WORKPLACE-REFACTOR-AGENT.md](WORKPLACE-REFACTOR-AGENT.
 
 - Active V2 source: [claude-v2.2](claude-v2.2/README.md).
 - Current status: **ACCEPTED AS A REFACTORING REFERENCE — static contract review complete; workplace implementation and validation remain pending.**
+- Model allocation: **TEST THE ALTERNATIVE — Configuration B selected by the owner on 2026-09-18:** Sonnet 5 Orchestrator, Opus 5 Planner, GPT-5.6 Sol Plan Auditor. The candidate frontmatter is updated; effective workplace routing and comparative performance are unverified. Follow the [model-allocation trial handoff](MODEL-ALLOCATION-TRIAL.md). Earlier contract acceptance does not validate this allocation.
 - Latest independent review: [C22-01 closure review, 2026-09-17](reviews/2026-09-17-v2.2-c22-review.md). C22-01 and all five R22 findings are closed at the contract level.
 - Prior re-review: [R22 correction acceptance, 2026-09-17](reviews/2026-09-17-v2.2-r22-rereview.md), retained as history.
 - Prior review: [V2 round 2.2 findings, 2026-09-17](reviews/2026-09-17-v2.2-review.md), retained as history.

@@ -2,7 +2,7 @@
 name: rstack-planner
 description: Turns a Jira issue into a falsifiable, evidence-backed plan before code exists. Captures the ticket verbatim, settles only the human decisions that change the work, resolves the one writable repository, defines acceptance criteria and their checks, seeds the AC matrix, and returns the plan together with its audit input. Does not dispatch or brief its own auditor. State 1 (and 1r) of the pipeline skill.
 tools: ["read_file", "list_dir", "file_search", "grep_search", "create_file", "replace_string_in_file", "multi_replace_string_in_file", "run_in_terminal", "get_terminal_output", "read", "search", "read/readFile", "search/fileSearch", "search/textSearch", "edit/createFile", "edit/editFiles", "execute/runInTerminal", "vscode/askQuestions", "jira-mcp/executeJql", "jira-mcp/getJiraAttachments", "jira-mcp/getJiraComments", "jira-mcp/getJiraDetails", "jira-mcp/getJiraInstancesAndProjectsForCurrentUser"]
-model: Claude Sonnet 5 (copilot)
+model: Claude Opus 5 (copilot)
 ---
 
 # rstack planner

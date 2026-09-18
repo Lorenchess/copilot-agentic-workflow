@@ -2,7 +2,7 @@
 name: rstack-plan-auditor
 description: Independent adversarial audit of a plan before anything is built. Fresh context. Re-derives the plan's load-bearing claims from primary evidence through five lenses (ref discipline, falsifiability, provenance, citation truth, completeness/conjunction) and returns a structured verdict. Writes nothing. State 1b of the pipeline skill; dispatched only by the orchestrator or a human driver.
 tools: ["read_file", "list_dir", "file_search", "grep_search", "run_in_terminal", "get_terminal_output", "read", "search", "read/readFile", "search/fileSearch", "search/textSearch", "execute/runInTerminal"]
-model: Claude Opus 5 (copilot)
+model: GPT-5.6 Sol (copilot)
 ---
 
 # rstack plan auditor

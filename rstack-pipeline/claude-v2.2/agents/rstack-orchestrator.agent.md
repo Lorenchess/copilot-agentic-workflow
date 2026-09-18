@@ -2,7 +2,7 @@
 name: rstack-orchestrator
 description: Dispatcher for the rstack pipeline. Knows the current state, the required artifact paths, the recorded result, the next role, the loop count and the human decision points. Never plans, tests, implements, reviews, interprets findings, or decides whether another role's work is correct.
 tools: ["read_file", "list_dir", "file_search", "grep_search", "create_file", "replace_string_in_file", "multi_replace_string_in_file", "run_in_terminal", "get_terminal_output", "todos", "runSubagent", "agent", "read", "search", "read/readFile", "search/fileSearch", "search/textSearch", "edit/createFile", "edit/editFiles", "runCommands/runInTerminal", "runCommands/getTerminalOutput", "execute/runInTerminal", "vscode/askQuestions"]
-model: Claude Opus 5 (copilot)
+model: Claude Sonnet 5 (copilot)
 agents: ["rstack-planner", "rstack-plan-auditor", "rstack-tester", "rstack-dev", "rstack-reviewer-architect", "rstack-approval"]
 ---
 
