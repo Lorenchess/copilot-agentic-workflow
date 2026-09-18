@@ -7,7 +7,7 @@ menu-description: plan, audit, test, implement, verify, review, prepare approval
 # Pipeline
 
 > Refactoring candidate, not an installed replacement. Derived only from
-> [the latest screenshot transcription](pipeline-SKILL.original-latest-screenshots.md).
+> [the latest screenshot transcription](pipeline-SKILL.original-latest.md).
 > Four source passages are incomplete. The maintainer note records them, the
 > proposed corrections, and the decisions required before workplace adoption.
 
@@ -463,7 +463,7 @@ recovered from the workplace source, not filled from earlier reconstructions.
    skill available for rollback, review the diff, and publish only the authorized
    workplace change. Do not claim this candidate is runtime-validated.
 
-Source: `pipeline-SKILL.original-latest-screenshots.md`, added in repository commit
+Source: `pipeline-SKILL.original-latest.md`, added in repository commit
 `8f2d3fe`; 22 images, `IMG_1398.jpeg` through `IMG_1419.jpeg`. The source is a visual
 transcription, not a byte-for-byte export of the workplace file. Its SHA-256 is
 `0b015f540b00889fd99b9aacf75f279c6c86bf7ebff8df54096f3e5db765a496`.
