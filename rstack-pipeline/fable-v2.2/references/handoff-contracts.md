@@ -231,7 +231,39 @@ Finding: severity, exact path/expression/ref, concrete reachable issue, supporti
 
 approval.md is append-only. Each dispatch of the approval role adds one numbered entry (`## Entry <N> — <mode> — <candidate or None>`); earlier entries, including a freeze entry's commit decision, are never rewritten or removed by a later freeze or release.
 
-An entry records mode, result, candidate/packet, full index and working-tree inventory, protected-work/stash identity and restoration status, every eligibility item and inspected evidence, AC/gate output, integration, commit contents, exceptions, and external-action intents/results. The intent line for an external action is written before the action is attempted and its result after; an intent with no result is an unknown outcome to reconcile, not a failure and not a success.
+An entry records mode, result, candidate/packet, full index and working-tree inventory, protected-work/stash identity and restoration status, every eligibility item and inspected evidence, AC/gate output, integration, commit contents, exceptions, and one publication record per external action. The intent line for an external action is written before the action is attempted and its result after; an intent with no result is an unknown outcome to reconcile, not a failure and not a success.
+
+Publication record, one per external action, inside the entry's append-only sequence. Three parts, in order: the **intent** (written before either performer acts), the **attempt result** (written once, never edited), and **reconciliation lines** (appended, never edited, as many as reads occur). Push, PR creation and each tracker or wiki write are separate records.
+
+~~~text
+Action ref: <entry number and action index; every later line for this action cites it>
+Action: <push | create_pr | tracker_write | wiki_write | other, named>
+Performed by: <human, own credential | approval role, agent credential>   (an assertion of attribution; see below)
+Candidate: <full commit>
+Target: <repository identity and full destination ref; project key where relevant>
+Intent payload: <the exact command, or the retained approved title/body/payload artifact path and its sha256>
+Components: <None, or the named effects of one compound mutation>
+Intent recorded: <before the attempt; host timestamp or blank>
+Attempted: <yes | no | unknown>
+PUBLICATION_RESULT: <SUCCEEDED | FAILED | UNKNOWN | PARTIAL>   (the attempt result as known at return; immutable)
+Remote object: <ref, PR id/URL, issue key or page id as returned; otherwise unavailable>
+Authorization: <the human's exact answer and primary conversation reference when available; provenance HUMAN_RECORDED unless the host supplied a receipt>
+--- reconciliation, appended per read ---
+Reconciliation <n>: <read interface, what it returned, provenance of that read, host timestamp or blank>
+Intent comparison <n>: <MATCH | MISMATCH | UNAVAILABLE> — <which fields were compared: repository, ref, observed SHA, source head, destination, title/body, component>
+CURRENT_KNOWN_STATE <n>: <SUCCEEDED | FAILED | UNKNOWN | PARTIAL> as of reconciliation <n>; per component when Components is not None
+~~~
+
+`PUBLICATION_RESULT` is the immutable attempt result. `CURRENT_KNOWN_STATE` is the latest supported reconciliation for the same action and intent, as of that read; a later unsupported sentence does not replace it, and it says nothing about future remote state. Both survive; neither is a gate verdict or proof of current authorization.
+
+| Status | Meaning (of the mutation's effects, never of logging or fetching) | Permitted next behaviour |
+|---|---|---|
+| `SUCCEEDED` | A reliable returned result or read establishes every effect of the exact authorized action, with `Intent comparison: MATCH` | Preserve the evidence; complete any still-required freshness check before dependent work; never repeat the mutation |
+| `FAILED` | Reliable evidence establishes terminal non-success with no successful or unknown effect | Report; a retry needs reconciled state and still-current authorization |
+| `UNKNOWN` | The effect cannot be established: lost response, uncertain partial effect, human report without remote confirmation | Stop advancement and retry; reconcile; still unknown means a human-owned blocker |
+| `PARTIAL` | A predeclared compound mutation (`Components` not None) has at least one established successful effect and at least one unfinished one; each component carries its own state | Never retry the whole operation; reconcile unknown components; authorize and perform only the remaining exact work |
+
+Rules the states depend on: a matching remote object is reused, never recreated; a remote object whose repository, source head, destination, title, body or other authorized field differs from the intent is `Intent comparison: MISMATCH` and stops for a decision, with no automatic repair; a candidate commit that is merely an ancestor of the remote branch tip does not establish that the candidate was pushed as the tip; an absent object or empty listing establishes `FAILED` only when the interface establishes that the earlier request is terminal and had no effect; a human's statement that an action succeeded is retained with `HUMAN_RECORDED` provenance and leaves the state `UNKNOWN` until a read establishes it. `Performed by` records who was asked to act; a commit author string, an object's existence or that line does not prove which credential was used, and only a platform audit event, when the host supplies one, attributes the actor. What happens on `UNKNOWN` and `PARTIAL` is owned by the pipeline skill's Unknown external effects rule.
 
 Each decision records requester, question, exact human answer, scope/action/candidate and primary host record reference when available. Exception requests are recorded by another role. Approval may record its own direct commit/publication conversation; this does not authenticate it. Reuse is limited to the exact still-current granted scope, not a general yes.
 

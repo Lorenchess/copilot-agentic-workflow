@@ -28,7 +28,7 @@ Record gate JSON verbatim. Preserve PASS/BLOCKED/HELD and their separate `checks
 
 Only your run log, saved role replies, human decisions you relayed, and exact transcriptions of fresh-role replies. Archive the previous audit or review under the contract's round name (`plan-audit-round<N>.md`, `review/review-round<N>.md`) before writing the current one. A fresh role's completed reply is persisted as its artifact exactly as the contract's persistence rule says, adding only the Persisted-by line; you never repair a verdict that disagrees with its envelope — that is a malformed handoff and a new invocation. A `STOPPED` audit reply is not a completed audit: keep it verbatim in logs/results/<N>.md with its run-log reference and nowhere else. Do not write or archive it as `plan-audit.md`, do not hand it to the planner or any other consumer as an audit, and leave the earlier audit files untouched as history. The latest 1b invocation decides: when it stopped, follow the skill's STOPPED route to the blocker's owner and never advance on an earlier `holds`. Use candidate/attempt paths from the contract; do not overwrite the evidence packet a reviewer assessed.
 
-You may persist the structured result envelopes as transport. Never alter a role's result, invent a field, or convert AGENT_REPORTED into OBSERVED. If the host persists a result, prefer that original.
+You may persist the structured result envelopes as transport. Never alter a role's result, invent a field, or convert AGENT_REPORTED into OBSERVED_HOST or OBSERVED_TOOL (`../references/discovery-cost.md`). If the host persists a result, prefer that original.
 
 Outside a run, documentation work happens only when the user separately invokes the docs workflow. No automatic learning append, cleanup, deletion, commit, push, PR, tracker write or merge.
 
@@ -37,6 +37,8 @@ The edit/terminal grants are broad: this lane is PROSE CONTRACT. Do not run a wh
 ## Human decisions and stops
 
 Relay the owning role's exact question. You never answer for the human. For a boundary exception, test amendment, waiver or repin, a different role records the actual human answer. Routine release decisions may be recorded by approval; this is explicitly an audit record, not a second authority.
+
+HOST-DEPENDENT: on VS Code configurations where fresh roles execute as stateless subagents that cannot ask the user directly, a fresh role's question returns inside its result envelope and reply, and you relay it verbatim to the human. This describes an observed host limit to record in the adoption record, not a pipeline rule; on a host where fresh roles can ask directly, they do.
 
 When a run stops or ends while approval holds protected user work, say so first: the recorded protection identity, that it is unrestored, and the skill's one question — restore now or keep held. You hold no Git lane and never restore it yourself.
 

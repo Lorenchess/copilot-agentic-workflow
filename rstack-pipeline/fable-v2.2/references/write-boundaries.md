@@ -72,16 +72,21 @@ The reconstructed `role-guard.mjs` accepts `--waiver "<path>=<reason>"` from the
 
 The mechanisms below are reconstructed requirements. Runtime source, invocation and actual host grants remain UNVERIFIED except for the call sites identified in SOURCE-EVIDENCE.md.
 
-| Boundary | Intended mechanism | Strength if established |
-|---|---|---|
-| Reviewer writes nothing | tool list without edit or terminal tools | UNVERIFIED host grant; intended read-only capability |
-| Auditor writes nothing | it was told not to; it holds a terminal | PROSE CONTRACT |
-| Planner, tester, dev, approval lanes | the role runs `role-guard.mjs --role <r>` on itself before reporting (exit 0 in lane, 1 out of lane with paths, 2 usage/environment) | SCRIPT CHECK, self-run: detects an honest mistake afterwards; prevents nothing |
-| Orchestrator's file list | it lists what it wrote | PROSE CONTRACT — the guard sees one `.rstack/**` bucket and a whole working tree, so the orchestrator and the auditor do not run it |
-| Dev did not touch a locked test | lock verification by the tester and again at release | SCRIPT CHECK by a different role |
-| Dev did not touch an **unlocked** test | the tester's and reviewer's reading | PROSE CONTRACT |
+Guarantee types and effects are defined in `harness-map.md`: HOST-ENFORCED CAPABILITY, DETERMINISTIC CHECK, PROSE CONTRACT, HUMAN DECISION; BLOCK-BEFORE, DETECT-AFTER, OBSERVE-ONLY, and `—` for no enforced effect. This table applies that one vocabulary to the lanes; it defines no second one.
 
-A guard is a detector. It cannot undo an escaped write, and a check an agent runs on itself is weaker than one a different role or the host runs. A guaranteed lane needs host-scoped write grants.
+| Boundary | Intended mechanism | Guarantee type | Effect |
+|---|---|---|---|
+| Reviewer writes nothing | frontmatter `tools` without edit or terminal tools | HOST-ENFORCED CAPABILITY, only to the extent the actual Copilot surface honours the configured list; UNVERIFIED host grant until observed | BLOCK-BEFORE, if honoured |
+| Orchestrator spawns only the six named roles | frontmatter `agents` list | HOST-ENFORCED CAPABILITY on the same condition; the Markdown declares, it does not enforce | BLOCK-BEFORE, if honoured |
+| Auditor writes nothing | it was told not to; it holds a terminal | PROSE CONTRACT | — |
+| Planner, tester, dev, approval lanes | the role runs `role-guard.mjs --role <r>` on itself before reporting (exit 0 in lane, 1 out of lane with paths, 2 usage/environment) | DETERMINISTIC CHECK, self-run: detects an honest mistake afterwards; prevents nothing | DETECT-AFTER |
+| Orchestrator's file list | it lists what it wrote | PROSE CONTRACT — the guard sees one `.rstack/**` bucket and a whole working tree, so the orchestrator and the auditor do not run it | — |
+| Dev did not touch a locked test | lock verification by the tester and again at release | DETERMINISTIC CHECK, cross-run; a later detection blocks advancement, it does not undo the edit | DETECT-AFTER |
+| Dev did not touch an **unlocked** test | the tester's and reviewer's reading | PROSE CONTRACT | — |
+| Governance paths untouched | prose; plus a host edit-tool ask-rule only where one is observed to be configured | PROSE CONTRACT generally; HOST-ENFORCED CAPABILITY on an observed, configured edit-tool path only; an unconfigured rule or a prompt is not prevention; a shell write bypasses it | BLOCK-BEFORE on that observed path only; otherwise — |
+| Out-of-lane write needs a human | request, human answer, record by another role | HUMAN DECISION; the record is `HUMAN_RECORDED`; neither the answer nor its record is a technical block, and a separate host mechanism may enforce it | — |
+
+A guard is a detector: DETECT-AFTER is never a sandbox. It cannot undo an escaped write, and a check an agent runs on itself is weaker than one a different role or the host runs. A guaranteed lane needs host-scoped write grants, which are BLOCK-BEFORE and are recorded in the adoption record only once observed.
 
 ## 6. Test lock
 

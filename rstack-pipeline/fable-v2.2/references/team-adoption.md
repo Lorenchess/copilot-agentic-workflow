@@ -30,6 +30,18 @@ Before the first production-like pilot, record in the team's existing source of 
 7. **Evidence policy** — what artifacts may contain, where they live, how long; where the PR's verification table is the durable record.
 8. **Optional mechanisms** — learnings on or off (default off); metrics collected or not.
 9. **Adopted version and deviations**, each with its reason.
+10. **Host and SCM facts**, each recorded as observed on the actual surface, never copied from another vendor's documentation (GitHub environment and ruleset controls are not Bitbucket facts):
+   - the Copilot surface actually running RSTACK (VS Code, CLI, cloud agent, other) and its version;
+   - whether hooks are supported on that surface, and whether they are GA, preview or unavailable there;
+   - whether `postToolUse` exposes the tool's exit status or only result text;
+   - whether MCP tools can be scoped by role or by state, or only per agent definition;
+   - whether subagents are truly isolated and stateless, whether they can ask the user, and what their result returns to the parent;
+   - whether frontmatter `tools` and `agents` are honoured (a tool absent from the list is unavailable, not merely hidden);
+   - Bitbucket branch protection rules on the target repositories;
+   - Bitbucket required-review behaviour (how many, who, whether re-approval is required after a new push);
+   - whether Bitbucket supports preventing self-approval of the initiator's own change, and whether it is enabled;
+   - who owns the publication credentials, and whether any role's session holds them before release;
+   - whether any host-generated authorization receipt exists (who answered which prompt, for which action and candidate) — if none, every in-run decision is `HUMAN_RECORDED` and the human's own credential on a human-performed publication is the authenticated actor (`approvals.md`).
 
 ## Choose the playbook before the run
 

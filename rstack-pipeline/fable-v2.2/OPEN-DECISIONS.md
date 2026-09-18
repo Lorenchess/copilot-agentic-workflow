@@ -53,3 +53,34 @@ Review: `../reviews/2026-09-17-v2.2-review.md`. The rows above are kept as first
 | OD-19 | CONTRACT IMPLEMENTED, provenance-limited (R22-03) | Audit currency is decided by plan sha256: the dispatcher measures it at dispatch, the auditor measures the file it read and returns both in its envelope, approval compares them with the digest frozen in candidate.md. The identity lives in the envelope so the parser-owned audit body is unchanged. Both digests are agent-measured; a host-computed identity would be stronger and is not available |
 
 OD-14, OD-15, OD-16 and OD-20 are unchanged and still open. The review's notes on them are recorded as questions in `FABLE-RESPONSE-2026-09-17-R22.md`, not acted on.
+
+## External Evidence Reconciliation (2026-09-17)
+
+Source: `../EXTERNAL-EVIDENCE-REVIEW.md` (verdict: YES WITH CORRECTIONS). That review verified the external research report against its primary sources and then compared them with this design. This batch applied only its section 20 corrections (unknown external effects, publication record, human-performed publication default, `HUMAN_RECORDED`, `OBSERVED_HOST` / `OBSERVED_TOOL`, block-before versus detect-after, frontmatter capability labelling, adoption-record host facts, the VS Code subagent note, finding-quality labels). No state, agent, script or setting was added; the decisions kept unchanged are listed in `CHANGES.md`.
+
+Status changes to existing rows:
+
+| ID | New status | What the evidence adds |
+|---|---|---|
+| OD-1 | Unchanged; classified EVIDENCE INSUFFICIENT, defer is the evidence-consistent default | No cited source tests a pre-implementation test critique; multi-agent coordination-cost evidence opposes an unmeasured extra dispatch; the measure that decides it is the reviewer's vacuous-check findings, now labelled under `discovery-cost.md` Finding quality |
+| OD-2 | Unchanged; entirely an RSTACK design choice | No external source discusses scalar tiers or surface-based depth |
+| OD-3 | Unchanged; weakly supported as it stands | Run state versus long-term store is a documented design distinction; no cited source measures memory benefit for coding agents |
+| OD-4 | Direction strongly supported; mechanism still HOST INFORMATION REQUIRED | Mature platform controls separate request, decision, authentication and action. Until the host supplies a receipt, publication defaults to the human's own credential (`approvals.md` Publication default), and every in-run decision is `HUMAN_RECORDED`. The external evidence is GitHub-only; the Bitbucket controls are adoption-record fields (`team-adoption.md` item 10), not assumptions |
+| OD-5c | Unchanged; one new candidate route recorded below (OD-21) | — |
+| OD-6 | Direction strongly supported | Commit SHA as the immutable subject, evidence outside the evaluated commit, and invalidation on change match platform and standards practice; a tool-written identity remains the stronger form and is still unavailable |
+| OD-7, OD-8, OD-10, OD-11 | Unchanged; owner policy or host information | No source orders review against full verification; a recorded bypass exists in mature platforms and is never a pass; handoff support differs by surface |
+| OD-9 | Unchanged; weakly supported | A role that re-reads agent-authored evidence has no distinct consumer |
+
+Deferred experiments and host observations. None is implemented; each needs the actual host or representative runs. They are recorded here so the batch does not silently drop them.
+
+| ID | Status / question | Candidate choice until adopted | Evidence or decision needed |
+|---|---|---|---|
+| OD-21 | HOST — `postToolUse` as a capture receipt | Not used; `suite.txt` capture stays `AGENT_REPORTED` | Whether the surface supports hooks and whether the hook payload carries the terminal command's exit status or only result text; if it does, compare a hook-written record with the tester-typed capture on the same run before naming it `OBSERVED_HOST` |
+| OD-22 | HOST — `subagentStop` as host-side persistence and shape check of fresh-role replies | Not used; persistence stays host-or-orchestrator transcription under OD-15 | Whether the hook fires for the dispatch mechanism in use, receives the full response, and can write it verbatim to the artifact path and block a malformed one; it must never alter a verdict |
+| OD-23 | HOST — `preToolUse` deny for governance paths and external writes | Not used; governance protection stays edit-tool ask-rules plus prose | Surface support and GA status; the hook input is not documented to carry the calling role, so role-lane enforcement through it is not a claim this candidate makes |
+| OD-24 | EXPERIMENT — plan-auditor value | Mandatory 1b on every ticket, unchanged | Finding-quality labels over at least three representative runs (`discovery-cost.md`); the owner decides whether universality stands; a run never skips 1b |
+| OD-25 | EXPERIMENT — tester separation value | Tester and developer separate, unchanged | After OD-24: defect seeding or retrospective classification, test strength or mutation score, cost |
+| OD-26 | EXPERIMENT — tier versus affected surfaces | Both recorded per run (OD-2) | Runs where the tier and the surface list would have selected different depths, and which was right |
+| OD-27 | EXPERIMENT — learnings exposure | Off (OD-3) | The `discovery-cost.md` decision test; fresh roles blinded in every arm |
+
+Host questions this batch leaves open, all recorded as adoption-record fields rather than answered: the Copilot surface and hook availability; `postToolUse` payload contents; MCP tool scoping by state; subagent isolation and statelessness; frontmatter `tools` and `agents` enforcement; Bitbucket branch protection, required review and self-approval prevention; publication credential ownership; the existence of any host-generated authorization receipt.

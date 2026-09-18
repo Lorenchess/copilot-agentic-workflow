@@ -84,3 +84,42 @@ The repository outside `rstack-pipeline/` was not written to: no file was create
 ## How to reproduce the comparison
 
 From `rstack-pipeline/`: hash both trees with any SHA-256 tool and compare, or run a recursive file diff of `rstack-v2.1` against `fable-v2.2`. Line-level findings for each changed operational file are in `FABLE-IMPLEMENTATION-REPORT.md`.
+
+## Addendum — External Evidence Reconciliation (2026-09-17)
+
+The sections above are kept exactly as the independent review read them. This addendum records one further in-place correction batch, specified by `../EXTERNAL-EVIDENCE-REVIEW.md` section 20 and described in `CHANGES.md` under the same heading. Hashes are SHA-256 of the file bytes; "before" is the state after the R22 correction round, "after" is the state at the end of this batch. No file was added or deleted; this manifest cannot record its own resulting hash.
+
+| File | Before SHA-256 | After SHA-256 | Bytes before → after | Correction |
+|---|---|---|---|---|
+| pipeline/SKILL.md | `575ec3d610ea7f9f16fdcfed64cc50ade4dd4dac6ba1cb00c6ff4431475237b1` | `a39d797f2c4ae611e292e8f70d3d5359616d6e73953448a7cef4576f97aad0db` | 19468 → 21592 | Unknown external effects rule (five steps); ownership row; routing row and human checkpoint reference it |
+| references/handoff-contracts.md | `da1af8ad1bd67784c7a2ff2b8fdec7e951ede560e91d4656b8b16f3365882d27` | `acde3c551b9632d51f74e1353221697268988a29aa9ac231211f1b5b908c660e` | 21127 → 22541 | Publication record per external action with `PUBLICATION_RESULT` |
+| agents/rstack-approval.agent.md | `bfc6cc1bcacb4b592cf1035b860dac141b1eafc2cd5933d6e0b8388f44b8717f` | `6520862a8ef87aaab8a8de2a0dcf0a65dab90b881ebd734a33e41892a97ed1cd` | 11544 → 12406 | Release steps 9 and 10: human-performed publication default; publication record and reconciliation reminder |
+| agents/rstack-orchestrator.agent.md | `a5085e421558148f853234b8a13d7b2ec4ef694192a9e1416e3b5f20e9b32919` | `1300cd31c720dfe3a25f30a3524b80b09a2737c5881aa7d5e4cc4a32c360de62` | 6374 → 6817 | HOST-DEPENDENT VS Code subagent note; `OBSERVED` split in the transport rule |
+| references/approvals.md | `d93f1acba1743e18e501b2465eac3083a80c916c13b0f194a0f6be4168e43f77` | `33e6e4f3a313a481d7c77690af17a0501a5d5eaeddf1cf09437bd91210a8ad90` | 4634 → 6611 | `HUMAN_RECORDED` definition; Publication default section; unknown-outcome section now points at the skill's rule |
+| references/discovery-cost.md | `809b236ebe5ba31eacf766cdd6344f55899cb26237c487e1fa76b34cd88747dc` | `4ee5026b65d70b2f9977a2c4a49d2b37e2e558f7037281ef5a4b47f57a40a58d` | 5020 → 7946 | `OBSERVED_HOST` / `OBSERVED_TOOL` / `HUMAN_RECORDED` labels; inheritance restated; publication-outcome measure; finding-quality labels |
+| references/harness-map.md | `98b7699c89904b147c56887e17637afabef864fc3ac9ff0ec0b89f200873637f` | `696687764008c659acdc2ddb46a29d2680d155ae4272d81371e44d2c392655e1` | 5044 → 8314 | Guarantee type and effect vocabulary; mechanism table on both axes; frontmatter capability statement |
+| references/write-boundaries.md | `22a1eea3e01a263051bf584a37205862f68f9771e92ad1627130b1484ce55f81` | `ff8937b8248535f647ce71d0b81462996315e9509be626621a33bc22870e01c2` | 9258 → 10284 | §5 table reclassified on both axes; frontmatter `tools` / `agents` rows; governance and exception rows |
+| references/team-adoption.md | `735afa82bf6c7b4d9232d32b507ae9f65b88b0a287b8176de6b34392e6093844` | `b3ed126f2576a613b9aa3df8ff44991b957ad6e413972277e87d884188ea69b2` | 4629 → 6128 | Adoption record item 10: host and SCM facts |
+| OPEN-DECISIONS.md | `561bbc4a667db5718e8489a766fbe8911b09bfa4ff53289ba8fe9d90b569ef6d` | `18f9d4793381aa93de85f4fabb4a0a8ff8e7cc835e3b590fab5313656aab5ff8` | 9166 → 14309 | Evidence status on OD-1 to OD-10; OD-21 to OD-27 (deferred host observations and experiments); open host questions |
+| CHANGES.md | `a6f51e9789805fc3d5ac99984b230a36d21eb300bddc96f521bc31851d564bef` | `1d3d2b3f47f2bb60d9fe591a06844099b0294296df63d4d7ed29d509950b465f` | 10139 → 15305 | Batch record, ownership delta, kept-unchanged list |
+| FABLE-CHANGE-MANIFEST.md | `769ce56999b590ab7fa3b2176abb3a937afe2dfd69babff8ffc583e1c5246e09` | not self-recorded | 10159 → (this addendum) | This addendum only |
+
+Net size across the eleven hashed files: 106,403 → 132,253 bytes (+25,850, about +24%). The growth is contract text: one recovery rule, one record schema, one label vocabulary, one classification table, one adoption checklist and one open-decisions section; no procedure was duplicated into more than one owner.
+
+Unchanged in this batch (hashes as after the R22 round): the planner, plan-auditor, tester, dev and reviewer-architect agents; estate-layout, estate-instructions template, instruction-precedence, learnings, plan-interview, risk-tiers and rstack-process references; the standing rules; the session-start payload; both maintenance skills; README, SOURCE-EVIDENCE, RUNTIME-PATCH-PLAN, WORKPLACE-PORT, VALIDATION-PLAN, FABLE-IMPLEMENTATION-REPORT and both dated responses. Nothing outside this folder was modified; `../EXTERNAL-EVIDENCE-REVIEW.md`, `../fable-v2/`, the originals, the proposed files and the Astra reviews are untouched. Nothing was staged, committed, pushed or executed.
+
+## Second addendum — correction pass after the batch review (2026-09-17)
+
+Specified by `../reviews/2026-09-17-v2.2-external-evidence-batch-review.md` (C1 to C3); described in `CHANGES.md` under the same heading. "Before" is the state after the External Evidence Reconciliation addendum above; "after" is the state committed with this pass. No file added or deleted; this manifest cannot record its own resulting hash.
+
+| File | Before SHA-256 | After SHA-256 | Bytes before → after | Finding |
+|---|---|---|---|---|
+| pipeline/SKILL.md | `a39d797f2c4ae611e292e8f70d3d5359616d6e73953448a7cef4576f97aad0db` | `6fa7a065673717c0e01efb5544eac155401ea67d56389af9407b3a22942972b7` | 21592 → 23205 | C1 |
+| references/handoff-contracts.md | `acde3c551b9632d51f74e1353221697268988a29aa9ac231211f1b5b908c660e` | `696d697e21ce78833302c981638b35e71c4cb2fc1ba1d43a7576c6b24354f8ba` | 22541 → 25444 | C1 |
+| agents/rstack-approval.agent.md | `6520862a8ef87aaab8a8de2a0dcf0a65dab90b881ebd734a33e41892a97ed1cd` | `97019a4462dbdb21b7fd48ba92682e0cac5d296482c322f9383116ff1280e243` | 12406 → 12538 | C1 |
+| references/approvals.md | `33e6e4f3a313a481d7c77690af17a0501a5d5eaeddf1cf09437bd91210a8ad90` | `d83aa3a0d8d209cb0d78cb96a9cbfbf12d9a70719072a1a2ad00fcafafc18b11` | 6611 → 6923 | C1 pointer |
+| references/harness-map.md | `696687764008c659acdc2ddb46a29d2680d155ae4272d81371e44d2c392655e1` | `f1f8985bacfaa4eb4d9c45f85832c8c68f0ba351ba8cf1b06007919a643685ab` | 8314 → 9537 | C2 |
+| references/write-boundaries.md | `ff8937b8248535f647ce71d0b81462996315e9509be626621a33bc22870e01c2` | `2b20f04c76bbd0c158350ad577231e8e2696086e76707f941fc7688406e00c4f` | 10284 → 10705 | C2 |
+| references/discovery-cost.md | `4ee5026b65d70b2f9977a2c4a49d2b37e2e558f7037281ef5a4b47f57a40a58d` | `df9886a0a208b4ba9c33a5a360d97e0112eb1d56ec66afc90f31c90211faa264` | 7946 → 9769 | C3 |
+
+Seven files: 89,694 → 98,121 bytes (+8,427). Unchanged in this pass: every other file in the folder, including the orchestrator, team adoption and OPEN-DECISIONS, which the review kept as written. The first addendum's "no procedure was duplicated" line was overstated, as the review found; it stands as history and is corrected by this pass. Note also that the opening sentence of this manifest ("`rstack-pipeline/` is covered by the repository's existing ignore rule") described the state at the time it was written; the folder is tracked in Git now.

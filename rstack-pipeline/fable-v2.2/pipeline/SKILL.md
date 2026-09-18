@@ -17,6 +17,7 @@ Read `principles`, `prove-it` and `ac-matrix` before driving a run. Investigatio
 | Concern | Owner |
 |---|---|
 | States, routing, candidate freshness, review/release predicates, fresh dispatch | this file |
+| Recovery after an external action whose result is unknown | this file (Unknown external effects); the record shape is in handoff-contracts.md |
 | Artifact shape, result envelope, evidence rounds | ../references/handoff-contracts.md |
 | Write lanes, locks, exceptions | ../references/write-boundaries.md |
 | Authorization and external actions | ../references/approvals.md |
@@ -73,7 +74,7 @@ Where a state has no more specific token, a role that cannot complete returns `S
 | 6 RELEASE_BLOCKED | the owner named for each blocker; a human-owned blocker stops the run. Nothing is published |
 | Any STOPPED | the owner named in Blockers; a human-owned or unowned blocker stops the run |
 | Run stops or ends while approval holds protected user work | report the recorded protection identity and its unrestored status; restoration follows the human's choice under Freshness below. A run never ends silently holding user work |
-| Any execution still running or outcome unknown | stop advancement; reconcile that execution before any replacement execution |
+| Any execution still running, or an external action whose result is unknown | stop advancement; reconcile under **Unknown external effects** below before any replacement execution or any retry; still unknown after reconciliation → `STOPPED` with a human-owned blocker |
 | Any malformed handoff, merge conflict or human-owned blocker | stop and name the missing fact/decision |
 
 **Owner first, at both targets** (owner decision on OD-18, 2026-09-17). A verification failure owned by production goes to dev, a test problem goes to tester, and a criterion/scope problem goes to planner, at WORKTREE and at candidate alike, locked or not; the rows above say the same thing and neither target has a second route. Only failures this run does not own (replay-supported pre-existing, environment, human-owned) or whose attribution is UNKNOWN travel to review, and UNKNOWN is disclosed as UNKNOWN: the shown gate does not attribute failures, and a basename match is not attribution. Review may diagnose complete known-failing evidence; it cannot authorize release. Never loop on a known pre-existing failure merely to turn it green.
@@ -162,7 +163,23 @@ Preserve the shown `PASS | BLOCKED | HELD` interface and exit codes; never redef
 
 Record raw gate output. Do not override it with optimistic prose. Gate evaluation for review and release is separate: a BLOCKED AC or full-suite result can accompany a diagnostic review, never a clean release.
 
-Pending/lost execution is recorded separately as execution status, not recast as the gate's HELD. Recover attributable original output when possible; otherwise obtain an authorized replacement run after accounting for the old process and side effects. No parallel duplicate test runs or publication retries after an unknown outcome.
+Pending/lost execution is recorded separately as execution status, not recast as the gate's HELD. Recover attributable original output when possible; otherwise obtain an authorized replacement run after accounting for the old process and side effects. No parallel duplicate test runs, and no publication retry, after an unknown outcome: the rule below owns that case.
+
+### Unknown external effects
+
+An external action is any externally visible mutation: a push, pull-request creation, a Jira write or transition, a Bitbucket write, a wiki write, or anything else another system can observe. Each action has one publication record in approval.md (`../references/handoff-contracts.md`): the intent written before the attempt, the immutable attempt result, and zero or more appended reconciliation lines, the latest supported one being the current known state. Push, PR creation and each tracker or wiki write are separate actions with separate records; a successful push followed by a failed PR creation is two outcomes, never one `PARTIAL`.
+
+When an attempt's result is not known — a timeout, a lost response, an interrupted session, a tool error after the request may have left the machine, a human-performed action reported but not yet read back — the pipeline never retries it blindly:
+
+1. **Record the attempt** against its intent: action, exact candidate, exact target, the retained command or payload. An intent with no result is an unresolved attempt, not a known failure.
+2. **Mark the attempt result `UNKNOWN`.** `UNKNOWN` is not a failure and not a success, and it is never permission to try again.
+3. **Reconcile through the target's read interface** and append the conclusion as a reconciliation line with its evidence and provenance and an intent comparison (does the remote object match the authorized candidate, target and content: match, mismatch, or unavailable). Which reads and comparisons apply to each action is the approval role's procedure. An absent object or empty listing establishes failure only when the interface establishes that the earlier request is terminal and had no effect; otherwise the state stays `UNKNOWN`.
+4. **If the effect still cannot be established**, stop: during state 6 that is the existing `STOPPED` result with a human-owned blocker naming the action, candidate, target and what was read (state 0's `NEEDS_HUMAN` is the same stop at preflight). The human decides the recovery action and may supply independently checkable evidence; a decision alone does not establish an external fact, and the evidence rules are not relaxed for it.
+5. **Preserve the possibility that the first attempt succeeded** throughout: an established matching success is reused, never repeated; an established terminal failure with no successful or unknown remainder may be retried only within still-current authorization; `UNKNOWN` stops advancement and retry; `PARTIAL` resumes only the individually reconciled, unfinished components. A remote object that differs from the authorized intent is a human decision, never an in-place repair or a duplicate creation.
+
+The current known state is the latest supported observation for that action and intent, as of that observation; a newer unsupported statement does not replace it, and it is not an assertion about future remote state — recheck before any dependent action. Every unresolved intent is recovered before any new publication attempt, including after an interruption. Publication outcome, eligibility and gate PASS/BLOCKED/HELD stay separate.
+
+Approval is the sole **agent** publisher and owns publication preparation and reconciliation for either performer, human or agent; other roles cite this rule and do not restate it.
 
 ## Fresh dispatch
 
@@ -178,6 +195,6 @@ Track blocker identity and turn count. Three consecutive turns with unchanged bl
 
 One active writable repository per run. Related tickets may share source candidate, lock, suite and review; keep a separate AC matrix for each ordered key and validate all. Resolve paths through the actual runtime; do not duplicate a parser in prose.
 
-Human checkpoints include scope decisions, boundary exceptions, amendments, freeze commit, conflicts, re-integration, enabled exceptions, each external effect, restoring protected work when a run stops early, and convergence. Silence is not permission. No agent merges a PR.
+Human checkpoints include scope decisions, boundary exceptions, amendments, freeze commit, conflicts, re-integration, enabled exceptions, each external effect, an external action whose result stays unknown after reconciliation, restoring protected work when a run stops early, and convergence. Silence is not permission. No agent merges a PR.
 
 Final report: unproven items first, then per-AC proof, review and candidate/packet identity, raw gate outcome including accepted gaps/NO_CLAIM, loop counts, user-work restoration status, and the single next human decision. Never equate fewer instructions with demonstrated behavioral improvement.
