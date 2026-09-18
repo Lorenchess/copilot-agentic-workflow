@@ -1,4 +1,4 @@
-# ASTRA — Phase 5 final assembled reference review
+# CHATGPT — Phase 5 final assembled reference review
 
 **Reviewed revision:** `b9216f99fcb183f71fdd47f6084eb784d821cc14`.
 **Recommendation: READY_TO_PUSH_AND_LOCK_PHASE_5.**
@@ -8,7 +8,7 @@
 
 This review evaluates the assembled reference from Jira intake through delivery, including the Phase 5 forward changes. It does not reopen the historical reference tags or claim validation in the corporate Copilot environment. The Phase 5 starting revision is `23b6ef26591cc3e48d8cd98bc75bcc8f7a4b29db`.
 
-Astra independently read the operating agents, relevant policy skills, FLOW, contracts, guardrails, settings and model-role material, and compared the current LARGE/SMALL examples and prior checkpoint evidence. The failure paths below were reasoned from those procedures. Source inspection and static checks are actual observations; example runner output remains fictional. No example Maven command, corporate Copilot session, Jira or Bitbucket call, database/Kafka integration, benchmark, or runtime fault injection was executed in this review.
+ChatGPT independently read the operating agents, relevant policy skills, FLOW, contracts, guardrails, settings and model-role material, and compared the current LARGE/SMALL examples and prior checkpoint evidence. The failure paths below were reasoned from those procedures. Source inspection and static checks are actual observations; example runner output remains fictional. No example Maven command, corporate Copilot session, Jira or Bitbucket call, database/Kafka integration, benchmark, or runtime fault injection was executed in this review.
 
 ## Assembled architecture assessment
 
@@ -74,7 +74,7 @@ All checkpoints are accepted:
 | P5-C2 | `54b900b748d80aff48300e845016c359d7c0b702` | 1 | PASS; one material draft finding closed |
 | P5-C3 | `b9216f99fcb183f71fdd47f6084eb784d821cc14` | 2 | PASS; two material trace/routing findings closed |
 
-The separate untracked checkpoint reviews record each correction and its actual-source closure. No checkpoint exceeded its correction bound. Astra's final assessment above was derived independently from the operating procedures; it does not rely on Sol's trace or self-report as proof.
+The separate untracked checkpoint reviews record each correction and its actual-source closure. No checkpoint exceeded its correction bound. ChatGPT's final assessment above was derived independently from the operating procedures; it does not rely on Sol's trace or self-report as proof.
 
 Final static checks at the reviewed revision: the total Phase 5 diff contains exactly the 13 authorized files; 93 pre-existing frozen files, including historical reviews, retain their starting SHA-256 hashes. Settings, model roles, all examples and prior-phase specifications/proposals are unchanged. All nine agents' active tool lists match the starting revision except PR's sole `edit/editFiles` addition. Complete G1–G4 sections are unchanged in Pipeline and FLOW. C1 preserved the STOP catalog/messages and allowed command forms; subsequent checkpoints did not touch operating files. The contract's approved 161-line prefix is preserved. The 23-case trace was read and checked, new source links were checked, whitespace checks passed, and the tracked working tree and index are clean. `docs/reviews/` is intentionally untracked.
 
@@ -85,7 +85,7 @@ All four local historical tag objects and peeled targets match the starting evid
 - Phase 3: `20939cc9ff00a9091042f0e3fb3c74194c7e583b`.
 - Phase 4: `9a7e704cf328b161b08cc0e903a883ef340d4368`.
 
-Sol authoring was independently verified from the delegated session's platform `turn_context` as `gpt-5.6-sol` with high reasoning effort, including refreshed C1/C2 context. Root/Astra performed architecture supervision, actual-file review, review-artifact writing and Git operations; Sol performed every implementation/correction edit. Reference runtime Sonnet 5 remains a separate, unverified corporate assignment.
+Sol authoring was independently verified from the delegated session's platform `turn_context` as `gpt-5.6-sol` with high reasoning effort, including refreshed C1/C2 context. Root/ChatGPT performed architecture supervision, actual-file review, review-artifact writing and Git operations; Sol performed every implementation/correction edit. Reference runtime Sonnet 5 remains a separate, unverified corporate assignment.
 
 ## Final decision
 

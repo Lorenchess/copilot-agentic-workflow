@@ -21,7 +21,7 @@ The photographs show these leads, not a complete installation map:
 | AC compatibility changes | plugins/rstack/skills/ac-matrix/scripts/ac-check.mjs plus skill/template producers | Authored script photographed; skill bodies not established |
 | Remaining runtime support | actual lock/replay/role/estate/OTel/capture/response/installer sources and fixtures | SOURCE DEPENDENCY |
 
-A relative link that works in this candidate may need rewriting by the actual generator. Do not preserve this layout mechanically. These agent frontmatters inherit Fable model/tool names; validate availability and effective grants in the target host, or select the team's approved equivalents. No new model policy is implied.
+A relative link that works in this candidate may need rewriting by the actual generator. Do not preserve this layout mechanically. These agent frontmatters inherit Claude model/tool names; validate availability and effective grants in the target host, or select the team's approved equivalents. No new model policy is implied.
 
 ## 2. Apply in small, reviewable slices
 

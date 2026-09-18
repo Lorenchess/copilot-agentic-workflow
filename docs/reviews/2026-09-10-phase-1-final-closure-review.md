@@ -1,4 +1,4 @@
-# ASTRA — PHASE 1 FINAL CLOSURE REVIEW
+# CHATGPT — PHASE 1 FINAL CLOSURE REVIEW
 
 Reviewed revision: `7fc98b4ae70e5018392fc010a795a234f27e04bb`
 
@@ -14,7 +14,7 @@ Four findings close. The original existing-PR reuse defect is corrected, but its
 
 This was a targeted closure review of R1–R6 and material regressions introduced by the two correction commits, not a new architecture audit. Local HEAD and `origin/main` both resolved to the reviewed revision; remote alignment was also supplied in the handoff. Live remote state was not independently queried during this review. All source links below are pinned to the reviewed revision, except the explicitly labeled before-change comparison.
 
-The review compared the actual changed agents, contracts, flow, skills, approval settings, example artifacts, and comparison guidance. Amendments A8–A10 were evaluated together with the earlier applicable amendments. Fable's and Sonnet's completion statements were not treated as closure evidence.
+The review compared the actual changed agents, contracts, flow, skills, approval settings, example artifacts, and comparison guidance. Amendments A8–A10 were evaluated together with the earlier applicable amendments. Claude's and Sonnet's completion statements were not treated as closure evidence.
 
 One isolated experiment evaluated the checked-in terminal approval regexes in memory using JavaScript, including false-rule precedence: 22 intended command forms and 15 unsafe or unsupported command strings, with zero unexpected results. None of those command strings was executed. This was not a test of Copilot's approval engine.
 
@@ -60,7 +60,7 @@ The remaining problem is the interaction between successful delivery and reporti
 
 **Concrete failure scenario:** With a maximum of five attempts, delivery succeeds on attempt two and its ledger-report call fails. AC3 schedules no further attempt. The configured budget is not exhausted, so AC5 does not require the UNREPORTED marker. The report is neither retried nor required to leave the promised visible terminal record. The shown re-reporting test and exhausted-budget test can both pass while this case loses the report silently.
 
-**Minimum correction:** Define the reporting outcome whenever delivery becomes terminal with an unreported attempt, including success before the maximum. The smallest direction is to extend the already accepted local-marker outcome to that case and show the corresponding acceptance scenario/test/evidence, subject to Fable's product-decision review. Keep PLAN, the fictional G3/adversary decision, TEST-CONTRACT, RED/GREEN/verification evidence, and final claims aligned. No durable queue or reconciliation service is required by this finding.
+**Minimum correction:** Define the reporting outcome whenever delivery becomes terminal with an unreported attempt, including success before the maximum. The smallest direction is to extend the already accepted local-marker outcome to that case and show the corresponding acceptance scenario/test/evidence, subject to Claude's product-decision review. Keep PLAN, the fictional G3/adversary decision, TEST-CONTRACT, RED/GREEN/verification evidence, and final claims aligned. No durable queue or reconciliation service is required by this finding.
 
 **Residual limitation:** UNREPORTED makes an audit gap observable locally; it does not guarantee later ledger persistence. Reconciliation and alerting are explicitly out of scope. That is acceptable when stated and approved honestly.
 
@@ -135,6 +135,6 @@ Those intentionally deferred items are not reasons for the recommendation. Readi
 1. Reject a freshly observed remote-SHA mismatch before creating a new PR, just as the reuse path does.
 2. Define and demonstrate the ledger-reporting outcome when delivery succeeds before its retry budget is exhausted.
 
-Both can be resolved within the existing agents, contract prose, and fictional example. Fable should independently evaluate these findings and propose the minimum correction scope. This report authorizes no implementation changes and does not begin Phase 2.
+Both can be resolved within the existing agents, contract prose, and fictional example. Claude should independently evaluate these findings and propose the minimum correction scope. This report authorizes no implementation changes and does not begin Phase 2.
 
 **TARGETED_CORRECTION_REQUIRED**

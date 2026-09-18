@@ -1,4 +1,4 @@
-# ASTRA — P5-C1 implementation review
+# CHATGPT — P5-C1 implementation review
 
 **Reviewed revision:** `f3aa9d425868fa48d934a065872c32b367015cba`.
 **Base:** approved contract `1619532eae6882af8b80c0116f413e139da37f5a`.
@@ -29,7 +29,7 @@ Precision corrections also removed an obsolete optional post-create-read descrip
 
 The actual seven-file diff and assembled instructions were read. Tool-entry comparisons, complete gate-section comparisons, unchanged STOP sections, staged scope, whitespace checks, and working-copy SHA-256 comparisons against the Phase 5 starting snapshot were checked. Only the seven authorized operating files changed. Earlier examples, specifications, reviews, settings, other agents and policy skills remain unchanged. The sole executable tool-entry addition is PR's `edit/editFiles`; its commented MCP descriptions now explain the required read behavior, while their placeholder identities remain unconfirmed. No command form, agent, gate, STOP code or run artifact was added. The PR-description basis is a section of an existing artifact.
 
-The scenarios above were reasoned against the procedures, not executed fault-injection tests. No fictional runner, corporate Copilot, Jira or Bitbucket operation was run. Sol's implementation model was independently verified from platform turn metadata as `gpt-5.6-sol`; Astra reviewed actual output and performed the local commit. This review remains untracked.
+The scenarios above were reasoned against the procedures, not executed fault-injection tests. No fictional runner, corporate Copilot, Jira or Bitbucket operation was run. Sol's implementation model was independently verified from platform turn metadata as `gpt-5.6-sol`; ChatGPT reviewed actual output and performed the local commit. This review remains untracked.
 
 ## Accepted boundaries
 

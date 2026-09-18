@@ -1,4 +1,4 @@
-# ASTRA — Phase 5 publication confirmation
+# CHATGPT — Phase 5 publication confirmation
 
 **PHASE 5: COMPLETE.** The five-phase reference pipeline is accepted, published and locked as a reference. Corporate validation remains **NOT VERIFIED**.
 
@@ -23,9 +23,9 @@ Live `git ls-remote` after both pushes returned the following exact values, all 
 
 ## Review, provenance and approval record
 
-All three checkpoints PASS. C1 used one correction round, C2 one and C3 two; five material checkpoint findings were closed. The final assembled Astra review reports no unresolved material finding or material regression. Sol performed all implementation, correction and administrative edits; Astra performed architecture, actual-file review, review-artifact writing and Git operations. The last administrative worker turn was independently checked in platform context as `gpt-5.6-sol`, high effort.
+All three checkpoints PASS. C1 used one correction round, C2 one and C3 two; five material checkpoint findings were closed. The final assembled ChatGPT review reports no unresolved material finding or material regression. Sol performed all implementation, correction and administrative edits; ChatGPT performed architecture, actual-file review, review-artifact writing and Git operations. The last administrative worker turn was independently checked in platform context as `gpt-5.6-sol`, high effort.
 
-Automatic approval review initially rejected the main push because the exact destination/payload authorization was not visible enough. No command ran in that rejected call. Astra re-read the user's attached request, including lines 145–180 and 681–701 explicitly authorizing the checkpoints, closure, commits/tag publication after acceptance, and remote verification; also exposed the exact configured GitHub destination and five-commit/13-file payload. The same guarded, explicit main-only push was then approved and succeeded. No alternate transport, indirect execution, broadened permission or new owner approval was used. Tag publication separately succeeded under the same explicit owner instruction.
+Automatic approval review initially rejected the main push because the exact destination/payload authorization was not visible enough. No command ran in that rejected call. ChatGPT re-read the user's attached request, including lines 145–180 and 681–701 explicitly authorizing the checkpoints, closure, commits/tag publication after acceptance, and remote verification; also exposed the exact configured GitHub destination and five-commit/13-file payload. The same guarded, explicit main-only push was then approved and succeeded. No alternate transport, indirect execution, broadened permission or new owner approval was used. Tag publication separately succeeded under the same explicit owner instruction.
 
 This confirms publication of the reference repository to `https://github.com/Lorenchess/copilot-agentic-workflow.git`. It does not validate corporate Jira/Bitbucket connectors, Copilot routing, the corporate approval engine, runners, database or Kafka proof. All 20 corporate-adoption rows remain NOT VERIFIED. Accepted N1–N3 maintenance debt, procedural trust limits, unmeasured defaults and non-atomic delivery remain documented.
 

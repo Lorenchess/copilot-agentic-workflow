@@ -1,4 +1,4 @@
-# Fable implementation report — round 2.2 on rstack-v2.1
+# Claude implementation report — round 2.2 on rstack-v2.1
 
 Date: 2026-09-17. Baseline: `../rstack-v2.1` (32 files). Candidate: this folder, created as a byte-identical copy of the baseline and then edited. Status: **awaiting independent review; not workplace-ready.**
 
@@ -12,7 +12,7 @@ Nothing was executed. Every correction below is contract text. No runtime script
 
 Status vocabulary: **IMPLEMENTED CONTRACT** (prose contract changed; nothing enforces or has exercised it) · **IMPLEMENTED RUNTIME** (none in this round) · **SOURCE-BLOCKED** · **DECISION-PENDING** · **NOT NEEDED**.
 
-Line references are to files in this folder (`fable-v2.2`), after the edit.
+Line references are to files in this folder (`claude-v2.2`), after the edit.
 
 ---
 

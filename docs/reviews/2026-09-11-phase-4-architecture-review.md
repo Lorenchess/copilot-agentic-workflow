@@ -1,9 +1,9 @@
-# ASTRA — PHASE 4 ARCHITECTURE REVIEW
+# CHATGPT — PHASE 4 ARCHITECTURE REVIEW
 
 **Recommendation:** `PROCEED_WITH_CHANGES`  
 **Status:** Independent review; proposal and owner decisions are not approved for implementation by this report.  
 **Material findings:** 5  
-**Decider:** Owner, after Fable/architect evaluates this review.  
+**Decider:** Owner, after Claude/architect evaluates this review.\
 **Date:** 2026-09-11
 
 Phase 4 is the right next investment. Strengthening Developer's handoff and Verifier's independent examination of the approved plan is more valuable than adding another reviewer stage. The proposal has a sound core, but its iteration/recovery rules, pre-existing-failure allowance, and integrity-restoration path need corrections before becoming an implementation contract. The semantic-review boundary also needs a narrow way to block demonstrable defects that lack a plan-item identifier.
@@ -131,4 +131,4 @@ The three checkpoints remain reasonable. N1 guide cleanup is now related to the 
 - Resolve restoration ownership and D3's evidence/verdict semantics before drafting implementation instructions. Use human restoration and conservative full-suite failure handling if the more permissive alternatives add disproportionate interface cost.
 - Extend the LARGE and SMALL examples as proposed, with focused traces for diagnostic exhaustion/resume, a handoff regression repaired before verification, a same-locus failure in an affected dependency, and restoration routing. These can be short document scenarios, not new end-to-end examples or runtime machinery.
 
-**Final recommendation: `PROCEED_WITH_CHANGES`.** Fable should evaluate M1–M5, obtain the owner's qualified D1–D4 decisions, and prepare the corrected contract for approval. This review authorizes no contract implementation, Sonnet dispatch, commit, push, tag movement, or Phase 5 work. The reviewed proposal and all locked assets remain unchanged.
+**Final recommendation: `PROCEED_WITH_CHANGES`.** Claude should evaluate M1–M5, obtain the owner's qualified D1–D4 decisions, and prepare the corrected contract for approval. This review authorizes no contract implementation, Sonnet dispatch, commit, push, tag movement, or Phase 5 work. The reviewed proposal and all locked assets remain unchanged.

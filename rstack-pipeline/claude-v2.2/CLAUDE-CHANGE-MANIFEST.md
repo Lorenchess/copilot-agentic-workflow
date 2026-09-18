@@ -1,8 +1,8 @@
-# Fable change manifest — fable-v2.2 against rstack-v2.1
+# Claude change manifest — claude-v2.2 against rstack-v2.1
 
 Generated 2026-09-17 by hashing files directly (SHA-256). `rstack-pipeline/` is covered by the repository's existing ignore rule, so `git status` and `git diff` show none of this work; every comparison here is file against file.
 
-Baseline: `rstack-pipeline/rstack-v2.1` (32 files). Result: `rstack-pipeline/fable-v2.2` (33 files plus this manifest, which cannot contain its own hash).
+Baseline: `rstack-pipeline/rstack-v2.1` (32 files). Result: `rstack-pipeline/claude-v2.2` (33 files plus this manifest, which cannot contain its own hash).
 
 | Set | Count |
 |---|---:|
@@ -15,8 +15,8 @@ Baseline: `rstack-pipeline/rstack-v2.1` (32 files). Result: `rstack-pipeline/fab
 
 | File | SHA-256 | Purpose |
 |---|---|---|
-| FABLE-IMPLEMENTATION-REPORT.md | `4aaaf7446324bb6f704dcb3debca6c6265c561d8155fbe8799e4cb4d196dbd4c` | New: findings, line references, before/after, E/R mapping, status, checks, risks. |
-| FABLE-CHANGE-MANIFEST.md | not self-recorded | This manifest |
+| CLAUDE-IMPLEMENTATION-REPORT.md | `4aaaf7446324bb6f704dcb3debca6c6265c561d8155fbe8799e4cb4d196dbd4c` | New: findings, line references, before/after, E/R mapping, status, checks, risks. |
+| CLAUDE-CHANGE-MANIFEST.md | not self-recorded | This manifest |
 
 ## Changed
 
@@ -64,7 +64,7 @@ Baseline: `rstack-pipeline/rstack-v2.1` (32 files). Result: `rstack-pipeline/fab
 
 None.
 
-## Preservation outside fable-v2.2
+## Preservation outside claude-v2.2
 
 Before any edit, every file then present under `rstack-pipeline/` was hashed (105 files). After the last edit each was hashed again.
 
@@ -72,7 +72,7 @@ Before any edit, every file then present under `rstack-pipeline/` was hashed (10
 |---|---:|---:|
 | (rstack-pipeline root) | 6 | 6 |
 | agents | 14 | 14 |
-| fable-v2 | 25 | 25 |
+| claude-v2 | 25 | 25 |
 | pipeline-skill | 2 | 2 |
 | references | 26 | 26 |
 | rstack-v2.1 | 32 | 32 |
@@ -83,7 +83,7 @@ The repository outside `rstack-pipeline/` was not written to: no file was create
 
 ## How to reproduce the comparison
 
-From `rstack-pipeline/`: hash both trees with any SHA-256 tool and compare, or run a recursive file diff of `rstack-v2.1` against `fable-v2.2`. Line-level findings for each changed operational file are in `FABLE-IMPLEMENTATION-REPORT.md`.
+From `rstack-pipeline/`: hash both trees with any SHA-256 tool and compare, or run a recursive file diff of `rstack-v2.1` against `claude-v2.2`. Line-level findings for each changed operational file are in `CLAUDE-IMPLEMENTATION-REPORT.md`.
 
 ## Addendum — External Evidence Reconciliation (2026-09-17)
 
@@ -102,11 +102,11 @@ The sections above are kept exactly as the independent review read them. This ad
 | references/team-adoption.md | `735afa82bf6c7b4d9232d32b507ae9f65b88b0a287b8176de6b34392e6093844` | `b3ed126f2576a613b9aa3df8ff44991b957ad6e413972277e87d884188ea69b2` | 4629 → 6128 | Adoption record item 10: host and SCM facts |
 | OPEN-DECISIONS.md | `561bbc4a667db5718e8489a766fbe8911b09bfa4ff53289ba8fe9d90b569ef6d` | `18f9d4793381aa93de85f4fabb4a0a8ff8e7cc835e3b590fab5313656aab5ff8` | 9166 → 14309 | Evidence status on OD-1 to OD-10; OD-21 to OD-27 (deferred host observations and experiments); open host questions |
 | CHANGES.md | `a6f51e9789805fc3d5ac99984b230a36d21eb300bddc96f521bc31851d564bef` | `1d3d2b3f47f2bb60d9fe591a06844099b0294296df63d4d7ed29d509950b465f` | 10139 → 15305 | Batch record, ownership delta, kept-unchanged list |
-| FABLE-CHANGE-MANIFEST.md | `769ce56999b590ab7fa3b2176abb3a937afe2dfd69babff8ffc583e1c5246e09` | not self-recorded | 10159 → (this addendum) | This addendum only |
+| CLAUDE-CHANGE-MANIFEST.md | `769ce56999b590ab7fa3b2176abb3a937afe2dfd69babff8ffc583e1c5246e09` | not self-recorded | 10159 → (this addendum) | This addendum only |
 
 Net size across the eleven hashed files: 106,403 → 132,253 bytes (+25,850, about +24%). The growth is contract text: one recovery rule, one record schema, one label vocabulary, one classification table, one adoption checklist and one open-decisions section; no procedure was duplicated into more than one owner.
 
-Unchanged in this batch (hashes as after the R22 round): the planner, plan-auditor, tester, dev and reviewer-architect agents; estate-layout, estate-instructions template, instruction-precedence, learnings, plan-interview, risk-tiers and rstack-process references; the standing rules; the session-start payload; both maintenance skills; README, SOURCE-EVIDENCE, RUNTIME-PATCH-PLAN, WORKPLACE-PORT, VALIDATION-PLAN, FABLE-IMPLEMENTATION-REPORT and both dated responses. Nothing outside this folder was modified; `../EXTERNAL-EVIDENCE-REVIEW.md`, `../fable-v2/`, the originals, the proposed files and the Astra reviews are untouched. Nothing was staged, committed, pushed or executed.
+Unchanged in this batch (hashes as after the R22 round): the planner, plan-auditor, tester, dev and reviewer-architect agents; estate-layout, estate-instructions template, instruction-precedence, learnings, plan-interview, risk-tiers and rstack-process references; the standing rules; the session-start payload; both maintenance skills; README, SOURCE-EVIDENCE, RUNTIME-PATCH-PLAN, WORKPLACE-PORT, VALIDATION-PLAN, CLAUDE-IMPLEMENTATION-REPORT and both dated responses. Nothing outside this folder was modified; `../EXTERNAL-EVIDENCE-REVIEW.md`, `../claude-v2/`, the originals, the proposed files and the ChatGPT reviews are untouched. Nothing was staged, committed, pushed or executed.
 
 ## Second addendum — correction pass after the batch review (2026-09-17)
 

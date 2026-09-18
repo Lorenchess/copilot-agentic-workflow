@@ -1,4 +1,4 @@
-# Fable harness proposal — reconciliation review
+# Claude harness proposal — reconciliation review
 
 **Review recommendation:** revise the proposal before implementation approval.
 
@@ -10,7 +10,7 @@
 
 ## 1. Reconciled direction
 
-Use Fable's proposal as the scope-correct starting point. Preserve Copilot-native configuration and documentation, existing agent ownership, G3/G4 authority, budgets, verdict semantics, and the reference/corporate boundary. Do not introduce a runner wrapper, scripts, hooks, schemas, services, or a policy engine under the current scope.
+Use Claude's proposal as the scope-correct starting point. Preserve Copilot-native configuration and documentation, existing agent ownership, G3/G4 authority, budgets, verdict semantics, and the reference/corporate boundary. Do not introduce a runner wrapper, scripts, hooks, schemas, services, or a policy engine under the current scope.
 
 The earlier ChatGPT recommendation to implement a wrapped test operation is withdrawn as the next deliverable for this repository. It described an executable-harness direction, whereas this proposal explicitly restricts the repository to declarative Copilot assets. That scope distinction must not be erased by either analysis.
 

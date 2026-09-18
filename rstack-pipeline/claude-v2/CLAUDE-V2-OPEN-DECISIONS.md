@@ -1,4 +1,4 @@
-# Fable V2 — open human decisions
+# Claude V2 — open human decisions
 
 Only decisions a human must make. Each entry gives what V2 does **until** the decision is made, so the set is usable as it stands, and nothing below was decided silently.
 
@@ -8,7 +8,7 @@ Status of all: **OPEN — awaiting owner.**
 
 ## OD-1 — Add a pre-implementation Test Challenge state?
 
-**Question.** Should a fresh role challenge the locked tests *before* the developer starts (a state 2b), as Astra's review of the Copilot reference keeps?
+**Question.** Should a fresh role challenge the locked tests *before* the developer starts (a state 2b), as ChatGPT's review of the Copilot reference keeps?
 
 **What exists without it.**
 
@@ -51,7 +51,7 @@ So test adequacy **is** independently challenged without self-review — but onl
 
 **Options.** (A) experimental, human-curated (default); (B) standard, with the orchestrator's automatic append and the `learnings-check.mjs` validator restored — reinstates a write lane, a validator nothing consumes, and a standing read cost; (C) remove entirely and put durable repository facts in the repository's own docs and tests.
 
-**Evidence that would settle it.** The decision test in `discovery-cost.md`: a repeated, material rediscovery cost across at least three representative runs, and a named human judging that an entry changed or shortened a decision. Astra's position is that the value is unproven; nothing in the reconstruction contradicts that (the original harness map says nothing had written a learning yet).
+**Evidence that would settle it.** The decision test in `discovery-cost.md`: a repeated, material rediscovery cost across at least three representative runs, and a named human judging that an entry changed or shortened a decision. ChatGPT's position is that the value is unproven; nothing in the reconstruction contradicts that (the original harness map says nothing had written a learning yet).
 
 ---
 
@@ -90,7 +90,7 @@ So test adequacy **is** independently challenged without self-review — but onl
 **V2 default.** A local commit on the ticket branch, created at freeze, plus its tree, the plan revision, the test-lock revision and the suite command, recorded in `candidate.md` by the approval role (so: agent-typed).
 
 **Open points.**
-1. **Commit or tree?** A commit is simple and robust; a tree id would survive a metadata-only change (message edit, no-op merge) without staling review. V2 uses the commit and treats tree equality as *not* established — Astra's ADR-04 warns against assuming equivalence.
+1. **Commit or tree?** A commit is simple and robust; a tree id would survive a metadata-only change (message edit, no-op merge) without staling review. V2 uses the commit and treats tree equality as *not* established — ChatGPT's ADR-04 warns against assuming equivalence.
 2. **Who computes it?** Ideally a tool writes `candidate.md`; today an agent does.
 3. **Is there a lock revision id?** The lock file's path and format are tool-owned and unknown here.
 4. **Durable record.** `ac.tsv` is no longer committed (that removes the self-referential SHA problem both the original and the proposal left open). The durable record becomes the PR's verification table naming the candidate. If the team requires an in-repo record, it must be added in a way that is not part of the evaluated commit — e.g. by the merge process, outside the pipeline.
@@ -103,7 +103,7 @@ So test adequacy **is** independently challenged without self-review — but onl
 | # | Decision | V2 default |
 |---|---|---|
 | OD-7 | Default order at a candidate: full verification before review, or review on scoped evidence first? | Full first; scoped-review option selectable per estate. Both bind to the same candidate, so either is safe |
-| OD-8 | Keep the pre-existing-failure waiver and accepted-unrecorded-rung paths at all? Astra keeps strict full-suite PASS in the Copilot reference | Kept, because they exist in the reconstructed rstack; confined to release, reported as `RELEASE_BLOCKED proceedable`, never a pass, never a bypass of review |
+| OD-8 | Keep the pre-existing-failure waiver and accepted-unrecorded-rung paths at all? ChatGPT keeps strict full-suite PASS in the Copilot reference | Kept, because they exist in the reconstructed rstack; confined to release, reported as `RELEASE_BLOCKED proceedable`, never a pass, never a bypass of review |
 | OD-9 | Drop the `evidence-auditor` sub-agent from approval? It is named in the reconstruction but undefined anywhere | Dropped: ambiguous evidence routes to the tester |
 | OD-10 | Keep manual-mode chat handoffs? | Kept only between non-fresh roles; none into the auditor or reviewer, because a handoff carries context |
 | OD-11 | The post-merge `docs` workflow and its deletion rules | Left to the `docs` skill; V2 only keeps the write-lane line and "never start it yourself" |

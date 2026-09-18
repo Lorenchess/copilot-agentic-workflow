@@ -12,7 +12,7 @@ This is an architectural application of the four official articles listed under 
 
 Preserve the current declarative scope: no new scripts, hooks, runtime, policy engine, tool wrappers, services, or executable schemas. Preserve role/mode access, the four gates, existing verdicts and STOP semantics, execution allowances, single-writer constraints, and historical references. G3 continues to govern approved planning and eligible bounded local implementation; G4 continues to govern publication. No model or permission change follows from this review.
 
-The uploaded Fable proposal is a draft, not evidence that H1–H6 have been implemented or approved. This addendum supplements the earlier reconciliation; it does not reinstate its rejected timeout or permission-promotion semantics.
+The uploaded Claude proposal is a draft, not evidence that H1–H6 have been implemented or approved. This addendum supplements the earlier reconciliation; it does not reinstate its rejected timeout or permission-promotion semantics.
 
 ## Decision
 
@@ -141,7 +141,7 @@ No automatic cleanup agent, scheduled sweep, opportunistic refactoring or auto-m
 
 **Acceptance:** a candidate lesson neither grants permission nor becomes a current rule before promotion; a later obsolete lesson can be retired without deleting its history or weakening current controls.
 
-## Reconciliation with Fable H1–H6
+## Reconciliation with Claude H1–H6
 
 | Item | Disposition |
 |---|---|

@@ -1,4 +1,4 @@
-# ASTRA — PHASE 4 CONTRACT REVIEW
+# CHATGPT — PHASE 4 CONTRACT REVIEW
 
 **Recommendation:** `TARGETED_CORRECTION_REQUIRED` before approving the contract for implementation.  
 **Reviewed:** Draft revision 1, 524 lines, 2026-09-11.  

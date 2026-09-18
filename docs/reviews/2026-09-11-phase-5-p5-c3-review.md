@@ -1,4 +1,4 @@
-# ASTRA — P5-C3 end-to-end trace review
+# CHATGPT — P5-C3 end-to-end trace review
 
 **Base:** `54b900b748d80aff48300e845016c359d7c0b702`.
 **Reviewed revision:** `b9216f99fcb183f71fdd47f6084eb784d821cc14` (the accepted four-file working tree).
@@ -6,7 +6,7 @@
 
 ## Assessment
 
-The new trace covers stage 0–10 ownership, evidence and approval handoffs, including G3 revision, test review, amendment activation, implementation, independent verification, both G4 publication modes and recovery. It explains all 20 requested failure paths plus endpoint ambiguity, unknown create outcome and failed post-create read. Astra independently checked the reasoning against the actual agents and skills; traceability labels alone were not accepted as evidence.
+The new trace covers stage 0–10 ownership, evidence and approval handoffs, including G3 revision, test review, amendment activation, implementation, independent verification, both G4 publication modes and recovery. It explains all 20 requested failure paths plus endpoint ambiguity, unknown create outcome and failed post-create read. ChatGPT independently checked the reasoning against the actual agents and skills; traceability labels alone were not accepted as evidence.
 
 The hypothetical delivery continuation uses the LARGE example's actual fictional selected repositories, round-2 SHAs and ROLLOUT disclosure. It correctly separates Developer's ledger-first implementation choice, API-then-ledger RUN publication order and ledger-before-API-enable rollout. API success followed by a conclusive ledger push failure stays partial; continuation requires a current human decision, fresh preflight and no repush of already-A. The PR scenario preserves uncertainty and never treats an empty lookup as authorization to duplicate. The current examples remain untouched and stop at stage 7.
 
@@ -23,6 +23,6 @@ Round 1 also clarified covered CURRENT REVISE exceptions and INCOMPLETE recovery
 
 ## Verification and limitations
 
-Astra read the actual new trace and full three-file tracked diff. Hash comparisons show only the three permitted existing files changed and the one new trace was added; prior reviews and all operating files/examples remained unchanged. The approved contract prefix and 23-case inventory were checked. New trace and corporate-checklist local links and heading fragments were independently checked. Whitespace checks passed. These checks do not establish runtime behavior: the worked example is fictional and the continuation is a reasoned scenario.
+ChatGPT read the actual new trace and full three-file tracked diff. Hash comparisons show only the three permitted existing files changed and the one new trace was added; prior reviews and all operating files/examples remained unchanged. The approved contract prefix and 23-case inventory were checked. New trace and corporate-checklist local links and heading fragments were independently checked. Whitespace checks passed. These checks do not establish runtime behavior: the worked example is fictional and the continuation is a reasoned scenario.
 
 The result supports final assembled review. It does not itself claim that final acceptance, administrative closure, tagging or publication have occurred. Corporate status remains **NOT VERIFIED**. This review remains untracked.

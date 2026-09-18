@@ -1,4 +1,4 @@
-# ASTRA — PHASE 4 PUBLICATION CONFIRMATION
+# CHATGPT — PHASE 4 PUBLICATION CONFIRMATION
 
 **PHASE 4: COMPLETE.** Final assembled review: **PASS**, no unresolved material findings or material regressions. Publication used the owner's explicit Phase 4 takeover authorization, not an inferred approval from a review recommendation.
 
@@ -12,7 +12,7 @@
 | P4-C3 / independently reviewed reference | `9a7e704cf328b161b08cc0e903a883ef340d4368` |
 | Separate administrative closure | `23b6ef26591cc3e48d8cd98bc75bcc8f7a4b29db` |
 
-The administrative diff was independently reviewed: two README status lines and an appended contract §11, with every prior contract byte of text preserved. No operating or example asset changed after the reviewed reference. Sol made both edits and the narrow README wording correction; Astra reviewed, staged the exact two-file set, and committed. Final review: `docs/reviews/2026-09-11-phase-4-final-implementation-review.md`. C2 review: `docs/reviews/2026-09-11-phase-4-p4-c2-implementation-review.md`.
+The administrative diff was independently reviewed: two README status lines and an appended contract §11, with every prior contract byte of text preserved. No operating or example asset changed after the reviewed reference. Sol made both edits and the narrow README wording correction; ChatGPT reviewed, staged the exact two-file set, and committed. Final review: `docs/reviews/2026-09-11-phase-4-final-implementation-review.md`. C2 review: `docs/reviews/2026-09-11-phase-4-p4-c2-implementation-review.md`.
 
 ## Actual publication and verification
 
@@ -35,6 +35,6 @@ All values match locally and remotely. Phase 1–3 tag objects and targets are u
 
 N1 normative repetition, N2 third-FAIL/special-STOP wording, and N3 envelope-template precision remain accepted non-blocking debt, recorded in contract §§10–11. Phase 3's stale comparison-guide summaries were corrected. The procedure and examples are reference evidence, not corporate Copilot validation: budgets and model compliance are procedural, ignored/generated state and concurrent external changes remain host limits, and corporate picker/tool/approval checks and benchmarks remain deferred.
 
-Historical Sonnet/Fable authorship was preserved. All post-takeover implementation/correction edits were made by GPT-5.6 Sol, whose actual runtime model and high effort were verified from platform turn-context metadata; Astra supervised and independently inspected the changes. The reference pipeline's own Sonnet-5 runtime assignment was not changed. No fictional application test command was executed.
+Historical Sonnet/Claude authorship was preserved. All post-takeover implementation/correction edits were made by GPT-5.6 Sol, whose actual runtime model and high effort were verified from platform turn-context metadata; ChatGPT supervised and independently inspected the changes. The reference pipeline's own Sonnet-5 runtime assignment was not changed. No fictional application test command was executed.
 
 **PHASE 5: NOT STARTED / NOT AUTHORIZED. Stop here.**

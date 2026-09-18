@@ -1,4 +1,4 @@
-# ASTRA — Phase 3 publication confirmation
+# CHATGPT — Phase 3 publication confirmation
 
 **Date:** 2026-09-11  
 **Result:** `PHASE_3_REFERENCE_PUBLICATION_CONFIRMED`  
@@ -37,7 +37,7 @@ The [new §11](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic
 
 The handoff reports Sonnet applied A1 and the architect reviewed and committed it. The resulting content matches the reviewed draft; this review does not independently attest the implementer's runtime model identity.
 
-For a precise process record, Astra's [closure-actions review](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/reviews/2026-09-11-phase-3-closure-actions-review.md>) recommended A1–A4 for owner authorization and explicitly did not grant that authorization. The handoff says the owner forwarded the suggested “Authorize A1–A4” instruction. If forwarded as the owner's instruction, that supplies the authorization; the review verdict or an unadopted suggested prompt alone does not. Git state confirms publication and content, not the approval exchange. This distinction does not change the technical reference-readiness conclusion.
+For a precise process record, ChatGPT's [closure-actions review](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/reviews/2026-09-11-phase-3-closure-actions-review.md>) recommended A1–A4 for owner authorization and explicitly did not grant that authorization. The handoff says the owner forwarded the suggested “Authorize A1–A4” instruction. If forwarded as the owner's instruction, that supplies the authorization; the review verdict or an unadopted suggested prompt alone does not. Git state confirms publication and content, not the approval exchange. This distinction does not change the technical reference-readiness conclusion.
 
 ## Closeout
 

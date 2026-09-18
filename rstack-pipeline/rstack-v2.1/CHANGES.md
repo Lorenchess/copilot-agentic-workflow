@@ -1,6 +1,6 @@
-# Changes from fable-v2
+# Changes from claude-v2
 
-This revision is an editable candidate built from the preserved Fable draft and the 44 photographs. It changes the contract where the draft contradicted visible code, and records the runtime work needed to enforce stronger guarantees. It does not claim that the proposed controls already run.
+This revision is an editable candidate built from the preserved Claude draft and the 44 photographs. It changes the contract where the draft contradicted visible code, and records the runtime work needed to enforce stronger guarantees. It does not claim that the proposed controls already run.
 
 | Change | Files | Reason / evidence |
 |---|---|---|
@@ -31,4 +31,4 @@ The normal release route permits no accepted observation gaps. A separate, disab
 
 ## Preservation and validation boundary
 
-Original reconstruction files, Astra reviews and fable-v2 remain unchanged. New files live only in rstack-v2.1. No executable script, generated workplace copy, host setting or installed skill was modified. No build, lint, test, browser, agent evaluation, commit, push or deployment was run for this revision.
+Original reconstruction files, ChatGPT reviews and claude-v2 remain unchanged. New files live only in rstack-v2.1. No executable script, generated workplace copy, host setting or installed skill was modified. No build, lint, test, browser, agent evaluation, commit, push or deployment was run for this revision.

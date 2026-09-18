@@ -28,7 +28,7 @@ The evidence supports an experiment, not immediate adoption. Neither the inspect
 
 Capability sensitivity: MEDIUM overall. Deep engineering reasoning requirement: LOW.
 
-The actual Orchestrator is a constrained dispatcher. It must preserve result envelopes, compare artifact identities, enforce routing prerequisites, obtain fresh audit contexts, relay human decisions, and stop on unknown execution outcomes. It is expressly prohibited from planning, interpreting findings, or judging implementation correctness. (Orchestrator contract, `fable-v2.2/agents/rstack-orchestrator.agent.md`, line 15.)
+The actual Orchestrator is a constrained dispatcher. It must preserve result envelopes, compare artifact identities, enforce routing prerequisites, obtain fresh audit contexts, relay human decisions, and stop on unknown execution outcomes. It is expressly prohibited from planning, interpreting findings, or judging implementation correctness. (Orchestrator contract, `claude-v2.2/agents/rstack-orchestrator.agent.md`, line 15.)
 
 That makes Sonnet 5 a plausible fit. Most authorized decisions should follow explicit fields and conditions rather than require difficult architectural judgment.
 
@@ -56,7 +56,7 @@ Capability sensitivity: HIGH.
 
 The Planner has substantially more reasoning work. It must reconcile ticket intent with repository facts, identify affected surfaces, preserve scope boundaries, distinguish assumptions from authorized requirements, construct falsifiable acceptance criteria, select proof routes, and decompose implementation.
 
-The contract also requires finding when the current behavior already satisfies the request and returning that decision to the human. That demands understanding the problem rather than merely generating a plausible change list. (Planner contract, `fable-v2.2/agents/rstack-planner.agent.md`, line 26.)
+The contract also requires finding when the current behavior already satisfies the request and returning that decision to the human. That demands understanding the problem rather than merely generating a plausible change list. (Planner contract, `claude-v2.2/agents/rstack-planner.agent.md`, line 26.)
 
 Opus could provide meaningful value on:
 
@@ -85,7 +85,7 @@ Assessment: Opus is a well-motivated challenger, especially for difficult ticket
 
 Capability sensitivity: HIGH.
 
-The Auditor must independently reconstruct requirements, inspect primary evidence, challenge assumptions, assess falsifiability, and find omissions in scope and combined outcomes. Its central question is whether every stated criterion could pass while the implementation still fails to satisfy the ticket. (Plan Auditor contract, `fable-v2.2/agents/rstack-plan-auditor.agent.md`, line 50.)
+The Auditor must independently reconstruct requirements, inspect primary evidence, challenge assumptions, assess falsifiability, and find omissions in scope and combined outcomes. Its central question is whether every stated criterion could pass while the implementation still fails to satisfy the ticket. (Plan Auditor contract, `claude-v2.2/agents/rstack-plan-auditor.agent.md`, line 50.)
 
 This requires both finding counterexamples and rejecting invalid objections.
 
@@ -124,7 +124,7 @@ For RSTACK, the three forms of independence have different functions:
 | Different role and evidence lens | Makes the Auditor reconstruct obligations and seek counterexamples | Foundational |
 | Different model family | May expose different blind spots | Additional, unproven benefit |
 
-The V2.2 pipeline already requires fresh audit contexts and treats model diversity as optional. (Independence contract, `fable-v2.2/pipeline/SKILL.md`, Fresh dispatch section.)
+The V2.2 pipeline already requires fresh audit contexts and treats model diversity as optional. (Independence contract, `claude-v2.2/pipeline/SKILL.md`, Fresh dispatch section.)
 
 Host-enforced context separation and evidence-first auditing matter most. Fresh context alone is insufficient: an Auditor can still anchor on the plan it receives. A different role alone is insufficient if it inherits the Planner's reasoning and conclusions.
 

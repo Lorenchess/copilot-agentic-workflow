@@ -1,4 +1,4 @@
-# Astra rstack review input
+# ChatGPT rstack review input
 
 This bundle contains the reconstructed original-from-screenshot files and the corresponding proposed revisions prepared in this ChatGPT conversation.
 

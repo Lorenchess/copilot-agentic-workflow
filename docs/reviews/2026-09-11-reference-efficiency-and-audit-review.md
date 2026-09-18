@@ -1,10 +1,10 @@
-# ASTRA — Reference efficiency and audit review
+# CHATGPT — Reference efficiency and audit review
 
 ## Decision and review basis
 
 **Keep the architecture and accept the bounded forward improvements described below.** The Web analysis identifies useful work, but does not justify another orchestration layer, extra agents, weaker verification, or a larger autonomous scope.
 
-Reviewed base: `c38c8ca1454cda293a7e9286b3925e6a34fa5794`, plus this task's uncommitted working-tree changes. The supplied Web analysis has SHA-256 `8F576911264DB0930E979D364451DD0F52D8A66D9F9B63EB09A43EE6F765F44D`. Two explicitly selected GPT-5.6 Sol subagents authored the changes; Astra inspected the sources, directed corrections, and wrote this assessment. Authoring-model selection does not establish the model used by a future corporate Copilot run.
+Reviewed base: `c38c8ca1454cda293a7e9286b3925e6a34fa5794`, plus this task's uncommitted working-tree changes. The supplied Web analysis has SHA-256 `8F576911264DB0930E979D364451DD0F52D8A66D9F9B63EB09A43EE6F765F44D`. Two explicitly selected GPT-5.6 Sol subagents authored the changes; ChatGPT inspected the sources, directed corrections, and wrote this assessment. Authoring-model selection does not establish the model used by a future corporate Copilot run.
 
 The five reference tags, historical specifications, examples, and earlier reviews remain unchanged. These are forward refinements, not a reopening of those baselines or a new phase. The old locked reviews do not automatically validate these refinements.
 

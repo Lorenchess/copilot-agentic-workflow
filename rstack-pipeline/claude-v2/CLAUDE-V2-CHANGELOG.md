@@ -1,12 +1,12 @@
-# Fable V2 — changelog
+# Claude V2 — changelog
 
-Changes relative to the ChatGPT proposed set (the editing baseline), organised by concern. "Restored" means the reconstructed original had it and the proposal dropped it. "Astra Cn / ADR-n" refers to `RSTACK-V2-ARCHITECTURE-REVIEW.md` §3 and `RSTACK-V2-DECISIONS.md`.
+Changes relative to the ChatGPT proposed set (the editing baseline), organised by concern. "Restored" means the reconstructed original had it and the proposal dropped it. "ChatGPT Cn / ADR-n" refers to `RSTACK-V2-ARCHITECTURE-REVIEW.md` §3 and `RSTACK-V2-DECISIONS.md`.
 
-Astra's recommendations were sorted first: **A** applies only to the Copilot reference (not adopted: nine roles, 12-artifact `.pipeline/` set, multi-writable repositories, G1–G4 gates, local commits by tester/dev, strict no-waiver release, deleting learnings outright); **B** exposes a defect in the proposed rstack files (adopted: C6–C9, C12); **C** general principle (adopted: one owner per rule, candidate identity, honest enforcement vocabulary, provenance inheritance, no framework-for-prose).
+ChatGPT's recommendations were sorted first: **A** applies only to the Copilot reference (not adopted: nine roles, 12-artifact `.pipeline/` set, multi-writable repositories, G1–G4 gates, local commits by tester/dev, strict no-waiver release, deleting learnings outright); **B** exposes a defect in the proposed rstack files (adopted: C6–C9, C12); **C** general principle (adopted: one owner per rule, candidate identity, honest enforcement vocabulary, provenance inheritance, no framework-for-prose).
 
 ## Rule ownership
 
-- One owner per concern, listed in `FABLE-V2-RULE-OWNERSHIP.md`; five deliberate short duplications are named there, everything else found twice is a defect.
+- One owner per concern, listed in `CLAUDE-V2-RULE-OWNERSHIP.md`; five deliberate short duplications are named there, everything else found twice is a defect.
 - `SKILL.md` no longer restates lanes, schemas, the learnings format, the external-action list or the tester's manual. The proposal said "do not restate the boundary matrix" and then restated it.
 - Agents carry a one-paragraph lane and point to `write-boundaries.md`; artifact templates exist only in `handoff-contracts.md`.
 - `harness-map.md` owns the four-term guarantee vocabulary and nothing else of substance.
@@ -15,7 +15,7 @@ Astra's recommendations were sorted first: **A** applies only to the Copilot ref
 ## Orchestration
 
 - Orchestrator reduced to a dispatcher: state, paths, recorded result, next role, loop count, human decision points. It no longer builds the auditor's per-claim brief (that paraphrased engineering content), runs change-budget, passes tier raises as prose to the reviewer, or writes learnings.
-- **Planner no longer dispatches or briefs its own auditor** (Astra C8; the conflict was already in the original). Planner writes `## Claims for audit` inside `plan.md` and returns; the orchestrator alone dispatches; the planner sees findings only on a revision turn (state 1r). `agents:` and all chat handoffs removed from the planner.
+- **Planner no longer dispatches or briefs its own auditor** (ChatGPT C8; the conflict was already in the original). Planner writes `## Claims for audit` inside `plan.md` and returns; the orchestrator alone dispatches; the planner sees findings only on a revision turn (state 1r). `agents:` and all chat handoffs removed from the planner.
 - Added the missing routing rows: every auditor verdict, the 1b↔1r loop, state F, malformed handoff.
 - Fixed the **scoped-gate deadlock** inherited from the original and copied by the proposal (scoped never passes → only a pass reaches review → full run only after approval → approval needs a clean review).
 - Convergence rule applies to every loop and keys on blocker identity; the proposal's "with no new evidence" loophole removed. Restored: "report and stop when the human is unavailable", "say a result is wrong and leave it blocked", "lead with what is not proven even when empty".
@@ -23,7 +23,7 @@ Astra's recommendations were sorted first: **A** applies only to the Copilot ref
 
 ## Candidate identity
 
-- New: one candidate = repository + commit/tree + plan revision + test-lock revision + proof configuration, recorded in `candidate.md` (Astra C7, ADR-04).
+- New: one candidate = repository + commit/tree + plan revision + test-lock revision + proof configuration, recorded in `candidate.md` (ChatGPT C7, ADR-04).
 - Flow reordered from `review → integrate → full re-test → approval` to `verify(worktree) → freeze (commit + integrate) → verify at candidate → review at candidate → release`. Integration now happens **before** the evidence and the review that must describe it.
 - One freshness rule: a changed candidate stales verification, review **and** publication authorization. Re-running tests never revives a review; nobody re-stamps a SHA.
 - **Self-referential SHA removed**: `ac.tsv` is no longer committed, and no evidence file enters the candidate. Neither the original nor the proposal closed that regress. The PR verification table is the durable record.
@@ -32,7 +32,7 @@ Astra's recommendations were sorted first: **A** applies only to the Copilot ref
 
 ## Evidence
 
-- Two predicates replace the overloaded `PASS/BLOCKED`: `REVIEW_ELIGIBLE` and `RELEASE_ELIGIBLE` (Astra C6, ADR-06). Scoped evidence can make a candidate reviewable; it never makes it releasable.
+- Two predicates replace the overloaded `PASS/BLOCKED`: `REVIEW_ELIGIBLE` and `RELEASE_ELIGIBLE` (ChatGPT C6, ADR-06). Scoped evidence can make a candidate reviewable; it never makes it releasable.
 - Restored the L4 bar ("VERIFIED at L4 or better, per `prove-it`") where the proposal wrote an undefined "required rung / configured proof bar"; `prove-it` named as owner again.
 - `WORKTREE` evidence is dev feedback only and is never cited for eligibility.
 - Transcribed artifacts carry `Persisted-by:` so a model-scribed verdict is labelled as such.
@@ -60,12 +60,12 @@ Astra's recommendations were sorted first: **A** applies only to the Copilot ref
 - Release re-checks HEAD against the candidate before **each** external action and pushes the candidate SHA explicitly.
 - Fixed the stash defect (proposal stashed only "unrelated work" with no pop while the ticket change was uncommitted): commit first, stash what remains, merge, pop, report.
 - Restored: refuse without `review.md`; open one artifact per AC; never clear an estate mismatch by re-pinning; state the PR target out loud; let the human act themselves; waivers named in both PR sections.
-- Authorization model rewritten around REQUEST / HUMAN AUTHORIZATION / RECORDED DECISION with the authentication limit stated (Astra #6, ADR-05). Restored the original's "what counts as an answer" table.
+- Authorization model rewritten around REQUEST / HUMAN AUTHORIZATION / RECORDED DECISION with the authentication limit stated (ChatGPT #6, ADR-05). Restored the original's "what counts as an answer" table.
 - Terminal template: `git commit`, `git pull`, `git -c/--git-dir` forms and `gh pr create|merge` now ask; merge auto-approval narrowed to the exact integration shape; three unanchored regexes anchored; `npx <pkg> test` executor form removed. Marked as reconstructed — validate before installing.
 
 ## Repositories
 
-- Kept one writable active repo + readable siblings + one run per repository, with the reason stated (candidate identity binds to one commit namespace). Astra's multi-writable model was **not** imported (it is an A-class recommendation).
+- Kept one writable active repo + readable siblings + one run per repository, with the reason stated (candidate identity binds to one commit namespace). ChatGPT's multi-writable model was **not** imported (it is an A-class recommendation).
 - Simplified: contract depends only on pin, verify and a recorded human decision before re-pinning. The repin ledger, `--pin --writable` and sibling dirty-path tracking are left inside the tool.
 - Restored: auditor runs `--verify`; "say which criteria this run does not cover"; two candidates is a question.
 - Resolved the timing contradiction: pin in state 1 after the active repo is settled and before any write outside `.rstack/`.
@@ -73,7 +73,7 @@ Astra's recommendations were sorted first: **A** applies only to the Copilot ref
 
 ## Memory
 
-- `learnings.md` is EXPERIMENTAL and off by default; human-curated; no role has a write lane; re-check before use; never evidence; never reaches a fresh role (Astra ADR-12). Removed from preflight and from the orchestrator's duties.
+- `learnings.md` is EXPERIMENTAL and off by default; human-curated; no role has a write lane; re-check before use; never evidence; never reaches a fresh role (ChatGPT ADR-12). Removed from preflight and from the orchestrator's duties.
 
 ## Risk / depth
 
@@ -82,13 +82,13 @@ Astra's recommendations were sorted first: **A** applies only to the Copilot ref
 
 ## Metrics / provenance
 
-- Provenance is inherited through derivation (Astra C9, ADR-13): everything computed from the orchestrator's run log is `AGENT_REPORTED`. `loopTurns`, `firstPassPhase4`, `wallMinutes`, `acsMappedToTests` relabelled.
+- Provenance is inherited through derivation (ChatGPT C9, ADR-13): everything computed from the orchestrator's run log is `AGENT_REPORTED`. `loopTurns`, `firstPassPhase4`, `wallMinutes`, `acsMappedToTests` relabelled.
 - "A citation proves an entry was read" corrected: it does not.
 - Added one measure — vacuous or missing checks found at review — as the input to OD-1.
 
 ## Instruction precedence
 
-- Process instructions no longer claim "these rules win" (Astra C12). The precedence file now states the circularity plainly: guards run because an instruction said so, so they are not a layer beneath the prose; what survives an unloaded file is withheld tools, host ask-rules and the human.
+- Process instructions no longer claim "these rules win" (ChatGPT C12). The precedence file now states the circularity plainly: guards run because an instruction said so, so they are not a layer beneath the prose; what survives an unloaded file is withheld tools, host ask-rules and the human.
 
 ## Deliberately not carried over
 

@@ -1,4 +1,4 @@
-# ASTRA — PHASE 2 ARCHITECTURE REVIEW
+# CHATGPT — PHASE 2 ARCHITECTURE REVIEW
 
 **Recommendation: PROCEED_WITH_CHANGES**
 
@@ -158,7 +158,7 @@ These can be reviewed as document scenarios; they require no test harness, schem
 
 ## Final assessment
 
-**PROCEED_WITH_CHANGES.** Phase 2 should proceed after Fable incorporates the necessary design corrections and the owner authorizes the qualified D1–D4 choices. Its core investment is sound and proportionate.
+**PROCEED_WITH_CHANGES.** Phase 2 should proceed after Claude incorporates the necessary design corrections and the owner authorizes the qualified D1–D4 choices. Its core investment is sound and proportionate.
 
 The minimum changes are: make changed G3 answers lead to review of the resulting plan; preserve evidence identity across fresh human cycles; separate materially revised example planning from old completed evidence; settle the plan's immediate Tester/Verifier interfaces; and require independent, consequence-driven challenge rather than evidence counters or finding quotas. Simplify the remaining structure around those outcomes.
 

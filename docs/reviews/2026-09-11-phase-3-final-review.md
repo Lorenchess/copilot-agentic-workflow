@@ -1,4 +1,4 @@
-# ASTRA — PHASE 3 FINAL REFERENCE CLOSURE REVIEW
+# CHATGPT — PHASE 3 FINAL REFERENCE CLOSURE REVIEW
 
 **Reviewed revision:** `20939cc9ff00a9091042f0e3fb3c74194c7e583b`  
 **Overall recommendation:** `READY_TO_PUSH_AND_LOCK_PHASE_3`  
@@ -66,7 +66,7 @@ Protected historical assets and unrelated agents/settings are unchanged. The Pha
 
 These deserve a bounded editorial cleanup, but do not block this baseline: the current Phase 3 paragraphs explicitly specify twelve artifacts, stage 5b, recovery, activation, and INCOMPLETE restrictions, and the authoritative operating assets agree. The stale summaries neither establish an alternative authorized bypass nor remove those controls. Calling the guide non-normative alone would not excuse a material misleading claim; the corrective context and intact operating rules are why this is non-blocking. [Current guide behavior](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/COMPARISON-GUIDE.md:35>). An exhausted correction budget explains why cleanup stopped; it does not determine severity or authorize another dispatch.
 
-**N2 — Closure attribution could be more precise.** The §10 heading still names Fable, while the body candidly records the Fable-to-Opus transition and Fable-authored C2 correction. Its blanket checkpoint-authorship and “reviewed after commit” phrasing is less precise than that detailed account and the separate checkpoint confirmation. This is editorial provenance debt, not a basis to recast the direct edits as Sonnet-authored or reopen the independently closed result. [Closure record](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/specs/2026-09-10-phase-3-test-contract-integrity-contract.md:229>).
+**N2 — Closure attribution could be more precise.** The §10 heading still names Claude, while the body candidly records the Claude-to-Opus transition and Claude-authored C2 correction. Its blanket checkpoint-authorship and “reviewed after commit” phrasing is less precise than that detailed account and the separate checkpoint confirmation. This is editorial provenance debt, not a basis to recast the direct edits as Sonnet-authored or reopen the independently closed result. [Closure record](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/specs/2026-09-10-phase-3-test-contract-integrity-contract.md:229>).
 
 Normative repetition, empty SMALL sections, and optional fixture diagnostics remain accepted housekeeping. The frozen Phase 2 plan's affected-file inventory gap is disclosed, with an explicit instruction to surface such a gap to planning in a real run; Phase 3 does not silently repair historical reference material.
 

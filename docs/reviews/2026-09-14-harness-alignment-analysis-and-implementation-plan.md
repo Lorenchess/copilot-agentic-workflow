@@ -6,12 +6,12 @@
 
 ## 1. Review basis and confidence
 
-Reviewed local HEAD: `77940936e7c1b8cd55b1ae29701c6f2b3d6dc85e`. The three supplied Markdown documents were untracked at review time. Fable's reconciliation reviews the earlier proposal; the actual proposal on disk is **revision 2**, which already incorporates most of that feedback. Its corrected positions are assessed below without reopening resolved revision-1 criticisms.
+Reviewed local HEAD: `77940936e7c1b8cd55b1ae29701c6f2b3d6dc85e`. The three supplied Markdown documents were untracked at review time. Claude's reconciliation reviews the earlier proposal; the actual proposal on disk is **revision 2**, which already incorporates most of that feedback. Its corrected positions are assessed below without reopening resolved revision-1 criticisms.
 
 | Input | SHA-256 of reviewed bytes |
 |---|---|
 | [Official recommendations](../../Official_References_Pipeline_Recommendations.md) | `E7CEB5A0C6BB1631ADA33C8A6AD548C81376F9E097CE06C51BDAEA2ABB771D09` |
-| [Fable reconciliation](../../Fable_Harness_Reconciliation_Review.md) | `F68F6B09C4763229DAFD204B13D242DC30AF5E305AAA5314D758FDBED5F6638D` |
+| [Claude reconciliation](../../Claude_Harness_Reconciliation_Review.md) | `F68F6B09C4763229DAFD204B13D242DC30AF5E305AAA5314D758FDBED5F6638D` |
 | [Alignment proposal, revision 2](../specs/2026-09-13-harness-engineering-alignment-proposal.md) | `2FE9D377B33438A02C9C0F52D845E72FA4BAC9BF099A106038D48254BE03DD9A` |
 
 The three supplied figures were inspected as design references: six harness responsibilities, consequence-sensitive autonomy, and promotion of lessons from failures. They are not instructions or evidence that this pipeline implements their guarantees. I did not establish the full original social post's contents or provenance beyond the supplied material.
@@ -31,7 +31,7 @@ I also checked the current agents, policy skills, flow contracts, guardrails, RE
 
 The official-recommendations document makes the strongest additional contribution: **P1/P4 connect workflow rules to discoverable domain knowledge and proof routes; P5/P6 connect improvements to evidence and eventual retirement.** These should be incorporated into the final scope, rather than implementing H1–H6 as an isolated package.
 
-Fable's reconciliation is sound on privacy, uncertainty, stage-specific evidence, and conditional autonomy. Revision 2 adequately fixes its central concerns: lesson classification is optional; the summary is derived; a universal verdict is deferred; timeout does not automatically mean environment failure; permissions never promote automatically. These choices should be retained.
+Claude's reconciliation is sound on privacy, uncertainty, stage-specific evidence, and conditional autonomy. Revision 2 adequately fixes its central concerns: lesson classification is optional; the summary is derived; a universal verdict is deferred; timeout does not automatically mean environment failure; permissions never promote automatically. These choices should be retained.
 
 ## 3. Current coverage: substantial specification, limited operational evidence
 
@@ -90,7 +90,7 @@ This table guides **selective corporate adaptation**. It does not authorize a cu
 | P3 tool-use guidance | **Condition on an actual tool-selection or result-interpretation failure.** | Existing corporate tool capabilities are not available here to diagnose. Guidance must not invent parameters, broaden retrieval, or collapse incomplete results into absence. |
 | P5 evaluation | **Required for claims of improvement or broad rollout.** Reuse the existing scorecard and corporate infrastructure. | Static review can approve a reference design; it cannot establish better completion, lower cost or safe corporate operation. |
 
-For Fable's D1–D5: **D1 ACCEPT_WITH_CHANGES** (ledger first, annotation optional); **D2 ACCEPT_WITH_CHANGES** (smaller summary, no resume authority); **D3 ACCEPT_WITH_CHANGES** (targeted mapping, no standalone normalization project); **D4 ACCEPT** (documentation only, precise controls); **D5 ACCEPT_WITH_CHANGES** (the batches below incorporate P1/P4/P5/P6 and separate H6 from optional UX work).
+For Claude's D1–D5: **D1 ACCEPT_WITH_CHANGES** (ledger first, annotation optional); **D2 ACCEPT_WITH_CHANGES** (smaller summary, no resume authority); **D3 ACCEPT_WITH_CHANGES** (targeted mapping, no standalone normalization project); **D4 ACCEPT** (documentation only, precise controls); **D5 ACCEPT_WITH_CHANGES** (the batches below incorporate P1/P4/P5/P6 and separate H6 from optional UX work).
 
 ## 6. Corrections needed before implementing the proposal
 

@@ -1,4 +1,4 @@
-# ASTRA — Phase 3 closure-action review
+# CHATGPT — Phase 3 closure-action review
 
 **Recommendation:** The proposed A1–A4 actions are suitable for owner authorization. Have Sonnet 5 apply A1; the architect reviews, verifies, and commits it. This review does not authorize or execute publication.
 

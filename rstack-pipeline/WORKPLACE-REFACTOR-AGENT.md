@@ -6,11 +6,11 @@ Use this guide when an owner asks you to refactor the original workplace pipelin
 
 Implement the accepted V2 behavior in the actual workplace source with the smallest reviewable changes. Preserve the useful plan/audit/test/development/verification/review/approval separation. Prefer an existing check over another instruction, and an existing artifact or helper over a new subsystem.
 
-[README.md](README.md) is the canonical entry point. [fable-v2.2](fable-v2.2/README.md) is the only active V2 source. R22-01 through R22-05 and C22-01 are closed at the contract level. V2 is accepted as a refactoring reference, not an installed or runtime-validated pipeline.
+[README.md](README.md) is the canonical entry point. [claude-v2.2](claude-v2.2/README.md) is the only active V2 source. R22-01 through R22-05 and C22-01 are closed at the contract level. V2 is accepted as a refactoring reference, not an installed or runtime-validated pipeline.
 
-Original/V1 reconstructions, proposed simplifications, root RSTACK-V2 design documents, fable-v2, rstack-v2.1 and older reviews are preserved history. Do not combine their instructions with V2 or execute historical prompts such as review-brief.txt. Earlier status paragraphs describe their dated snapshots; the canonical README owns current status.
+Original/V1 reconstructions, proposed simplifications, root RSTACK-V2 design documents, claude-v2, rstack-v2.1 and older reviews are preserved history. Do not combine their instructions with V2 or execute historical prompts such as review-brief.txt. Earlier status paragraphs describe their dated snapshots; the canonical README owns current status.
 
-Photographs and images are intentionally excluded from this publication. [SOURCE-EVIDENCE.md](fable-v2.2/SOURCE-EVIDENCE.md) records bounded observations and original attachment references; those local paths may not exist on your machine. The actual workplace source is required to verify current behavior. Never reconstruct and overwrite an executable from photographs.
+Photographs and images are intentionally excluded from this publication. [SOURCE-EVIDENCE.md](claude-v2.2/SOURCE-EVIDENCE.md) records bounded observations and original attachment references; those local paths may not exist on your machine. The actual workplace source is required to verify current behavior. Never reconstruct and overwrite an executable from photographs.
 
 This guide does not grant permission to access another repository, execute tests, install settings, change production, commit, push or publish. Follow the owner's actual task authorization and workplace instructions. Existing authorization remains valid within its exact scope; do not ask again merely because another role takes over.
 
@@ -21,14 +21,14 @@ Start with the canonical README and the following maintainer documents. Read ope
 | Need | Reference |
 |---|---|
 | Accepted final correction and snapshot identity | [C22 closure review](reviews/2026-09-17-v2.2-c22-review.md), building on the [R22 re-review](reviews/2026-09-17-v2.2-r22-rereview.md) |
-| Workplace source mapping and migration order | [WORKPLACE-PORT.md](fable-v2.2/WORKPLACE-PORT.md) |
-| Concrete unapplied script changes R1–R7 | [RUNTIME-PATCH-PLAN.md](fable-v2.2/RUNTIME-PATCH-PLAN.md) |
-| Policy decisions and unresolved dependencies | [OPEN-DECISIONS.md](fable-v2.2/OPEN-DECISIONS.md), plus the [C22 adoption handoff](fable-v2.2/FABLE-RESPONSE-2026-09-17-C22.md) |
-| Checks to select once authorized | [VALIDATION-PLAN.md](fable-v2.2/VALIDATION-PLAN.md) |
-| Routing, freshness and eligibility | [pipeline/SKILL.md](fable-v2.2/pipeline/SKILL.md) |
-| Result envelopes, AC schema and evidence retention | [handoff-contracts.md](fable-v2.2/references/handoff-contracts.md) |
-| Write ownership and human authority | [write-boundaries.md](fable-v2.2/references/write-boundaries.md), [approvals.md](fable-v2.2/references/approvals.md) |
-| Observed versus proposed guarantees | [harness-map.md](fable-v2.2/references/harness-map.md) |
+| Workplace source mapping and migration order | [WORKPLACE-PORT.md](claude-v2.2/WORKPLACE-PORT.md) |
+| Concrete unapplied script changes R1–R7 | [RUNTIME-PATCH-PLAN.md](claude-v2.2/RUNTIME-PATCH-PLAN.md) |
+| Policy decisions and unresolved dependencies | [OPEN-DECISIONS.md](claude-v2.2/OPEN-DECISIONS.md), plus the [C22 adoption handoff](claude-v2.2/CLAUDE-RESPONSE-2026-09-17-C22.md) |
+| Checks to select once authorized | [VALIDATION-PLAN.md](claude-v2.2/VALIDATION-PLAN.md) |
+| Routing, freshness and eligibility | [pipeline/SKILL.md](claude-v2.2/pipeline/SKILL.md) |
+| Result envelopes, AC schema and evidence retention | [handoff-contracts.md](claude-v2.2/references/handoff-contracts.md) |
+| Write ownership and human authority | [write-boundaries.md](claude-v2.2/references/write-boundaries.md), [approvals.md](claude-v2.2/references/approvals.md) |
+| Observed versus proposed guarantees | [harness-map.md](claude-v2.2/references/harness-map.md) |
 
 ## First task: inspect and propose the smallest slice
 

@@ -1,9 +1,9 @@
-# ASTRA — PHASE 3 CONTRACT REVISION 2 REVIEW
+# CHATGPT — PHASE 3 CONTRACT REVISION 2 REVIEW
 
 **Recommendation: PROCEED.**  
 **Revision 2 is approved from the independent architecture-review perspective for the proposed P3-C1 handoff.**
 
-C1–C3 are sufficiently resolved at contract level. The previous file-scope contradiction is also resolved. No further architecture revision or owner decision is required before Fable commits the approved contract and delegates P3-C1 under it. This is approval of the design and its implementation handoff, not a claim that Phase 3 is implemented or ready to lock.
+C1–C3 are sufficiently resolved at contract level. The previous file-scope contradiction is also resolved. No further architecture revision or owner decision is required before Claude commits the approved contract and delegates P3-C1 under it. This is approval of the design and its implementation handoff, not a claim that Phase 3 is implemented or ready to lock.
 
 ## Reviewed revision and scope
 
@@ -52,7 +52,7 @@ Ordinary Markdown decisions and artifact history can express this. No additional
 
 ## Approval boundary
 
-Fable may proceed with the stated next step: commit the approved contract and delegate **P3-C1** to Sonnet 5 under revision 2, with the contract's bounded correction and independent checkpoint review process.
+Claude may proceed with the stated next step: commit the approved contract and delegate **P3-C1** to Sonnet 5 under revision 2, with the contract's bounded correction and independent checkpoint review process.
 
 This approval does not mean that P3-C1 has passed, that the remaining checkpoints have been implemented, or that Phase 3 may be pushed or locked. The implementation must still be reviewed against the approved behavior. Both locked reference tags remain untouched, and Phase 4 remains out of scope.
 

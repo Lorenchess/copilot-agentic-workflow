@@ -1,8 +1,8 @@
-# ASTRA — P3-C2 CORRECTION SCOPE REVIEW
+# CHATGPT — P3-C2 CORRECTION SCOPE REVIEW
 
 **Decision: APPROVED_WITH_QUALIFICATIONS — one bounded Sonnet 5 correction round.**
 
-This approves Fable's proposed correction approach, subject to the two qualifications below. It does **not** close C2-I1–I4: closure depends on the resulting diff. P3-C2 remains uncommitted; P3-C3 and publishing remain on hold.
+This approves Claude's proposed correction approach, subject to the two qualifications below. It does **not** close C2-I1–I4: closure depends on the resulting diff. P3-C2 remains uncommitted; P3-C3 and publishing remain on hold.
 
 Reviewed against HEAD **9b78efbd55abef4ae0578ca2d23559d3d22bd8b4**, the current example, and the [P3-C2 implementation review](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/reviews/2026-09-10-phase-3-c2-implementation-review.md>). No implementation agent was invoked by this review.
 
@@ -42,5 +42,5 @@ Directories: `docs/examples/PAYMENTS-12345-testing/` and `docs/examples/PAYMENTS
 
 Keep both PLAN.md and RUN.md files unchanged, as proposed. Do not change policy assets, contracts, baseline examples, reference tags, settings, or existing reviews. If the correction exposes a dependency outside this scope, report it before changing that file.
 
-Fable may delegate this single bounded correction round to Sonnet 5, review the assembled result, and return the full diff for targeted closure. Do not commit, push, or begin P3-C3. This approval is not a claim that the corrected examples have already passed review.
+Claude may delegate this single bounded correction round to Sonnet 5, review the assembled result, and return the full diff for targeted closure. Do not commit, push, or begin P3-C3. This approval is not a claim that the corrected examples have already passed review.
 

@@ -1,4 +1,4 @@
-# ASTRA — P5-C2 corporate-adoption checklist review
+# CHATGPT — P5-C2 corporate-adoption checklist review
 
 **Base:** `f3aa9d425868fa48d934a065872c32b367015cba`.
 **Reviewed revision:** `54b900b748d80aff48300e845016c359d7c0b702` (the accepted two-file C2 working tree).
@@ -22,6 +22,6 @@ The same bounded round added explicit protected-instruction/settings edit-previe
 
 ## Verification and limits
 
-Astra read the actual checklist and questions diff, compared the referenced rules, and checked the two-file scope. Existing `docs/questions.md` content is preserved; only a link section is appended. Working-file hashes were compared against the accepted C1 snapshot; prior reviews and unrelated assets were unchanged. Whitespace checking passed. These are document/source checks, not tests of Copilot, Jira, Bitbucket, Git approval-engine behavior or corporate execution.
+ChatGPT read the actual checklist and questions diff, compared the referenced rules, and checked the two-file scope. Existing `docs/questions.md` content is preserved; only a link section is appended. Working-file hashes were compared against the accepted C1 snapshot; prior reviews and unrelated assets were unchanged. Whitespace checking passed. These are document/source checks, not tests of Copilot, Jira, Bitbucket, Git approval-engine behavior or corporate execution.
 
 The worker's platform turn context continues to identify `gpt-5.6-sol`. This establishes authoring provenance only; the corporate reference runtime remains Sonnet 5 and requires CA-03 validation. This review is intentionally untracked.

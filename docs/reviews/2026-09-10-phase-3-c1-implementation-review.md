@@ -1,4 +1,4 @@
-# ASTRA — PHASE 3 P3-C1 IMPLEMENTATION REVIEW
+# CHATGPT — PHASE 3 P3-C1 IMPLEMENTATION REVIEW
 
 **Recommendation: TARGETED_CORRECTION_REQUIRED.**  
 **P3-C2: hold delegation until the three narrow handoff defects below are corrected.**
@@ -81,7 +81,7 @@ This matters to the approved separation between planning and test review and to 
 
 ### Pipeline-owned Decision log
 
-Accepted. The heading provides durable, pipeline-owned records for non-gate decisions, exceptions, retirement, and prerequisite commits without overloading the gate log or adding another artifact. [docs/questions.md](C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/questions.md) records the question and Fable's answer. This is a reasonable implementation of the approved decision-recording requirement.
+Accepted. The heading provides durable, pipeline-owned records for non-gate decisions, exceptions, retirement, and prerequisite commits without overloading the gate log or adding another artifact. [docs/questions.md](C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/questions.md) records the question and Claude's answer. This is a reasonable implementation of the approved decision-recording requirement.
 
 ### Expanded pipeline-skill resume paragraph
 
@@ -95,7 +95,7 @@ Accepted. The approved acceptance criteria require the Phase 3 landing/current-r
 
 Normative repetition remains a maintenance concern, but does not by itself block the next checkpoint. Keep this correction limited to the handoffs rather than undertaking a documentation reorganization.
 
-## Direction for Fable
+## Direction for Claude
 
 Correct C1-I1–C1-I3 within P3-C1, with the smallest corresponding procedure/contract cross-reference changes. The approved Phase 3 architecture, D6(a), both locked baselines, and the planned example scope remain valid.
 

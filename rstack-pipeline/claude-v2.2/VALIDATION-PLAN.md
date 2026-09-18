@@ -57,9 +57,9 @@ Record sample size, uncertainty, regressions and time/tool cost. A single improv
 
 Performed on this folder after the round 2.2 edits. Document checks only; builds, lint, tests, browser checks, agent evaluations, runtime scripts and workplace deployment remain NOT RUN.
 
-- Starting point verified: `fable-v2.2` was created as a copy of `rstack-v2.1` and all 32 files matched by SHA-256 before any edit.
-- Preservation: all 105 files that existed under `rstack-pipeline/` before this round (originals, Astra reviews, fable-v2, rstack-v2.1) were re-hashed after the edits and match their recorded SHA-256 values. Git cannot show this work because `rstack-pipeline/` is ignored; files were compared directly.
-- Inventory against v2.1: 21 files changed, 11 unchanged, 2 added, none deleted. Per-file hashes are in `FABLE-CHANGE-MANIFEST.md`.
+- Starting point verified: `claude-v2.2` was created as a copy of `rstack-v2.1` and all 32 files matched by SHA-256 before any edit.
+- Preservation: all 105 files that existed under `rstack-pipeline/` before this round (originals, ChatGPT reviews, claude-v2, rstack-v2.1) were re-hashed after the edits and match their recorded SHA-256 values. Git cannot show this work because `rstack-pipeline/` is ignored; files were compared directly.
+- Inventory against v2.1: 21 files changed, 11 unchanged, 2 added, none deleted. Per-file hashes are in `CLAUDE-CHANGE-MANIFEST.md`.
 - Local Markdown links resolve; fenced code blocks are balanced in every file.
 - Every role-result token used in agents, skill, references, rules, hooks and skills belongs to the token list in `references/handoff-contracts.md`; no unlisted `VERIFY_*`, `RELEASE_*` or `STATE_*` token exists.
 - Photographed interface strings are byte-identical in the v2.1 and v2.2 handoff contracts: the eight-column AC header, both exception TSV headers, the five suite markers and the raw-log marker, the tree-marker syntax, the five impact headings, and the rule that WORKTREE is never a sha value. Gate exit codes and the JSON field list in the harness map are unchanged.
@@ -87,7 +87,7 @@ Not checked, because it cannot be from documents: parser acceptance of any propo
 
 Independent review verdict: CHANGES REQUESTED, five findings (R22-01 to R22-05). This section records the static checks made after correcting them in place. Nothing was executed; every earlier NOT RUN item stays NOT RUN.
 
-- All files under `rstack-pipeline/` were hashed before the round (141 files, including the new root README and `reviews/`). After the round, every file outside `fable-v2.2` re-hashed identical. Inside `fable-v2.2` the changed, unchanged and added sets and their hashes are in `FABLE-RESPONSE-2026-09-17-R22.md`. The round 2.2 report and manifest were not edited.
+- All files under `rstack-pipeline/` were hashed before the round (141 files, including the new root README and `reviews/`). After the round, every file outside `claude-v2.2` re-hashed identical. Inside `claude-v2.2` the changed, unchanged and added sets and their hashes are in `CLAUDE-RESPONSE-2026-09-17-R22.md`. The round 2.2 report and manifest were not edited.
 - Local Markdown links resolve; fenced blocks balanced; every role-result token is in the contract's list; the eleven photographed interface strings, gate exit codes and JSON field list are unchanged.
 - Every `node` command template in an operational file has its script path inside double quotes.
 - R22-01 acceptance case walked by reading: after a second attempt and second candidate replace every current file, each path in the first packet is under `evidence/attempt-1/`, `comparison/round-1/` or an archive name, none of which a later round writes.

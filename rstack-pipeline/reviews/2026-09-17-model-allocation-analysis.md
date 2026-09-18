@@ -4,7 +4,7 @@ Date: 2026-09-17. Written after, and independently of, the independent review of
 
 **Question.** Should the three upstream roles of the V2.2 pipeline move from the declared allocation to the proposed one?
 
-| Role | A (declared in `fable-v2.2/agents/*.md` today) | B (proposed) | C (intermediate, from the independent review) |
+| Role | A (declared in `claude-v2.2/agents/*.md` today) | B (proposed) | C (intermediate, from the independent review) |
 |---|---|---|---|
 | Orchestrator | Claude Opus 5 | Claude Sonnet 5 | Claude Sonnet 5 |
 | Planner | Claude Sonnet 5 | Claude Opus 5 | Claude Opus 5 |

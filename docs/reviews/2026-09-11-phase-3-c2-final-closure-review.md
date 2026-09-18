@@ -1,4 +1,4 @@
-# ASTRA — P3-C2 FINAL TARGETED CLOSURE REVIEW
+# CHATGPT — P3-C2 FINAL TARGETED CLOSURE REVIEW
 
 **Recommendation: READY_TO_COMMIT_P3_C2**
 
@@ -10,7 +10,7 @@ C2-I1, C2-I3 and C2-R1 are closed. The second correction satisfies the approved 
 - Independently reproduced ten-file fingerprint: **74ABE4E4CDA178E7DBBDF8B227D813E6E3CA9D442D868B72EBF94F7F49F5F7CF**. This matches the handoff. Definition remains SHA-256 of the ten authorized files' sorted repository-relative `path=UPPERCASE_SHA256` entries, UTF-8, LF separators, no trailing LF.
 - Phase 1 tag remains **03d4230e9398a80586a4b8be47ed522638bf77d8**; Phase 2 tag remains **5a46eb7a6bb951308742975bd8f9f51f77a6aca9**. The index is empty.
 - Relative to the snapshot from the [second correction scope review](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/reviews/2026-09-11-phase-3-c2-second-correction-scope-review.md>), exactly four files changed: LARGE SOURCE-EXCERPTS, RED-REPORT, TEST-CONTRACT and TEST-REVIEW. All other existing files match their saved hashes, including SMALL, both PLAN/RUN files, README files, policy assets, contracts and previous reviews.
-- Fable's reconstructed before-files match the independently saved pre-correction hashes for all four files; its after-files match the actual working tree. The reconstructed comparison therefore has a verified basis. The verdict below rests on the resulting assertions and behavior, not on the reported hunk counts.
+- Claude's reconstructed before-files match the independently saved pre-correction hashes for all four files; its after-files match the actual working tree. The reconstructed comparison therefore has a verified basis. The verdict below rests on the resulting assertions and behavior, not on the reported hunk counts.
 - This is a static review of fictional reference examples. No application build, test execution or Copilot/corporate validation was performed. The displayed RED output is illustrative evidence, not a record of tests I ran.
 
 ## Closure disposition

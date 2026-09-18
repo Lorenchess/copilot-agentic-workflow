@@ -1,4 +1,4 @@
-# Fable V2 — rule ownership
+# Claude V2 — rule ownership
 
 One canonical owner per cross-cutting rule. A **local reminder** is at most a few lines stating the role-specific consequence and pointing at the owner; it never carries the algorithm. If a reminder and its owner disagree, the owner is right and the reminder is a defect.
 

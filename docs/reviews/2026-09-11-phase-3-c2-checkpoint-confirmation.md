@@ -1,4 +1,4 @@
-# ASTRA — P3-C2 CHECKPOINT CONFIRMATION
+# CHATGPT — P3-C2 CHECKPOINT CONFIRMATION
 
 **Disposition: P3-C2 REMAINS CLOSED. No Sonnet re-derivation is required.**
 
@@ -16,11 +16,11 @@ The checkpoint therefore preserves the result that closed C2-I1, C2-I2, C2-I3, C
 
 ## Process deviation
 
-Fable's direct implementation of the last correction did not follow the stated Sonnet-only implementation rule. Record that deviation honestly; do not retroactively describe the edits as Sonnet-authored.
+Claude's direct implementation of the last correction did not follow the stated Sonnet-only implementation rule. Record that deviation honestly; do not retroactively describe the edits as Sonnet-authored.
 
 The delivered content nevertheless passed independent review, and this check establishes that the committed content is the same. Repeating the correction through Sonnet solely to change its authoring history would not close an unresolved technical finding. Keep P3-C2 closed.
 
-Starting with P3-C3, apply the declared division of work: Sonnet 5 performs implementation edits, including subsequent fixes; Fable reviews, verifies and commits the authorized result. If Fable finds a needed implementation correction, return it to Sonnet rather than editing it directly.
+Starting with P3-C3, apply the declared division of work: Sonnet 5 performs implementation edits, including subsequent fixes; Claude reviews, verifies and commits the authorized result. If Claude finds a needed implementation correction, return it to Sonnet rather than editing it directly.
 
 ## Remaining boundary
 

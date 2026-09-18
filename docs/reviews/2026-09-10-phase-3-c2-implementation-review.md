@@ -1,4 +1,4 @@
-# ASTRA — PHASE 3 P3-C2 IMPLEMENTATION REVIEW
+# CHATGPT — PHASE 3 P3-C2 IMPLEMENTATION REVIEW
 
 **Recommendation: TARGETED_CORRECTION_REQUIRED.**  
 **Material findings: 4 — two HIGH, two MEDIUM.**
@@ -105,7 +105,7 @@ These do not independently require a new architecture review, but should be clea
 
 Preserve the approved architecture and both example directories. Correct the four evidence/coverage problems inside the C2 test-stage files and reconcile their RED, review and explanatory claims. The fixes need neither real application implementation nor new policy assets, infrastructure, agents, gates or routine human approvals.
 
-**Hold the P3-C2 commit and P3-C3.** Fable should evaluate these findings and return the corrected example diff for targeted closure review. This report does not authorize implementation by this reviewer or any agent delegation.
+**Hold the P3-C2 commit and P3-C3.** Claude should evaluate these findings and return the corrected example diff for targeted closure review. This report does not authorize implementation by this reviewer or any agent delegation.
 
 ## Reviewed working-tree identity
 

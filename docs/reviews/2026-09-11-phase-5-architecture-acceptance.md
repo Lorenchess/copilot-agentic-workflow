@@ -1,4 +1,4 @@
-# ASTRA — Phase 5 bounded architecture acceptance
+# CHATGPT — Phase 5 bounded architecture acceptance
 
 **Decision: PROCEED.** Contract commit: `1619532`. Base: `23b6ef26591cc3e48d8cd98bc75bcc8f7a4b29db`.
 
@@ -23,6 +23,6 @@ The actual contract was re-read after Sol applied these precision changes. They 
 
 Detailed behavior belongs in Workspace and PR; the other five C1 files carry sequence, ownership, and concise invariants. C2 provides an executable corporate validation checklist with all results initially NOT VERIFIED. C3 traces the complete pipeline and the owner's twenty failure scenarios against current rules and existing fictional examples. No new full example, gate, agent, runtime, STOP code, or command form is authorized.
 
-All repository implementation and correction edits are delegated to GPT-5.6 Sol. Astra verified `model: gpt-5.6-sol` in platform turn metadata before permitting edits, then reviewed the actual contract. The pipeline's documented Sonnet 5 runtime baseline is a separate matter and remains unchanged. No corporate Copilot or connector execution has been performed.
+All repository implementation and correction edits are delegated to GPT-5.6 Sol. ChatGPT verified `model: gpt-5.6-sol` in platform turn metadata before permitting edits, then reviewed the actual contract. The pipeline's documented Sonnet 5 runtime baseline is a separate matter and remains unchanged. No corporate Copilot or connector execution has been performed.
 
 Checkpoint acceptance remains pending implementation review. At most two ordinary correction rounds per checkpoint are permitted. N1–N3 from Phase 4 remain accepted debt. Existing tags, examples, historical contracts, and review artifacts remain frozen. This file remains untracked.

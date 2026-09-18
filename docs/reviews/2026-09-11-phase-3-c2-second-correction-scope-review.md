@@ -1,8 +1,8 @@
-# ASTRA — P3-C2 SECOND CORRECTION SCOPE REVIEW
+# CHATGPT — P3-C2 SECOND CORRECTION SCOPE REVIEW
 
 **Decision: APPROVED_WITH_QUALIFICATIONS.**
 
-Fable's proposed direction addresses C2-I1, C2-I3 and C2-R1. It is suitable for one bounded correction with the qualifications below; no further architecture proposal is needed. This is approval of the correction approach, not closure of the resulting implementation. Those three items remain pending targeted closure; C2-I2 and C2-I4 remain closed.
+Claude's proposed direction addresses C2-I1, C2-I3 and C2-R1. It is suitable for one bounded correction with the qualifications below; no further architecture proposal is needed. This is approval of the correction approach, not closure of the resulting implementation. Those three items remain pending targeted closure; C2-I2 and C2-I4 remain closed.
 
 ## Evidence and scope
 

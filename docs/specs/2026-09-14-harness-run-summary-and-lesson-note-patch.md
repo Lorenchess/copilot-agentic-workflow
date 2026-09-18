@@ -1,9 +1,9 @@
 # Forward patch — compact run summary in Resume notes and optional lesson note (H3 / H1)
 
-**Status: APPROVED FOR IMPLEMENTATION by owner instruction on 2026-09-14 ("continue with the other batches; Astra will review everything done at the end"). Astra's independent review is pending and happens at the end of the batch sequence.** This is the "Optional UX patch — H1/H3 only if useful" of Astra's plan (`docs/reviews/2026-09-14-harness-alignment-analysis-and-implementation-plan.md` §7, §6D). Astra asked that a human first see a normal SMALL run and an interrupted run with the block before keeping it; §4 renders both as **labelled scenarios** so the owner and Astra can judge usability at the end-of-sequence review, and the patch is committed separately so it can be reverted alone.
+**Status: APPROVED FOR IMPLEMENTATION by owner instruction on 2026-09-14 ("continue with the other batches; ChatGPT will review everything done at the end"). ChatGPT's independent review is pending and happens at the end of the batch sequence.** This is the "Optional UX patch — H1/H3 only if useful" of ChatGPT's plan (`docs/reviews/2026-09-14-harness-alignment-analysis-and-implementation-plan.md` §7, §6D). ChatGPT asked that a human first see a normal SMALL run and an interrupted run with the block before keeping it; §4 renders both as **labelled scenarios** so the owner and ChatGPT can judge usability at the end-of-sequence review, and the patch is committed separately so it can be reverted alone.
 
 - **Base:** the Batch B commit (which follows `2634e71`). Locked references `phase-1-reference` … `phase-5-reference` remain immutable. No historical example run record is edited; the scenarios below are new and fictional.
-- **Author / role:** Fable 5.1 as architect; Sonnet 5 implements; Astra reviews at the end.
+- **Author / role:** Claude 5.1 as architect; Sonnet 5 implements; ChatGPT reviews at the end.
 
 ## 1. What this patch is, and is not
 

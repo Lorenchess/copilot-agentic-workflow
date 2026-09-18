@@ -2,11 +2,11 @@
 
 This folder contains the revised rstack agent/skill contracts and the implementation plan needed to port them back to the original workplace rstack.
 
-It reconciles the preserved Fable draft with all 44 supplied photographs. It is a candidate for review and porting, not an installed or runtime-validated release. No executable scripts have been reconstructed from clipped images.
+It reconciles the preserved Claude draft with all 44 supplied photographs. It is a candidate for review and porting, not an installed or runtime-validated release. No executable scripts have been reconstructed from clipped images.
 
 ## Start here
 
-1. [Changes from Fable](CHANGES.md) — what changed and why.
+1. [Changes from Claude](CHANGES.md) — what changed and why.
 2. [Pipeline contract](pipeline/SKILL.md) — states, candidate identity and review/release conditions.
 3. [Runtime patch plan](RUNTIME-PATCH-PLAN.md) — exact source anchors and required behavior changes.
 4. [Workplace port guide](WORKPLACE-PORT.md) — source mapping, application order and adoption dependencies.
@@ -35,6 +35,6 @@ Runtime paths and frontmatter are candidate integration material. Validate actua
 
 ## Validation and preservation
 
-The original reconstruction, Astra review files and fable-v2 remain preserved. This task adds only rstack-v2.1 files. No build, lint, test, browser, behavioral evaluation, commit, push or workplace installation was run.
+The original reconstruction, ChatGPT review files and claude-v2 remain preserved. This task adds only rstack-v2.1 files. No build, lint, test, browser, behavioral evaluation, commit, push or workplace installation was run.
 
 Static document checks cannot establish that the proposed controls execute or improve agent behavior. Complete the selected workplace checks and adoption decisions before promotion.

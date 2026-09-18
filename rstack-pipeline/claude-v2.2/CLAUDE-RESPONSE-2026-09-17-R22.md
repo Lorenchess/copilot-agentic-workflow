@@ -1,4 +1,4 @@
-# Fable response to the independent review of V2 round 2.2
+# Claude response to the independent review of V2 round 2.2
 
 Date: 2026-09-17. Review answered: `../reviews/2026-09-17-v2.2-review.md` — verdict CHANGES REQUESTED, findings R22-01 to R22-05. Active source: this folder, corrected in place as `../README.md` directs. No sibling V2.x folder was created.
 
@@ -127,8 +127,8 @@ SHA-256, files hashed directly. "Before" is the folder exactly as the independen
 
 | File | SHA-256 |
 |---|---|
-| FABLE-CHANGE-MANIFEST.md | `769ce56999b590ab7fa3b2176abb3a937afe2dfd69babff8ffc583e1c5246e09` |
-| FABLE-IMPLEMENTATION-REPORT.md | `4aaaf7446324bb6f704dcb3debca6c6265c561d8155fbe8799e4cb4d196dbd4c` |
+| CLAUDE-CHANGE-MANIFEST.md | `769ce56999b590ab7fa3b2176abb3a937afe2dfd69babff8ffc583e1c5246e09` |
+| CLAUDE-IMPLEMENTATION-REPORT.md | `4aaaf7446324bb6f704dcb3debca6c6265c561d8155fbe8799e4cb4d196dbd4c` |
 | WORKPLACE-PORT.md | `a8caac784362b2f5177fe349923912336a0b19877a1309a9a43bc41fecd350d7` |
 | agents/rstack-planner.agent.md | `83313ac4fb9f717b5bfc4b36ba498a36308fd224ae13f29020cffbdff06dbca3` |
 | hooks/session-start-context.md | `a89cfb1f8d578adfe707323980bbb6aeef370a188c47379a7c5a88e77d6682c9` |
@@ -148,6 +148,6 @@ SHA-256, files hashed directly. "Before" is the folder exactly as the independen
 
 None besides this response.
 
-### Outside fable-v2.2
+### Outside claude-v2.2
 
-107 files existed elsewhere under `rstack-pipeline/` before this round (original reconstructions, Astra reviews, fable-v2, rstack-v2.1, the canonical `README.md`, `reviews/`). After the round 107 of 107 re-hash identical. The canonical README and the review were read, not edited; changing the entry point's status is the reviewer's step.
+107 files existed elsewhere under `rstack-pipeline/` before this round (original reconstructions, ChatGPT reviews, claude-v2, rstack-v2.1, the canonical `README.md`, `reviews/`). After the round 107 of 107 re-hash identical. The canonical README and the review were read, not edited; changing the entry point's status is the reviewer's step.

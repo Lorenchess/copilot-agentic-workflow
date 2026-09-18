@@ -4,7 +4,7 @@
 
 Give the workplace agent [WORKPLACE-REFACTOR-AGENT.md](WORKPLACE-REFACTOR-AGENT.md) to start the source audit and carry out the authorized refactor using V2.
 
-- Active V2 source: [fable-v2.2](fable-v2.2/README.md).
+- Active V2 source: [claude-v2.2](claude-v2.2/README.md).
 - Current status: **ACCEPTED AS A REFACTORING REFERENCE — static contract review complete; workplace implementation and validation remain pending.**
 - Latest independent review: [C22-01 closure review, 2026-09-17](reviews/2026-09-17-v2.2-c22-review.md). C22-01 and all five R22 findings are closed at the contract level.
 - Prior re-review: [R22 correction acceptance, 2026-09-17](reviews/2026-09-17-v2.2-r22-rereview.md), retained as history.
@@ -16,13 +16,13 @@ Read this file first, then the active V2 source and its current review. This fil
 
 | Material | Role |
 |---|---|
-| fable-v2.2 | Sole active V2 contract source; correct this folder in place |
+| claude-v2.2 | Sole active V2 contract source; correct this folder in place |
 | Its SOURCE-EVIDENCE and original photographs | Evidence for pictured behavior; not proof of a currently installed runtime |
 | Current review | Correction queue and acceptance status; unresolved findings remain explicit |
-| Original/V1 reconstructions, root RSTACK-V2 review/design files, fable-v2, rstack-v2.1 | Historical inputs and comparison baselines; not alternative operating contracts |
+| Original/V1 reconstructions, root RSTACK-V2 review/design files, claude-v2, rstack-v2.1 | Historical inputs and comparison baselines; not alternative operating contracts |
 | Actual workplace source, once supplied | Required evidence of existing implementation and the target of the later authorized port |
 
-The folder name fable-v2.2 identifies the current draft. It does not mean there are multiple active versions. Future correction rounds update that same source; dated review/response records preserve history.
+The folder name claude-v2.2 identifies the current draft. It does not mean there are multiple active versions. Future correction rounds update that same source; dated review/response records preserve history.
 
 Do not create V2.3/V2.4 siblings as competing references. Any future relocation must update this entry point in the same change and retire the old location explicitly.
 

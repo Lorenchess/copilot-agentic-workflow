@@ -1,9 +1,9 @@
 # Phase 4 — Developer Implementation Quality, GREEN Iteration & Deeper Verification
 ## Architecture Proposal (architect role, Opus 5, for owner review)
 
-Status: **draft for owner and Astra review, 2026-09-11 — not approved; nothing implemented; no Sonnet dispatch yet.** Base: `main` at `9e29ca8` (the Phase 3 administrative closure on top of `20939cc`). Locked references, untouched and not reopened: `phase-1-reference` → `03d4230`, `phase-2-reference` → `5a46eb7`, `phase-3-reference` → `20939cc`. Everything here is forward evolution of current `main`. On approval this proposal stays unedited as the reviewed record and an approved contract is written beside it (the Phase 2/3 precedent). No Phase 5 work.
+Status: **draft for owner and ChatGPT review, 2026-09-11 — not approved; nothing implemented; no Sonnet dispatch yet.** Base: `main` at `9e29ca8` (the Phase 3 administrative closure on top of `20939cc`). Locked references, untouched and not reopened: `phase-1-reference` → `03d4230`, `phase-2-reference` → `5a46eb7`, `phase-3-reference` → `20939cc`. Everything here is forward evolution of current `main`. On approval this proposal stays unedited as the reviewed record and an approved contract is written beside it (the Phase 2/3 precedent). No Phase 5 work.
 
-Roles: Opus 5 is architect and implementation supervisor. Sonnet 5 makes every checkpoint edit and every correction edit (Agent tool, `model: "sonnet"`; its `claude-sonnet-5` self-identification is recorded but is not independent attestation). At most two correction rounds per checkpoint. The architect reviews each checkpoint independently and commits locally on PASS. Astra reviews independently. Push and tag happen only on an explicit owner authorization instruction.
+Roles: Opus 5 is architect and implementation supervisor. Sonnet 5 makes every checkpoint edit and every correction edit (Agent tool, `model: "sonnet"`; its `claude-sonnet-5` self-identification is recorded but is not independent attestation). At most two correction rounds per checkpoint. The architect reviews each checkpoint independently and commits locally on PASS. ChatGPT reviews independently. Push and tag happen only on an explicit owner authorization instruction.
 
 **Phase 4 question.** How does Developer implement the approved test contract efficiently and correctly, and how does Verifier independently prove that the implementation is genuinely correct, not merely that the tests passed?
 
@@ -466,7 +466,7 @@ Rejected: a separate verify-implementation skill (it would hide criteria from De
 
 ## 20. Proposed implementation checkpoints
 
-**Delivery method.** Sonnet 5 implements each checkpoint; the architect reviews it against §21; at most two correction rounds; local commit on PASS; then Astra review.
+**Delivery method.** Sonnet 5 implements each checkpoint; the architect reviews it against §21; at most two correction rounds; local commit on PASS; then ChatGPT review.
 
 - **P4-C1 — Policy skill, agents, pipeline documents.** The skill; `developer`, `verifier`, `pipeline` agents; FLOW.md, AGENT-CONTRACTS.md, GUARDRAILS.md, MODEL-ROLES.md; the pipeline skill's regeneration phrase.
 - **P4-C2 — Implementation-stage examples.**
@@ -572,7 +572,7 @@ Examples of the comparison questions:
 
 **PROCEED_WITH_OWNER_DECISIONS** (D1–D4).
 
-On approval, Astra reviews this proposal. The approved form then becomes `docs/specs/2026-09-11-phase-4-implementation-quality-contract.md`, and P4-C1 is delegated to Sonnet 5 (`model: "sonnet"`, with its `claude-sonnet-5` self-identification recorded) with the contract, the locked baselines, and §21's acceptance criteria.
+On approval, ChatGPT reviews this proposal. The approved form then becomes `docs/specs/2026-09-11-phase-4-implementation-quality-contract.md`, and P4-C1 is delegated to Sonnet 5 (`model: "sonnet"`, with its `claude-sonnet-5` self-identification recorded) with the contract, the locked baselines, and §21's acceptance criteria.
 
 Until then:
 - nothing is implemented;

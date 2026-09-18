@@ -1,5 +1,5 @@
 # Phase 2 — Planning Quality & Adversarial Review
-## Architecture Proposal (Fable, for owner review)
+## Architecture Proposal (Claude, for owner review)
 
 Status: **DRAFT — not approved, not implemented.** Written 2026-09-10 against the locked Phase 1 baseline `03d4230` (tag `phase-1-reference`; administrative closure `0f54a59`). No Phase 1 asset has been edited. Nothing here authorizes implementation; Sonnet 5 has not been invoked for implementation. Delegation target verified: `model: "sonnet"` resolves to Claude Sonnet 5 / `claude-sonnet-5`.
 
@@ -260,16 +260,16 @@ Portable as-is, independent of Copilot: the requirement-item enumeration and ite
 - **Same model both sides.** Structural independence reduces, does not remove, correlated blind spots (§3.12).
 - **Evidence claims are still model-produced.** The Adversary verifies them within its read tools; the verifier does not (Phase 4).
 - **Decision summary drift.** Mitigated by the fidelity check; a drifted summary is a HIGH finding.
-- **Two agent bodies grow.** Mitigated by moving rules into the two skills; Fable's independent review checks agent/skill/contract consistency line by line.
+- **Two agent bodies grow.** Mitigated by moving rules into the two skills; Claude's independent review checks agent/skill/contract consistency line by line.
 - **G3 question wall.** Bounded by construction: only `G3` rows, non-`IMPLEMENTED` items, `ACCEPTED` risks, and residual findings are asked.
 
 ## 10. Implementation checkpoints
 
-Same working rule as Phase 1 §2: Sonnet 5 implements; Fable reviews independently against every acceptance criterion; at most two correction rounds; Fable commits on PASS.
+Same working rule as Phase 1 §2: Sonnet 5 implements; Claude reviews independently against every acceptance criterion; at most two correction rounds; Claude commits on PASS.
 
 - **P2-C1 — Policy skills, contracts, agents.** `plan-grounding/SKILL.md`, `challenge-plan/SKILL.md`, `planner.agent.md`, `adversary.agent.md`, `pipeline.agent.md` (G3 only), `FLOW.md`, `AGENT-CONTRACTS.md`, `MODEL-ROLES.md`.
 - **P2-C2 — Worked examples.** Regenerated PAYMENTS-12345 planning artifacts (both rounds' content reflected as today: round 2 kept, round 1 described) and the new SMALL example.
-- **P2-C3 — Guide, README, Phase 2 closure.** `COMPARISON-GUIDE.md`, `README.md`, the Phase 2 contract's closure section; Fable runs the challenge catalogue against both example plans as the independent closure check.
+- **P2-C3 — Guide, README, Phase 2 closure.** `COMPARISON-GUIDE.md`, `README.md`, the Phase 2 contract's closure section; Claude runs the challenge catalogue against both example plans as the independent closure check.
 
 ## 11. Acceptance criteria per checkpoint
 
@@ -289,7 +289,7 @@ Same working rule as Phase 1 §2: Sonnet 5 implements; Fable reviews independent
 
 **P2-C3**
 - Comparison guide has, for each Phase 2 asset, "what to look at" and internal-pipeline questions; the new cross-cutting theme present; README asset tree and status current.
-- Fable's closure check: running `challenge-plan` against both example plans yields no HIGH finding the example's review missed.
+- Claude's closure check: running `challenge-plan` against both example plans yields no HIGH finding the example's review missed.
 - Phase 1 tag still resolves to `03d4230`; no Phase 1 contract or archive file edited.
 
 ## 12. Owner decisions needed

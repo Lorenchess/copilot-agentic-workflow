@@ -1,8 +1,8 @@
-# ASTRA — PHASE 3 P3-C1 CORRECTION REVIEW
+# CHATGPT — PHASE 3 P3-C1 CORRECTION REVIEW
 
 **Recommendation: READY_TO_COMMIT_P3_C1_CORRECTION.**
 
-C1-I1, C1-I2, and C1-I3 are **CLOSED**. The nine-file working-tree correction resolves the original failure scenarios. No material regression was found. This is the independent review of that correction; another handoff to Astra is not needed for these same contents.
+C1-I1, C1-I2, and C1-I3 are **CLOSED**. The nine-file working-tree correction resolves the original failure scenarios. No material regression was found. This is the independent review of that correction; another handoff to ChatGPT is not needed for these same contents.
 
 This recommendation covers committing the correction, not locking Phase 3 or starting P3-C2.
 
@@ -97,7 +97,7 @@ SHA-256 of each working-tree file:
 | `.github/skills/pipeline/SKILL.md` | `4B6D0D020B5CF6794A79683F54B10D5730E0B76AB83FC18B5F88B75979A3D284` |
 | `.github/skills/test-contract/SKILL.md` | `C3695095597E8E42E88A0837A22352AFB82B80231F66E43157880A361DA42E3A` |
 
-## Final direction for Fable
+## Final direction for Claude
 
 **Commit the reviewed nine-file P3-C1 correction.** The original review hold is resolved for this checkpoint. Leave this and the existing untracked review artifacts out of that commit unless separately authorized.
 

@@ -1,15 +1,15 @@
-# rstack 2.2 — workplace improvement candidate (Fable round on rstack-v2.1)
+# rstack 2.2 — workplace improvement candidate (Claude round on rstack-v2.1)
 
 This folder contains the revised rstack agent/skill contracts and the implementation plan needed to port them back to the original workplace rstack. It started as a byte-identical copy of `../rstack-v2.1` and carries one further round of contract corrections (2026-09-17). This folder is the single active V2 source named by the canonical entry point `../README.md`; it is corrected in place, and no sibling V2.x folder is created.
 
-**Status (2026-09-17): independent review returned CHANGES REQUESTED with five findings (`../reviews/2026-09-17-v2.2-review.md`). All five have been corrected in place and answered in [the dated response](FABLE-RESPONSE-2026-09-17-R22.md). The corrections have not been re-reviewed, so the status in the canonical entry point stays CHANGES REQUESTED until a reviewer changes it. Not an accepted baseline, not workplace-ready, nothing executed.**
+**Status (2026-09-17): independent review returned CHANGES REQUESTED with five findings (`../reviews/2026-09-17-v2.2-review.md`). All five have been corrected in place and answered in [the dated response](CLAUDE-RESPONSE-2026-09-17-R22.md). The corrections have not been re-reviewed, so the status in the canonical entry point stays CHANGES REQUESTED until a reviewer changes it. Not an accepted baseline, not workplace-ready, nothing executed.**
 
-It reconciles the preserved Fable draft with all 44 supplied photographs. It is a candidate for review and porting, not an installed or runtime-validated release. No executable scripts have been reconstructed from clipped images.
+It reconciles the preserved Claude draft with all 44 supplied photographs. It is a candidate for review and porting, not an installed or runtime-validated release. No executable scripts have been reconstructed from clipped images.
 
 ## Start here
 
-0. [Response to the independent review](FABLE-RESPONSE-2026-09-17-R22.md) — each review finding mapped to its exact change, with current file hashes. Then the dated records it builds on: [round 2.2 implementation report](FABLE-IMPLEMENTATION-REPORT.md) and [change manifest](FABLE-CHANGE-MANIFEST.md). Those two are kept as reviewed; their hashes and line numbers describe the folder as it was when the review read it, not as it is now.
-1. [Changes](CHANGES.md) — the v2.1 record of changes from fable-v2, then the round 2.2 changes from v2.1.
+0. [Response to the independent review](CLAUDE-RESPONSE-2026-09-17-R22.md) — each review finding mapped to its exact change, with current file hashes. Then the dated records it builds on: [round 2.2 implementation report](CLAUDE-IMPLEMENTATION-REPORT.md) and [change manifest](CLAUDE-CHANGE-MANIFEST.md). Those two are kept as reviewed; their hashes and line numbers describe the folder as it was when the review read it, not as it is now.
+1. [Changes](CHANGES.md) — the v2.1 record of changes from claude-v2, then the round 2.2 changes from v2.1.
 2. [Pipeline contract](pipeline/SKILL.md) — states, candidate identity and review/release conditions.
 3. [Runtime patch plan](RUNTIME-PATCH-PLAN.md) — exact source anchors and required behavior changes.
 4. [Workplace port guide](WORKPLACE-PORT.md) — source mapping, application order and adoption dependencies.
@@ -24,7 +24,7 @@ Round 2.2 adds no state, agent, script or setting. It closes contract gaps found
 
 The candidate also consolidates the standing evidence/trust rules and adds bounded estate-sweep and screened skill-evaluation contracts. Runtime enforcement changes are specified separately because their actual source/dependencies are unavailable.
 
-There are 25 operational Markdown files and 10 maintainer documents. The operational set contains seven agents, the pipeline skill, thirteen references, a standing-rule file, a session-context payload and two maintenance skills. Maintainer documents are README, CHANGES, SOURCE-EVIDENCE, RUNTIME-PATCH-PLAN, WORKPLACE-PORT, OPEN-DECISIONS, VALIDATION-PLAN, FABLE-IMPLEMENTATION-REPORT, FABLE-CHANGE-MANIFEST and FABLE-RESPONSE-2026-09-17-R22.
+There are 25 operational Markdown files and 10 maintainer documents. The operational set contains seven agents, the pipeline skill, thirteen references, a standing-rule file, a session-context payload and two maintenance skills. Maintainer documents are README, CHANGES, SOURCE-EVIDENCE, RUNTIME-PATCH-PLAN, WORKPLACE-PORT, OPEN-DECISIONS, VALIDATION-PLAN, CLAUDE-IMPLEMENTATION-REPORT, CLAUDE-CHANGE-MANIFEST and CLAUDE-RESPONSE-2026-09-17-R22.
 
 ## Runtime entries
 
@@ -40,6 +40,6 @@ Runtime paths and frontmatter are candidate integration material. Validate actua
 
 ## Validation and preservation
 
-The original reconstruction, Astra review files, fable-v2 and rstack-v2.1 remain preserved and byte-identical to their recorded hashes. The v2.1 task added only rstack-v2.1 files; round 2.2 and the correction round after its review added and changed only files inside this folder. In neither round was a build, lint, test, browser check, behavioral evaluation, commit, push or workplace installation run.
+The original reconstruction, ChatGPT review files, claude-v2 and rstack-v2.1 remain preserved and byte-identical to their recorded hashes. The v2.1 task added only rstack-v2.1 files; round 2.2 and the correction round after its review added and changed only files inside this folder. In neither round was a build, lint, test, browser check, behavioral evaluation, commit, push or workplace installation run.
 
 Static document checks cannot establish that the proposed controls execute or improve agent behavior. Complete the selected workplace checks and adoption decisions before promotion.

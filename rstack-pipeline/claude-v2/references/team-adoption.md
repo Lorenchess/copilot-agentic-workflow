@@ -49,6 +49,6 @@ Expect the first runs to expose adapter gaps: a runner that reports modules inst
 
 For each: record what could and could not be proven; name the missing adapter or proof route; decide to add support or keep the limit explicit; re-run on a representative ticket before making the adaptation a default.
 
-Sequence: one representative low-risk ticket; one with a real external dependency or cross-module boundary; one that exercises the team's normal review and approval path. Only then tune limits, consider automating classification, or decide the open questions in `FABLE-V2-OPEN-DECISIONS.md` that need run evidence.
+Sequence: one representative low-risk ticket; one with a real external dependency or cross-module boundary; one that exercises the team's normal review and approval path. Only then tune limits, consider automating classification, or decide the open questions in `CLAUDE-V2-OPEN-DECISIONS.md` that need run evidence.
 
 The aim is not quiet runs. It is that every claim the pipeline makes corresponds to something the team can actually prove.

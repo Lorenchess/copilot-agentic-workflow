@@ -1,4 +1,4 @@
-# ASTRA — PHASE 2 IMPLEMENTATION REVIEW
+# CHATGPT — PHASE 2 IMPLEMENTATION REVIEW
 
 **Overall recommendation: TARGETED_CORRECTION_REQUIRED**
 
@@ -15,11 +15,11 @@ Reviewed the assembled local files and the changes from administrative Phase 1 c
 - `960ac5be503ca7d0ef97f42d46691f3961dfc9dc` — planning examples.
 - `8b279c9c46e1731e4e57bf0419c6a442b0a92081` — guidance and closure material.
 
-The tracked working tree and index were clean. Four existing Astra review files were untracked and were left untouched. The local `origin/main` reference remains at `0f54a59`, with these four commits ahead. A read-only remote query failed because the configured network/proxy endpoint was unreachable; therefore “nothing pushed” is consistent with local state and the handoff, but was not independently confirmed against live GitHub.
+The tracked working tree and index were clean. Four existing ChatGPT review files were untracked and were left untouched. The local `origin/main` reference remains at `0f54a59`, with these four commits ahead. A read-only remote query failed because the configured network/proxy endpoint was unreachable; therefore “nothing pushed” is consistent with local state and the handoff, but was not independently confirmed against live GitHub.
 
 The local annotated `phase-1-reference` tag still peels to `03d4230e9398a80586a4b8be47ed522638bf77d8`. Compared with the administrative closure baseline, the Phase 1 contract, archive, completed PAYMENTS example, unrelated agents, two intake skills, Copilot instructions, and VS Code settings are unchanged. Planner and Adversary tool declarations are unchanged. The historical proposal retains the SHA-256 recorded in the architecture review: `6C74C0CAD172107F11B7B52F606011413ACB58F866ED4AFF8EC561F82AFBF492`.
 
-This review used actual source inspection, cross-file comparison, and document-level counterexample traces. It did not execute Copilot, tests, builds, corporate tools, or implementation agents. The examples' repository descriptions are fictional evidence to evaluate for adequacy and consistency, not facts independently verified in real payment services. Fable's PASS statements and challenge-case table were treated as claims to check.
+This review used actual source inspection, cross-file comparison, and document-level counterexample traces. It did not execute Copilot, tests, builds, corporate tools, or implementation agents. The examples' repository descriptions are fictional evidence to evaluate for adequacy and consistency, not facts independently verified in real payment services. Claude's PASS statements and challenge-case table were treated as claims to check.
 
 ## 2. Architecture-to-implementation assessment
 
@@ -111,7 +111,7 @@ These are source-level conclusions, not observations of an executed Copilot run.
 | A new observable boundary has no existing route | Closed at reference-contract level: `NO EXISTING ROUTE` must surface a G3 prerequisite; a future boundary does not satisfy Tester. Human approval of scope does not silently rewrite Tester's unchanged scaffolding constraint. |
 | A correct SMALL change has no novel finding | The policy permits this and the example records specific local and combined-outcome checks. There is no finding quota. It is usable, although its template overhead can be reduced without weakening checks. |
 
-Relevant rules: [challenge-plan, lines 16–24 and 51–63](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/.github/skills/challenge-plan/SKILL.md:16>); [plan-grounding, lines 70–77](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/.github/skills/plan-grounding/SKILL.md:70>); [pipeline, lines 71–85](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/.github/agents/pipeline.agent.md:71>). Fable's trace table is [contract §6](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/specs/2026-09-10-phase-2-planning-quality-contract.md:138>).
+Relevant rules: [challenge-plan, lines 16–24 and 51–63](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/.github/skills/challenge-plan/SKILL.md:16>); [plan-grounding, lines 70–77](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/.github/skills/plan-grounding/SKILL.md:70>); [pipeline, lines 71–85](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/.github/agents/pipeline.agent.md:71>). Claude's trace table is [contract §6](<C:/Users/Ramon Lorente/Documents/Claude/Projects/copilot-agentic-workflow/docs/specs/2026-09-10-phase-2-planning-quality-contract.md:138>).
 
 Additional recovery states were considered:
 
@@ -163,7 +163,7 @@ The highest-value reusable ideas are:
 
 The two policy skills are worthwhile reusable assets. Their underlying rules can be adopted without copying this repository's full template. Copilot frontmatter, agent tool lists, explicit skill reads, artifact ownership, and `agent/runSubagent` conventions are host-specific adaptation material. The organization's existing orchestration should implement the approval and recovery relationships using its existing facilities rather than reproduce an eleven-artifact bookkeeping scheme unnecessarily.
 
-Keep Sonnet-5 as the baseline. Exact corporate MCP names, picker strings, agent-picker behavior, approval-engine behavior, and model benchmarking remain deferred. The repository's source does not independently prove which model executed Fable's implementation sessions; that provenance claim is separate from this assessment of the delivered assets.
+Keep Sonnet-5 as the baseline. Exact corporate MCP names, picker strings, agent-picker behavior, approval-engine behavior, and model benchmarking remain deferred. The repository's source does not independently prove which model executed Claude's implementation sessions; that provenance claim is separate from this assessment of the delivered assets.
 
 ## 8. Final recommendation
 

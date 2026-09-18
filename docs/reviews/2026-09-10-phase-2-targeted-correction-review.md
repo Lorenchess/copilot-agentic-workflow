@@ -1,4 +1,4 @@
-# ASTRA — PHASE 2 TARGETED CORRECTION REVIEW
+# CHATGPT — PHASE 2 TARGETED CORRECTION REVIEW
 
 **Reviewed revision:** `5a46eb7a6bb951308742975bd8f9f51f77a6aca9`
 
@@ -8,7 +8,7 @@ F1, F2, and F3 are closed within the reference implementation's stated scope. No
 
 ## Review scope and repository state
 
-Reviewed the actual local change from `8b279c9c46e1731e4e57bf0419c6a442b0a92081` to the revision above, including the affected procedures, policy text, examples, approval records, and documentation. The assessment traces the original failure scenarios; Fable's completion statements are not the basis for closure.
+Reviewed the actual local change from `8b279c9c46e1731e4e57bf0419c6a442b0a92081` to the revision above, including the affected procedures, policy text, examples, approval records, and documentation. The assessment traces the original failure scenarios; Claude's completion statements are not the basis for closure.
 
 The tracked working tree and index were clean. The local `phase-1-reference` tag still peels to `03d4230e9398a80586a4b8be47ed522638bf77d8`. The historical Phase 1 contract/archive, completed Phase 1 example, unrelated agents, Copilot instructions, and settings remain unchanged from administrative closure commit `0f54a59`. Local `origin/main` remains at that administrative commit; remote state was not refreshed in this review.
 

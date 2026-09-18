@@ -1,4 +1,4 @@
-# ASTRA — PHASE 4 FINAL ASSEMBLED IMPLEMENTATION REVIEW
+# CHATGPT — PHASE 4 FINAL ASSEMBLED IMPLEMENTATION REVIEW
 
 **Reviewed reference revision:** `9a7e704cf328b161b08cc0e903a883ef340d4368`.
 
@@ -19,9 +19,9 @@ This review assesses the complete Phase 4 delta, including its operating assets 
 | P4-C2 | Original `a5af1725197922d3cbacf2e7959ee2703c170606`, accepted after `713a302103bc2b02d00949d78f0eeefe0399c1d8`. The actual examples and correction were inspected; see `2026-09-11-phase-4-p4-c2-implementation-review.md` alongside this file. |
 | P4-C3 | `9a7e704cf328b161b08cc0e903a883ef340d4368`; the three-file guidance, traces and checkpoint-closure change satisfies §6, with five draft precision corrections inspected before acceptance. No architecture or operating-procedure correction was needed. |
 
-Historical C1 and original C2 authorship remains Sonnet/Fable as recorded in those commits. That model's actual identity is not retroactively certified here. The owner handoff changed subsequent authoring to GPT-5.6 Sol, supervised and reviewed by Astra. Astra verified `gpt-5.6-sol`, effort `high`, in the delegated session's platform `turn_context` before edits and refreshed that check during C3. Sol made every implementation/correction edit after takeover. Astra reviewed actual files and diffs, authored review artifacts, and performed accepted Git operations. C2 used its second correction round after the historical Sonnet/Fable first round; its budget was not restarted on takeover.
+Historical C1 and original C2 authorship remains Sonnet/Claude as recorded in those commits. That model's actual identity is not retroactively certified here. The owner handoff changed subsequent authoring to GPT-5.6 Sol, supervised and reviewed by ChatGPT. ChatGPT verified `gpt-5.6-sol`, effort `high`, in the delegated session's platform `turn_context` before edits and refreshed that check during C3. Sol made every implementation/correction edit after takeover. ChatGPT reviewed actual files and diffs, authored review artifacts, and performed accepted Git operations. C2 used its second correction round after the historical Sonnet/Claude first round; its budget was not restarted on takeover.
 
-Astra is both supervisor and reviewer under the owner's explicit role assignment. The review is independent of the implementation worker's claims, not an additional blind external audit. The reference pipeline itself still assigns Sonnet 5 to its runtime roles; authoring these assets with Sol does not change that baseline.
+ChatGPT is both supervisor and reviewer under the owner's explicit role assignment. The review is independent of the implementation worker's claims, not an additional blind external audit. The reference pipeline itself still assigns Sonnet 5 to its runtime roles; authoring these assets with Sol does not change that baseline.
 
 ## Evidence map
 

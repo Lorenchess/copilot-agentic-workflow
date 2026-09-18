@@ -1,4 +1,4 @@
-# Fable response to re-review note C22-01, with the adoption-dependency handoff
+# Claude response to re-review note C22-01, with the adoption-dependency handoff
 
 Date: 2026-09-17. Answers the nonblocking wording note C22-01 in `../reviews/2026-09-17-v2.2-r22-rereview.md`. The re-review accepted V2 as a refactoring reference and closed R22-01 to R22-05; nothing here reopens them, and this is a bounded wording correction, not an implementation round.
 

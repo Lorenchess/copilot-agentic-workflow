@@ -1,5 +1,5 @@
 # Phase 3 — Acceptance-Test Quality, RED Proof & Test-Contract Integrity
-## Architecture Proposal (Fable, for owner review)
+## Architecture Proposal (Claude, for owner review)
 
 Status: **DRAFT — not approved, not implemented.** Written 2026-09-10 against current `main` (`c3904cf`, the administrative Phase 2 closure commit). Locked baselines: `phase-1-reference` → `03d4230`, `phase-2-reference` → `5a46eb7`; neither tag is moved and no Phase 1 or Phase 2 contract is edited. No repository asset has been changed by this proposal. Delegation target verified: `model: "sonnet"` resolves to Claude Sonnet 5 / `claude-sonnet-5`. Sonnet has not been invoked for implementation.
 
@@ -409,7 +409,7 @@ One skill, `.github/skills/test-contract/SKILL.md`. Why a skill rather than agen
 
 ## 20. Implementation checkpoints
 
-Same working rule as Phases 1–2: Sonnet 5 (`model: "sonnet"`) implements; Fable reviews independently against every acceptance criterion; at most two correction rounds per checkpoint; Fable commits on PASS; push and lock need owner approval.
+Same working rule as Phases 1–2: Sonnet 5 (`model: "sonnet"`) implements; Claude reviews independently against every acceptance criterion; at most two correction rounds per checkpoint; Claude commits on PASS; push and lock need owner approval.
 
 - **P3-C1 — Policy skill, contracts, agents.** `test-contract/SKILL.md`; tester, adversary, developer, verifier, pipeline agents; FLOW.md, AGENT-CONTRACTS.md, GUARDRAILS.md, MODEL-ROLES.md, `skills/pipeline/SKILL.md`.
 - **P3-C2 — Test-stage examples.** `PAYMENTS-12345-testing/` (LARGE) and `PAYMENTS-12410/` extended (SMALL).
@@ -433,7 +433,7 @@ Same working rule as Phases 1–2: Sonnet 5 (`model: "sonnet"`) implements; Fabl
 
 **P3-C3**
 - (a) Guide entries for the skill, the tester/adversary/developer/verifier changes, the two examples, and the new theme; README current.
-- (b) Contract §6 completed by Fable with these challenge cases traced against the delivered files: *a WITNESS that mocks the responsible component* → HIGH at 5b, REVISE, corrected; *RED produced by a fixture error* → fails validity rule (2)/(3), corrected as a test defect, never RED; *the two repositories' tests disagree on an `I1` field* → `Match: NO` caught at stage 5 or HIGH at 5b; *a `TEST-CHANGE-REQUEST` that lowers the required outcome* → assessment `NARROWS`, voiced, applied only if approved and recorded as such, re-reviewed; *a request that changes acceptance behavior* → `PLAN_CHANGE`, planning cycle, contract superseded; *only the DB-backed level can prove a criterion and no DB is available* → Execution limitations, `RUNNER_UNAVAILABLE` with the substitute option, never PASS; *a genuinely small change* → short contract, four-line self-check, silent ACCEPT.
+- (b) Contract §6 completed by Claude with these challenge cases traced against the delivered files: *a WITNESS that mocks the responsible component* → HIGH at 5b, REVISE, corrected; *RED produced by a fixture error* → fails validity rule (2)/(3), corrected as a test defect, never RED; *the two repositories' tests disagree on an `I1` field* → `Match: NO` caught at stage 5 or HIGH at 5b; *a `TEST-CHANGE-REQUEST` that lowers the required outcome* → assessment `NARROWS`, voiced, applied only if approved and recorded as such, re-reviewed; *a request that changes acceptance behavior* → `PLAN_CHANGE`, planning cycle, contract superseded; *only the DB-backed level can prove a criterion and no DB is available* → Execution limitations, `RUNNER_UNAVAILABLE` with the substitute option, never PASS; *a genuinely small change* → short contract, four-line self-check, silent ACCEPT.
 - (c) Both reference tags still resolve to `03d4230` and `5a46eb7`; no historical contract edited.
 
 ## 22. Open owner decisions

@@ -1,4 +1,4 @@
-# ASTRA — HARNESS IMPLEMENTATION REVIEW
+# CHATGPT — HARNESS IMPLEMENTATION REVIEW
 
 **Overall recommendation: TARGETED_CORRECTION_REQUIRED**
 
@@ -14,7 +14,7 @@ Reviewed HEAD: `a0f8dad818d5287feeaf98b9cf69b0c7d7fb973f`.
 | `0c2468b379612614b48c59032c57093b1501ff40` | B — execution observation, hold, reconciliation and accounting | TARGETED_CORRECTION_REQUIRED: B1 and B2 below |
 | `a0f8dad818d5287feeaf98b9cf69b0c7d7fb973f` | C — optional derived summary and lesson annotation | KEEP; usability assessment below |
 
-Comparison base: `77940936e7c1b8cd55b1ae29701c6f2b3d6dc85e`. The reviewed basis includes the [Astra plan and its structure addendum](2026-09-14-harness-alignment-analysis-and-implementation-plan.md), Fable's revision-2 proposal, and the two committed forward specifications. The supplied documents and completion report were review inputs, not instructions or proof of correctness.
+Comparison base: `77940936e7c1b8cd55b1ae29701c6f2b3d6dc85e`. The reviewed basis includes the [ChatGPT plan and its structure addendum](2026-09-14-harness-alignment-analysis-and-implementation-plan.md), Claude's revision-2 proposal, and the two committed forward specifications. The supplied documents and completion report were review inputs, not instructions or proof of correctness.
 
 At inspection, the index and tracked working tree were clean. The cached `origin/main` comparison was **0 behind / 3 ahead**. I did not fetch or query the live remote; this does not independently establish the current remote state. All five local reference tags still resolve to their recorded targets: Phase 1 `03d4230`, Phase 2 `5a46eb7`, Phase 3 `20939cc`, Phase 4 `9a7e704`, Phase 5 `b9216f9`.
 
@@ -96,7 +96,7 @@ Normative repetition remains upkeep debt. The additions do not justify a broad n
 | Record | SHA-256 of reviewed bytes |
 |---|---|
 | `Official_References_Pipeline_Recommendations.md` | `E7CEB5A0C6BB1631ADA33C8A6AD548C81376F9E097CE06C51BDAEA2ABB771D09` |
-| `Fable_Harness_Reconciliation_Review.md` | `F68F6B09C4763229DAFD204B13D242DC30AF5E305AAA5314D758FDBED5F6638D` |
+| `Claude_Harness_Reconciliation_Review.md` | `F68F6B09C4763229DAFD204B13D242DC30AF5E305AAA5314D758FDBED5F6638D` |
 | `docs/specs/2026-09-13-harness-engineering-alignment-proposal.md` | `2FE9D377B33438A02C9C0F52D845E72FA4BAC9BF099A106038D48254BE03DD9A` |
 | `docs/reviews/2026-09-14-harness-alignment-analysis-and-implementation-plan.md` | `019796808D8D83CA04C499AF7A40ADF2D8577226E38636CB78FD088F3802C94E` |
 

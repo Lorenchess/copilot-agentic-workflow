@@ -1,11 +1,11 @@
 # Phase 5 — Delivery, Corporate Adoption & Final Reference Validation
-## Contract (Astra architecture → GPT-5.6 Sol implementation) — approved
+## Contract (ChatGPT architecture → GPT-5.6 Sol implementation) — approved
 
-**Status: APPROVED BY ASTRA under explicit owner delegation on 2026-09-11, conditional on Astra confirming this file faithfully transcribes the approved architecture before P5-C1 begins.**
+**Status: APPROVED BY CHATGPT under explicit owner delegation on 2026-09-11, conditional on ChatGPT confirming this file faithfully transcribes the approved architecture before P5-C1 begins.**
 
 - **Base:** `main` at `23b6ef26591cc3e48d8cd98bc75bcc8f7a4b29db`.
 - **Locked references:** `phase-1-reference` → `03d4230e9398a80586a4b8be47ed522638bf77d8`; `phase-2-reference` → `5a46eb7a6bb951308742975bd8f9f51f77a6aca9`; `phase-3-reference` → `20939cc9ff00a9091042f0e3fb3c74194c7e583b`; `phase-4-reference` → `9a7e704cf328b161b08cc0e903a883ef340d4368`. These tags are immutable.
-- **Roles and provenance:** Astra owns and approved the architecture expressed in its implementation brief, supervises implementation, reviews this transcription and every checkpoint, and performs the final assembled review. GPT-5.6 Sol transcribes that architecture into this contract and performs every repository edit and correction edit; this file is not an independently Sol-approved architecture. Astra verified the implementation model through platform turn context. The reference pipeline runtime remains Sonnet 5 for all nine roles.
+- **Roles and provenance:** ChatGPT owns and approved the architecture expressed in its implementation brief, supervises implementation, reviews this transcription and every checkpoint, and performs the final assembled review. GPT-5.6 Sol transcribes that architecture into this contract and performs every repository edit and correction edit; this file is not an independently Sol-approved architecture. ChatGPT verified the implementation model through platform turn context. The reference pipeline runtime remains Sonnet 5 for all nine roles.
 - **Correction bound:** at most two ordinary correction rounds per checkpoint. If a material defect remains after round two, STOP and report it to the owner; no automatic new cycle.
 
 ## 1. Purpose, checkpoints, and constraints
@@ -23,7 +23,7 @@ Phase 5 integrates the completed pipeline, defines an honest corporate-adoption 
 - No new STOP code and no change to G1–G4. Preserve the exact G4 question, modes, tuple, and existing STOP messages.
 - Existing debt N1–N3 remains recorded; Phase 5 does not clean it up.
 - Historical specifications, proposals, reviews, examples, and locked reference tags remain unchanged.
-- Publication occurs only after all three checkpoints PASS and Astra's final assembled review has no material finding.
+- Publication occurs only after all three checkpoints PASS and ChatGPT's final assembled review has no material finding.
 - P5-C3's reviewed implementation revision is distinct from the later administrative-closure commit.
 
 ## 2. Current gaps and forward-correction boundary
@@ -115,7 +115,7 @@ There is no Jira transition or comment capability. External workflow handoff is 
 
 Keep detailed procedure in the owning Workspace and PR agents, stage sequence in Pipeline/FLOW, and only concise capabilities, templates, and cross-role contracts elsewhere.
 
-Frozen: every other agent and skill; `.vscode/**`; `.github/copilot-instructions.md`; `.github/pipeline/MODEL-ROLES.md`; every existing example; every historical specification, proposal, and review. Astra's files under `docs/reviews/` remain intentionally untracked.
+Frozen: every other agent and skill; `.vscode/**`; `.github/copilot-instructions.md`; `.github/pipeline/MODEL-ROLES.md`; every existing example; every historical specification, proposal, and review. ChatGPT's files under `docs/reviews/` remain intentionally untracked.
 
 ## 5. Checkpoint acceptance criteria
 
@@ -142,7 +142,7 @@ Frozen: every other agent and skill; `.vscode/**`; `.github/copilot-instructions
 
 ## 6. Review, closure, and publication
 
-After each checkpoint, Astra reviews the actual diff, files, Git state, scope, and acceptance criteria before committing. Sol reports are not review evidence. At most two bounded Sol correction rounds are available per checkpoint.
+After each checkpoint, ChatGPT reviews the actual diff, files, Git state, scope, and acceptance criteria before committing. Sol reports are not review evidence. At most two bounded Sol correction rounds are available per checkpoint.
 
 The final assembled review covers architecture coherence, role and artifact ownership, requirement and decision fidelity, challenge and test-contract quality, implementation and verification discipline, recovery, gates, retries, trust boundaries, multi-repository delivery, PR integrity, corporate-adoption honesty, proportionality, and maintenance burden.
 
@@ -164,13 +164,13 @@ After Phase 5 closure, STOP. There is no Phase 6 or optional cleanup in this aut
 
 | Checkpoint | Reviewed revision | Status | Correction record |
 |---|---|---|---|
-| P5-C1 — delivery and PR integration | `f3aa9d425868fa48d934a065872c32b367015cba` | **PASS — accepted by Astra** | One ordinary correction round: RUN/WORKSPACE history ownership, preflight-versus-later partial-effect reporting, and mandatory post-create read wording. |
-| P5-C2 — corporate adoption checklist | `54b900b748d80aff48300e845016c359d7c0b702` | **PASS — accepted by Astra** | One ordinary correction round: hidden stage-agent picker behavior, protected-edit preview evidence, connector capability-to-tool cardinality, and link validation. Every corporate result remains `NOT VERIFIED`. |
-| P5-C3 — trace, guide, README, contract appendices | pending reviewed implementation revision | **PENDING ASTRA REVIEW** | No checkpoint PASS is claimed by this implementation record. |
-| Final assembled review | pending | **PENDING ASTRA REVIEW** | Must cover the whole pipeline and find no unresolved material issue before closure. |
-| Administrative closure, `phase-5-reference`, and publication | pending | **PENDING ASTRA ACCEPTANCE AND COMPLETION PREREQUISITES** | The owner has already authorized Phase 5 and publication after the contract criteria are satisfied. The reviewed P5-C3 revision must remain distinct from the later closure commit; nothing here claims a tag or push. |
+| P5-C1 — delivery and PR integration | `f3aa9d425868fa48d934a065872c32b367015cba` | **PASS — accepted by ChatGPT** | One ordinary correction round: RUN/WORKSPACE history ownership, preflight-versus-later partial-effect reporting, and mandatory post-create read wording. |
+| P5-C2 — corporate adoption checklist | `54b900b748d80aff48300e845016c359d7c0b702` | **PASS — accepted by ChatGPT** | One ordinary correction round: hidden stage-agent picker behavior, protected-edit preview evidence, connector capability-to-tool cardinality, and link validation. Every corporate result remains `NOT VERIFIED`. |
+| P5-C3 — trace, guide, README, contract appendices | pending reviewed implementation revision | **PENDING CHATGPT REVIEW** | No checkpoint PASS is claimed by this implementation record. |
+| Final assembled review | pending | **PENDING CHATGPT REVIEW** | Must cover the whole pipeline and find no unresolved material issue before closure. |
+| Administrative closure, `phase-5-reference`, and publication | pending | **PENDING CHATGPT ACCEPTANCE AND COMPLETION PREREQUISITES** | The owner has already authorized Phase 5 and publication after the contract criteria are satisfied. The reviewed P5-C3 revision must remain distinct from the later closure commit; nothing here claims a tag or push. |
 
-Astra owns the Phase 5 architecture and accepted P5-C1/P5-C2. All repository authoring and correction edits were performed by platform-verified GPT-5.6 Sol under that delegation. This authoring provenance is distinct from the reference pipeline's intended Sonnet-5 runtime for all nine roles and is not corporate model-routing evidence.
+ChatGPT owns the Phase 5 architecture and accepted P5-C1/P5-C2. All repository authoring and correction edits were performed by platform-verified GPT-5.6 Sol under that delegation. This authoring provenance is distinct from the reference pipeline's intended Sonnet-5 runtime for all nine roles and is not corporate model-routing evidence.
 
 ## 8. End-to-end trace record
 
@@ -180,7 +180,7 @@ Astra owns the Phase 5 architecture and accepted P5-C1/P5-C2. All repository aut
 
 The stages 8–10 continuation is explicitly hypothetical. The existing example still stops at stage 7 and records no G4, draft, push, PR, or rollout. The scenario preserves its three distinct order facts: Developer's ledger-then-API implementation choice, RUN's API-then-ledger publication order, and the ledger-before-API-enable rollout obligation. It illustrates partial publication, human-confirmed same-basis continuation, already-A reuse without push, known-PR reconciliation, and unknown-create reconciliation without claiming execution or adding an artifact.
 
-The final reuse assessment copies portable evidence and safety rules, adapts templates and numeric bounds to existing internal infrastructure, and keeps Copilot packaging and host controls platform-specific. It preserves Phase 4 debt N1–N3, states the shared-model and procedural-control limits, and links the corporate checklist where every result remains `NOT VERIFIED`. Under the owner's existing authorization, P5-C3 acceptance, final assembled review, and all closure/publication prerequisites remain pending Astra review; this record does not claim they have completed.
+The final reuse assessment copies portable evidence and safety rules, adapts templates and numeric bounds to existing internal infrastructure, and keeps Copilot packaging and host controls platform-specific. It preserves Phase 4 debt N1–N3, states the shared-model and procedural-control limits, and links the corporate checklist where every result remains `NOT VERIFIED`. Under the owner's existing authorization, P5-C3 acceptance, final assembled review, and all closure/publication prerequisites remain pending ChatGPT review; this record does not claim they have completed.
 
 ## 9. Final acceptance and administrative closure record
 
@@ -191,11 +191,11 @@ The pending entries in §7 record the state when P5-C3 was drafted. This final r
 | P5-C1 | `f3aa9d425868fa48d934a065872c32b367015cba` | **PASS** after one ordinary correction round; two material findings were closed: RUN/WORKSPACE history ownership and accurate disclosure of preflight versus later same-attempt effects. Mandatory post-create read wording was aligned in the same bounded round. |
 | P5-C2 | `54b900b748d80aff48300e845016c359d7c0b702` | **PASS** after one ordinary correction round; one material agent-picker/frontmatter finding was closed, with the bounded protected-edit preview, connector-cardinality, and link corrections. |
 | P5-C3 | `b9216f99fcb183f71fdd47f6084eb784d821cc14` | **PASS** after two ordinary correction rounds; the missing indirect Developer-to-approved-G3 failure case was added, then its over-restrictive Verifier repair routing was corrected to permit a bounded plan-restoring fix before `MATERIAL_DEVIATION`. |
-| Final assembled reference | P5-C3 revision above | **PASS**; Astra found no unresolved material finding or material regression. |
+| Final assembled reference | P5-C3 revision above | **PASS**; ChatGPT found no unresolved material finding or material regression. |
 
-The accepted target for `phase-5-reference` is the reviewed P5-C3 revision `b9216f99fcb183f71fdd47f6084eb784d821cc14`, not the later administrative-closure commit. The local untracked [`phase-5-final-review.md`](../reviews/2026-09-11-phase-5-final-review.md) is the audit record for Astra's independent assembled review; the tracked [`END-TO-END-REFERENCE-TRACE.md`](../END-TO-END-REFERENCE-TRACE.md) is the public readable assessment. The audit file is not required as a public source.
+The accepted target for `phase-5-reference` is the reviewed P5-C3 revision `b9216f99fcb183f71fdd47f6084eb784d821cc14`, not the later administrative-closure commit. The local untracked [`phase-5-final-review.md`](../reviews/2026-09-11-phase-5-final-review.md) is the audit record for ChatGPT's independent assembled review; the tracked [`END-TO-END-REFERENCE-TRACE.md`](../END-TO-END-REFERENCE-TRACE.md) is the public readable assessment. The audit file is not required as a public source.
 
-Platform evidence identifies GPT-5.6 Sol as the author of every Phase 5 implementation, correction, and administrative edit under Astra's architecture and delegation. Astra performed the actual-file reviews and Git operations. The intended Sonnet-5 runtime for all nine reference roles remains a distinct corporate assignment and was not validated by Sol authoring.
+Platform evidence identifies GPT-5.6 Sol as the author of every Phase 5 implementation, correction, and administrative edit under ChatGPT's architecture and delegation. ChatGPT performed the actual-file reviews and Git operations. The intended Sonnet-5 runtime for all nine reference roles remains a distinct corporate assignment and was not validated by Sol authoring.
 
 At final review, all 93 pre-existing frozen files retained their starting SHA-256 hashes. The four earlier reference tags and targets were unchanged: Phase 1 `03d4230e9398a80586a4b8be47ed522638bf77d8`, Phase 2 `5a46eb7a6bb951308742975bd8f9f51f77a6aca9`, Phase 3 `20939cc9ff00a9091042f0e3fb3c74194c7e583b`, and Phase 4 `9a7e704cf328b161b08cc0e903a883ef340d4368`.
 
@@ -203,4 +203,4 @@ Accepted maintenance debt remains: N1 duplicates detailed implementation rules; 
 
 All 20 corporate-adoption checks remain **NOT VERIFIED**. No corporate Jira, Bitbucket, Git-host, agent-routing, approval, container, database, Kafka, PR, or other connector behavior was executed by this phase.
 
-The owner's explicit Phase 5 instruction authorizes publication after the contract criteria are met; Astra's PASS is review evidence, not publication authority. This record is time-neutral and does not claim that a commit, tag, or push has occurred. After publication, live reads must separately confirm remote `main`, `phase-5-reference`, and all four earlier immutable tags. Stop after Phase 5 publication confirmation; there is no Phase 6 or optional cleanup.
+The owner's explicit Phase 5 instruction authorizes publication after the contract criteria are met; ChatGPT's PASS is review evidence, not publication authority. This record is time-neutral and does not claim that a commit, tag, or push has occurred. After publication, live reads must separately confirm remote `main`, `phase-5-reference`, and all four earlier immutable tags. Stop after Phase 5 publication confirmation; there is no Phase 6 or optional cleanup.

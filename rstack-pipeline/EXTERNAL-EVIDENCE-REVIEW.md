@@ -1,12 +1,12 @@
-# Fable external-evidence review
+# Claude external-evidence review
 
-**Subject.** `rstack-ai-software-factory-evidence-report.md` (dated 2026-09-17), an external research synthesis, checked against its own cited primary sources and then against the Fable V2 architecture in `rstack-pipeline/fable-v2/`.
+**Subject.** `rstack-ai-software-factory-evidence-report.md` (dated 2026-09-17), an external research synthesis, checked against its own cited primary sources and then against the Claude V2 architecture in `rstack-pipeline/claude-v2/`.
 
-**Date.** 2026-09-17. **Author.** Fable (architect / reviewer). **Status.** Analysis only. No file outside this one was created or modified; nothing staged, committed or pushed.
+**Date.** 2026-09-17. **Author.** Claude (architect / reviewer). **Status.** Analysis only. No file outside this one was created or modified; nothing staged, committed or pushed.
 
-**Method.** Every source the report relies on for a material conclusion was fetched live on 2026-09-17 (41 catalog entries; the six openai.com pages block non-browser fetchers and were read in a real browser session). Quotes below are verbatim from the fetched pages. Five parallel verification passes covered OpenAI, Anthropic, GitHub, Google/research papers, and durable-state/telemetry/supply-chain sources; Fable spot-checked host documentation the report did not cite (Claude Code subagents and hooks, VS Code custom agents, subagents and hooks). Labels used throughout: **SOURCE FACT** (the page says it), **EMPIRICAL RESULT** (the page reports a measurement), **VENDOR GUIDANCE** (a vendor recommends it, no measurement), **INFERENCE** (a conclusion drawn across sources), **RECOMMENDATION** (what Fable should do).
+**Method.** Every source the report relies on for a material conclusion was fetched live on 2026-09-17 (41 catalog entries; the six openai.com pages block non-browser fetchers and were read in a real browser session). Quotes below are verbatim from the fetched pages. Five parallel verification passes covered OpenAI, Anthropic, GitHub, Google/research papers, and durable-state/telemetry/supply-chain sources; Claude spot-checked host documentation the report did not cite (Claude Code subagents and hooks, VS Code custom agents, subagents and hooks). Labels used throughout: **SOURCE FACT** (the page says it), **EMPIRICAL RESULT** (the page reports a measurement), **VENDOR GUIDANCE** (a vendor recommends it, no measurement), **INFERENCE** (a conclusion drawn across sources), **RECOMMENDATION** (what Claude should do).
 
-**Scope caveat.** The task names `fable-v2/` (7 agents, `pipeline/SKILL.md`, 13 references) and its `FABLE-V2-OPEN-DECISIONS.md`. Since that folder was written, `rstack-pipeline/README.md` has made `fable-v2.2` the sole active V2 source and added OD-12 to OD-20, a `hooks/` directory, and photograph-reconciled gate facts (PASS / BLOCKED / HELD, 8-column sha-based `ac.tsv`). This review evaluates `fable-v2` as instructed and notes, without reviewing `fable-v2.2`, where a finding is already known to have moved. Any change recommended here must be applied to the active source, not to `fable-v2`.
+**Scope caveat.** The task names `claude-v2/` (7 agents, `pipeline/SKILL.md`, 13 references) and its `CLAUDE-V2-OPEN-DECISIONS.md`. Since that folder was written, `rstack-pipeline/README.md` has made `claude-v2.2` the sole active V2 source and added OD-12 to OD-20, a `hooks/` directory, and photograph-reconciled gate facts (PASS / BLOCKED / HELD, 8-column sha-based `ac.tsv`). This review evaluates `claude-v2` as instructed and notes, without reviewing `claude-v2.2`, where a finding is already known to have moved. Any change recommended here must be applied to the active source, not to `claude-v2`.
 
 ---
 
@@ -14,14 +14,14 @@
 
 **Verdict: ALIGNED WITH IMPORTANT CORRECTIONS.**
 
-Fable V2's load-bearing structure is supported by the strongest evidence class the report cites (platform controls and standards, grade A): one immutable candidate identity, evidence and review bound to it and invalidated when it changes, integration before final verification, review eligibility separated from release eligibility, no self-issued authorization, no agent merges a pull request, an orchestrator that dispatches rather than judges, and a fresh reviewer. Those are not conclusions the report reached by inference; they are direct analogues of GitHub required-status strict mode, dismiss-stale-approvals, prevent-self-review, protected-environment secret withholding, full-SHA pinning, and in-toto's authorized-functionary model. Fable V2 also already states, in its own vocabulary, the report's central rule that a prompt is not a boundary and an agent-written record is not authentication.
+Claude V2's load-bearing structure is supported by the strongest evidence class the report cites (platform controls and standards, grade A): one immutable candidate identity, evidence and review bound to it and invalidated when it changes, integration before final verification, review eligibility separated from release eligibility, no self-issued authorization, no agent merges a pull request, an orchestrator that dispatches rather than judges, and a fresh reviewer. Those are not conclusions the report reached by inference; they are direct analogues of GitHub required-status strict mode, dismiss-stale-approvals, prevent-self-review, protected-environment secret withholding, full-SHA pinning, and in-toto's authorized-functionary model. Claude V2 also already states, in its own vocabulary, the report's central rule that a prompt is not a boundary and an agent-written record is not authentication.
 
 The corrections are real but bounded:
 
-1. **The multi-agent evidence is weaker and more double-edged than the report presents.** The Google study is an unreviewed preprint whose benchmarks contain no software engineering; its current revision adds a small SWE-bench slice on which every multi-agent architecture scored below a single agent. That supports Fable's deterministic dispatcher, but it equally warns against the coordination cost of seven mandatory dispatches per ticket. Fable's justification for role separation must therefore rest on adversarial independence (author is never judge), which no cited study measures, not on performance.
-2. **The separate-Tester and mandatory-Plan-Auditor choices have narrower support than Fable's confidence implies.** AgentCoder does contain an ablation for a separate test-writing agent, but on function-level Python with GPT-3.5. Nothing external supports RED-first or a plan audit on every ticket. Both are defensible RSTACK policy choices; neither is externally proven.
-3. **Fable V2 uses no host hooks and enforces lanes only by self-run detectors.** The Copilot hooks reference documents `preToolUse` deny and a `subagentStop` hook that receives the subagent's full response and can block or rewrite it. Those two mechanisms directly address two of Fable's stated enforcement dependencies (protected-path prevention; host-side persistence of a fresh role's reply). They are available today only on Copilot CLI and the cloud agent, and preview in VS Code, so their adoption is host information, not a design change.
-4. **The approval agent is narrower than the original but still a reasoning agent holding publication tools.** The evidence says release eligibility belongs to a deterministic gate and authorization to an authenticated platform event; Fable already declares both as enforcement dependencies. What can change now is the default: the human performs the external action with their own credential unless the host provides an authorization receipt.
+1. **The multi-agent evidence is weaker and more double-edged than the report presents.** The Google study is an unreviewed preprint whose benchmarks contain no software engineering; its current revision adds a small SWE-bench slice on which every multi-agent architecture scored below a single agent. That supports Claude's deterministic dispatcher, but it equally warns against the coordination cost of seven mandatory dispatches per ticket. Claude's justification for role separation must therefore rest on adversarial independence (author is never judge), which no cited study measures, not on performance.
+2. **The separate-Tester and mandatory-Plan-Auditor choices have narrower support than Claude's confidence implies.** AgentCoder does contain an ablation for a separate test-writing agent, but on function-level Python with GPT-3.5. Nothing external supports RED-first or a plan audit on every ticket. Both are defensible RSTACK policy choices; neither is externally proven.
+3. **Claude V2 uses no host hooks and enforces lanes only by self-run detectors.** The Copilot hooks reference documents `preToolUse` deny and a `subagentStop` hook that receives the subagent's full response and can block or rewrite it. Those two mechanisms directly address two of Claude's stated enforcement dependencies (protected-path prevention; host-side persistence of a fresh role's reply). They are available today only on Copilot CLI and the cloud agent, and preview in VS Code, so their adoption is host information, not a design change.
+4. **The approval agent is narrower than the original but still a reasoning agent holding publication tools.** The evidence says release eligibility belongs to a deterministic gate and authorization to an authenticated platform event; Claude already declares both as enforcement dependencies. What can change now is the default: the human performs the external action with their own credential unless the host provides an authorization receipt.
 5. **The report's evidence is entirely GitHub-centric for authorization, while RSTACK's approval agent targets Bitbucket and Jira.** No source in the report says anything about Bitbucket branch permissions, required reviewers or merge checks. That is host information the owner must supply; this review does not invent it.
 
 Nothing verified here justifies a redesign. Several things justify sharper labelling, one added rule (reconcile unknown external effects before retry), and a measurement plan before any further mechanism is added.
@@ -114,7 +114,7 @@ Uncatalogued: **[S12], [S19], [S27], [S37]** cannot be verified because they do 
 
 ## 2.5 Important missing evidence
 
-1. **The corporate host.** The report's authorization and hook evidence is GitHub-only. Fable's approval agent holds `bitbucket-mcp` tools and the planner holds `jira-mcp`. No Bitbucket branch-permission, required-reviewer, or merge-check documentation was cited or verified. This review does not invent it (section 9).
+1. **The corporate host.** The report's authorization and hook evidence is GitHub-only. Claude's approval agent holds `bitbucket-mcp` tools and the planner holds `jira-mcp`. No Bitbucket branch-permission, required-reviewer, or merge-check documentation was cited or verified. This review does not invent it (section 9).
 2. **Copilot surface limits.** Hooks are GA on CLI and cloud agent, preview in VS Code, absent elsewhere. Subagents are not available on GitHub.com. `handoffs` frontmatter is "currently not supported for Copilot cloud agent". VS Code subagents "cannot" use "the built-in tools for asking clarifying questions and managing todo items" and "Each subagent invocation is stateless". The report never states which surface RSTACK runs on; its hook recommendations are only as real as that answer.
 3. **Copilot `preToolUse` input carries no agent identity** (fields: `sessionId, timestamp, cwd, toolName, toolArgs`). A hook cannot know which rstack role is calling. Role-scoped lane enforcement through hooks is therefore not a documented Copilot capability; Claude Code's hooks do carry `agent_type`.
 4. **Anthropic's own agent documentation** (not cited): Claude Code subagents run "in its own context window", can be restricted with `tools` or `disallowedTools`, and enterprise `allowManagedHooksOnly` hooks cannot be disabled by users. This is corroborating vendor documentation for fresh-role isolation and managed policy hooks, but for a different host.
@@ -126,7 +126,7 @@ Uncatalogued: **[S12], [S19], [S27], [S37]** cannot be verified because they do 
 
 Ranked by evidence strength (source type, directness, whether the source is a mechanism or an opinion).
 
-| Rank | Principle in Fable V2 | Evidence | Type | Strength |
+| Rank | Principle in Claude V2 | Evidence | Type | Strength |
 |---|---|---|---|---|
 | 1 | Evidence, review and authorization bind to an immutable commit identity and go stale when it changes | S41 full-SHA pinning; S42 dismiss stale approvals on push, approval by someone other than the last pusher; S45 subject digests; S46 materials/products | Platform mechanism + standard | Very high |
 | 2 | Integrate the base branch before final verification and review | S42 strict mode: "must be up to date with the base branch before merging" | Platform mechanism | Very high (as analogue) |
@@ -137,7 +137,7 @@ Ranked by evidence strength (source type, directness, whether the source is a me
 | 7 | Reviewer independent of author; agent review supplements human review | S11 (narrative), S18 (verbatim), S8 evaluator-optimizer | Engineering narrative + vendor guidance | Medium-high |
 | 8 | Orchestration as predefined transitions, not model-chosen paths | S8 workflows vs agents; S7 deterministic workflow agents; S6 centralized error containment | Guidance + preprint | Medium-high |
 | 9 | Provenance is inherited through derivation; agent logs are not telemetry | S38, S39 (trace semantics); INFERENCE | Tooling semantics | Medium |
-| 10 | Reconcile an external effect of unknown result before retrying | S17 (functional-api / interrupts pages) idempotency on resume | Framework docs | Medium; **not yet in Fable V2** |
+| 10 | Reconcile an external effect of unknown result before retrying | S17 (functional-api / interrupts pages) idempotency on resume | Framework docs | Medium; **not yet in Claude V2** |
 | 11 | Separate test author from implementer | S31 ablation (GPT-3.5, function-level); S10 locked feature list | Preprint + narrative | Medium-low |
 | 12 | Keep memory optional; run state is not long-term memory | S17 checkpointer vs store; S20a | Design distinction only | Low |
 
@@ -162,19 +162,19 @@ Ranked by evidence strength (source type, directness, whether the source is a me
 
 **What it does not support.** That a pipeline of seven specialised LLM roles delivers software more reliably than one agent plus deterministic gates. The only software-engineering datum in the cited set (S6 v3, 20 SWE-bench instances) points slightly the other way, and MetaGPT / ChatDev (S36, S37a) show role structures on synthetic tasks with proxy metrics.
 
-**Comparison with Fable V2.** Fable's pipeline is a strictly sequential chain (0 → 1 → 1b → 1r → 2 → 3 → 4 → F → 4 → 5 → 6) dispatched by an orchestrator that "never plans, tests, implements, reviews, interprets findings". It is the report's "deterministic controller" in shape, executed by an LLM in practice (SKILL.md: "Unless a line here says otherwise, it is a PROSE CONTRACT"). There is no parallel fan-out anywhere, which is consistent with S9. There is also no per-ticket variation: every ticket pays seven dispatches, two of them fresh. The Google and Anthropic evidence say that cost is real and unmeasured.
+**Comparison with Claude V2.** Claude's pipeline is a strictly sequential chain (0 → 1 → 1b → 1r → 2 → 3 → 4 → F → 4 → 5 → 6) dispatched by an orchestrator that "never plans, tests, implements, reviews, interprets findings". It is the report's "deterministic controller" in shape, executed by an LLM in practice (SKILL.md: "Unless a line here says otherwise, it is a PROSE CONTRACT"). There is no parallel fan-out anywhere, which is consistent with S9. There is also no per-ticket variation: every ticket pays seven dispatches, two of them fresh. The Google and Anthropic evidence say that cost is real and unmeasured.
 
-**Assessment.** Making the orchestrator "mostly deterministic" is supported (medium-high). Fable already did that in prose; the evidence says the transition table should eventually be evaluated by code (ADK, LangGraph), which Fable lists as an enforcement dependency. The evidence does not tell RSTACK to remove roles; it tells RSTACK that the reason for each role must be independence (author never judges), and that the cost of that independence must be measured (section 17). Where a role's output has no consumer that a deterministic check could not serve, the evidence favours removal; Fable already removed `evidence-auditor` on that reasoning.
+**Assessment.** Making the orchestrator "mostly deterministic" is supported (medium-high). Claude already did that in prose; the evidence says the transition table should eventually be evaluated by code (ADK, LangGraph), which Claude lists as an enforcement dependency. The evidence does not tell RSTACK to remove roles; it tells RSTACK that the reason for each role must be independence (author never judges), and that the cost of that independence must be measured (section 17). Where a role's output has no consumer that a deterministic check could not serve, the evidence favours removal; Claude already removed `evidence-auditor` on that reasoning.
 
 ---
 
 # 6. Role-by-role assessment
 
-**Orchestrator.** SUPPORTED. Dispatcher-only, routes from artifacts not prose, compares fields, never judges. This is the ADK "workflow agent" role (S7) with an LLM executor. Two gaps the evidence exposes: no rule for an external effect whose result is unknown (S17: "A task that started but did not finish may run again on that resume"); and its `agents:` frontmatter list is a host-enforced restriction on VS Code ("Use ... an empty array `[]` to prevent any subagent use") that Fable does not label as such. On VS Code the orchestrator's fresh roles are subagents that "cannot" ask questions and are "stateless"; Fable's design (roles ask through their reply, orchestrator relays) is consistent with that, and should say so in the adoption record.
+**Orchestrator.** SUPPORTED. Dispatcher-only, routes from artifacts not prose, compares fields, never judges. This is the ADK "workflow agent" role (S7) with an LLM executor. Two gaps the evidence exposes: no rule for an external effect whose result is unknown (S17: "A task that started but did not finish may run again on that resume"); and its `agents:` frontmatter list is a host-enforced restriction on VS Code ("Use ... an empty array `[]` to prevent any subagent use") that Claude does not label as such. On VS Code the orchestrator's fresh roles are subagents that "cannot" ask questions and are "stateless"; Claude's design (roles ask through their reply, orchestrator relays) is consistent with that, and should say so in the adoption record.
 
 **Planner.** SUPPORTED as a distinct pass (S8 prompt chaining with gates; S11 planner; S10 initializer). The interview method, verbatim ticket capture and provenance labels are RSTACK-specific; no external source addresses them and none contradicts them. Removal of self-dispatched audit is supported by the evaluator-independence argument (S11).
 
-**Plan Auditor.** SUPPORTED as a role; **NOT SUPPORTED as a mandatory state on every ticket.** S8's evaluator-optimizer is recommended "when we have clear evaluation criteria"; S11's evaluator judges output, not plans. Fable's rationale (falsifiability of criteria before tests are locked, so that a vacuous check is caught before the expensive repair) is coherent and is the best available argument; it is untested. The report's proposal to run it conditionally is INFERENCE and conflicts with Fable's invariant "no risk tier ... removes a state". That invariant is an OWNER POLICY, not an evidence finding. Recommendation: keep mandatory for the pilot, run ablation A (section 17), decide with data.
+**Plan Auditor.** SUPPORTED as a role; **NOT SUPPORTED as a mandatory state on every ticket.** S8's evaluator-optimizer is recommended "when we have clear evaluation criteria"; S11's evaluator judges output, not plans. Claude's rationale (falsifiability of criteria before tests are locked, so that a vacuous check is caught before the expensive repair) is coherent and is the best available argument; it is untested. The report's proposal to run it conditionally is INFERENCE and conflicts with Claude's invariant "no risk tier ... removes a state". That invariant is an OWNER POLICY, not an evidence finding. Recommendation: keep mandatory for the pilot, run ablation A (section 17), decide with data.
 
 **Tester.** SUPPORTED WITH CHANGES. Separate test authorship: medium-low external support (S31 ablation; S10). Locking tests against the implementer: the S10 instruction is the closest analogue, and it is a PROMPT_CONTRACT there too. RED-first, two-run flake check, base replay, fixture-survival rule: RSTACK-specific engineering discipline with no external citation and no contradiction. Change: `suite.txt` is `AGENT_REPORTED`; the host's `postToolUse` hook receives `toolResult.textResultForLlm` for the terminal tool, which is a host-observed record of the same execution (section 12). That is the first credible route to `OBSERVED_HOST` receipts without a new wrapper.
 
@@ -182,66 +182,66 @@ Ranked by evidence strength (source type, directness, whether the source is a me
 
 **Reviewer-Architect.** SUPPORTED, strongest role. Fresh context, read-only tool list (host-enforced "to the extent the host honours the list", which matches VS Code: "If a given tool is not available when using the custom agent, it is ignored"), candidate-bound, test adequacy as primary obligation (S33b principle), findings routed by owner. The independence statement ("Fresh context is independence from prior reasoning, not vendor diversity") matches the report's 15.16 and is better evidenced than model diversity. Two host facts to record: the review reply's persistence depends on the parent (VS Code: "The main agent receives only the final recommendation"), and `subagentStop` could persist it host-side (section 12).
 
-**Approval.** SUPPORTED WITH CHANGES. The evidence (S42, S43, S46) says: eligibility is a deterministic check; authorization is a platform event by someone other than the initiator; the action is performed by a guarded publisher with credentials withheld until approval; the result is re-read. Fable's `release` mode already re-checks eligibility mechanically (HEAD, `suite.txt` fields, `review.md` presence and verdict, lock, estate), asks one decision per action naming the candidate, pushes the explicit SHA, offers "to let the human perform the action themselves", and refuses merges. What remains reasoning-heavy is the eligibility re-evaluation being done by a model reading files, and the agent holding `bitbucket-mcp` PR-creation tools throughout the run. Recommendation: (a) keep the stage and the two modes; (b) rename in substance to a release coordinator whose eligibility step is a script once the real gate is known; (c) make "human performs push and PR with their own credential" the default when the host has no authorization receipt; (d) add the unknown-result reconciliation rule. It should not disappear as a role until a gate script and a host receipt exist; until then it is the only place the re-check happens at all.
+**Approval.** SUPPORTED WITH CHANGES. The evidence (S42, S43, S46) says: eligibility is a deterministic check; authorization is a platform event by someone other than the initiator; the action is performed by a guarded publisher with credentials withheld until approval; the result is re-read. Claude's `release` mode already re-checks eligibility mechanically (HEAD, `suite.txt` fields, `review.md` presence and verdict, lock, estate), asks one decision per action naming the candidate, pushes the explicit SHA, offers "to let the human perform the action themselves", and refuses merges. What remains reasoning-heavy is the eligibility re-evaluation being done by a model reading files, and the agent holding `bitbucket-mcp` PR-creation tools throughout the run. Recommendation: (a) keep the stage and the two modes; (b) rename in substance to a release coordinator whose eligibility step is a script once the real gate is known; (c) make "human performs push and PR with their own credential" the default when the host has no authorization receipt; (d) add the unknown-result reconciliation rule. It should not disappear as a role until a gate script and a host receipt exist; until then it is the only place the re-check happens at all.
 
 ---
 
 # 7. State-machine assessment
 
-**Centralized transitions.** SUPPORTED (S7, S8, S6). One owner (`SKILL.md`), one table, results read from artifacts. The report's minimal state list (section 6.1) is a superset of Fable's; the names are immaterial.
+**Centralized transitions.** SUPPORTED (S7, S8, S6). One owner (`SKILL.md`), one table, results read from artifacts. The report's minimal state list (section 6.1) is a superset of Claude's; the names are immaterial.
 
-**Retries.** Fable has a convergence rule keyed on blocker identity ("Three consecutive turns with no change in what is blocking → stop") and no iteration budget that converts an unproven criterion into a pass. Evidence neither supports nor contradicts a specific count. **Gap:** nothing in `SKILL.md`, `approvals.md` or the approval agent says what happens when a push, PR creation or tracker write was attempted and its result is unknown. S17 (functional-api: "design side effects to be idempotent"; interrupts: "any code that ran before the interrupt will execute again") is directly on point. RECOMMENDATION: add to `SKILL.md` a rule that an external action with an unknown result yields `NEEDS_HUMAN` with a remote re-read, never a retry; add a `PUBLICATION_RESULT` line with `SUCCEEDED | FAILED | UNKNOWN | PARTIAL` to `approval.md` in `handoff-contracts.md`.
+**Retries.** Claude has a convergence rule keyed on blocker identity ("Three consecutive turns with no change in what is blocking → stop") and no iteration budget that converts an unproven criterion into a pass. Evidence neither supports nor contradicts a specific count. **Gap:** nothing in `SKILL.md`, `approvals.md` or the approval agent says what happens when a push, PR creation or tracker write was attempted and its result is unknown. S17 (functional-api: "design side effects to be idempotent"; interrupts: "any code that ran before the interrupt will execute again") is directly on point. RECOMMENDATION: add to `SKILL.md` a rule that an external action with an unknown result yields `NEEDS_HUMAN` with a remote re-read, never a retry; add a `PUBLICATION_RESULT` line with `SUCCEEDED | FAILED | UNKNOWN | PARTIAL` to `approval.md` in `handoff-contracts.md`.
 
-**HELD.** `fable-v2` has no `HELD` state; it has `NEEDS_HUMAN`, `CONFLICT`, `BLOCKED owner=human` and `RELEASE_BLOCKED proceedable`. The photographed gate emits `HELD` (known since the v2.1 reconciliation, and the memory rule "HELD is not pending execution"). External evidence says nothing about HELD; it is an RSTACK gate fact and belongs to the source-inspection decision (OD-5). `fable-v2.2` already carries it; nothing further from this review.
+**HELD.** `claude-v2` has no `HELD` state; it has `NEEDS_HUMAN`, `CONFLICT`, `BLOCKED owner=human` and `RELEASE_BLOCKED proceedable`. The photographed gate emits `HELD` (known since the v2.1 reconciliation, and the memory rule "HELD is not pending execution"). External evidence says nothing about HELD; it is an RSTACK gate fact and belongs to the source-inspection decision (OD-5). `claude-v2.2` already carries it; nothing further from this review.
 
 **Review eligibility.** SUPPORTED. Five field comparisons at one candidate. The AC-carried-forward rule ("does not block review; ... blocks release") is a sound reading of S42's separation between review and merge requirements.
 
-**Release eligibility.** SUPPORTED. Six conditions, `proceedable` never equals eligible, waivers confined to release. Analogue: S43 "administrators can bypass the protection rules" by default; a bypass is a recorded human act, not a pass. Fable's deviation from S42 strict mode (continue at the candidate if the base moved without path overlap) is a deliberate cost trade-off, weaker than strict, and correctly stated as such; it stays an OWNER POLICY.
+**Release eligibility.** SUPPORTED. Six conditions, `proceedable` never equals eligible, waivers confined to release. Analogue: S43 "administrators can bypass the protection rules" by default; a bypass is a recorded human act, not a pass. Claude's deviation from S42 strict mode (continue at the candidate if the base moved without path overlap) is a deliberate cost trade-off, weaker than strict, and correctly stated as such; it stays an OWNER POLICY.
 
 ---
 
 # 8. Candidate identity and provenance
 
-Fable's `candidate.md`: repository, commit, tree, integrated default, plan revision, test-lock revision, suite command, changed paths, superseded candidates; written by the approval role at freeze; no evidence file inside the commit.
+Claude's `candidate.md`: repository, commit, tree, integrated default, plan revision, test-lock revision, suite command, changed paths, superseded candidates; written by the approval role at freeze; no evidence file inside the commit.
 
 | Concept | External analogue | Transfers to RSTACK? |
 |---|---|---|
 | Commit SHA as the immutable subject | S41 "the only way to use an action as an immutable release"; S42 status checks are per-commit | **Yes, directly.** Git's own identity; no framework needed |
-| Tree hash | Not in the cited sources (in-toto DigestSet lists `gitCommit`; a tree id is a Git object) | Yes as an optional second key; Fable rightly does not assume tree equality survives review (OD-6) |
+| Tree hash | Not in the cited sources (in-toto DigestSet lists `gitCommit`; a tree id is a Git object) | Yes as an optional second key; Claude rightly does not assume tree equality survives review (OD-6) |
 | Artifact digest | S45 `subject` digests | **No, not now.** RSTACK publishes source, builds nothing. Becomes relevant only if RSTACK ever drives deployment |
 | Build provenance (`buildDefinition`, `runDetails`) | S45 | Vocabulary only. SLSA's **Source** track (S44: "the creation of source code revisions and the change management processes") is the correct frame for a commit-level candidate; the report cites the wrong track |
 | Materials / products per step, authorized functionaries | S46 | Conceptually yes: plan → tests → implementation → review as steps with declared inputs and outputs and an allowed role per step. The signature half does not transfer: agents hold no keys. Commit signing (NIST PS.1.1 example) is the nearest available functionary signature, and only for the freeze commit |
-| Strict branch freshness | S42 strict mode | Fable is deliberately looser (path-overlap rule). Weaker, stated, owner's choice |
-| Stale evidence after mutation | S42 "dismiss stale pull request approvals when commits are pushed that affect the diff" | **Yes, directly.** Fable's single freshness rule is the same rule generalised to tests and authorization |
+| Strict branch freshness | S42 strict mode | Claude is deliberately looser (path-overlap rule). Weaker, stated, owner's choice |
+| Stale evidence after mutation | S42 "dismiss stale pull request approvals when commits are pushed that affect the diff" | **Yes, directly.** Claude's single freshness rule is the same rule generalised to tests and authorization |
 | Evidence outside the evaluated commit | Not stated by any source; INFERENCE (a file naming its own final SHA cannot be inside it) | Yes. Sound. Note the photographed `ac.tsv` is committed and sha-based; that conflict is already in the v2.2 record (OD-5b), not resolved by evidence |
-| Who computes the identity | S45 `runDetails.builder.id` is a trusted builder, not a participant | Fable's "today an agent types it" is honest; a tool should write `candidate.md` (OD-6 point 2) |
+| Who computes the identity | S45 `runDetails.builder.id` is a trusted builder, not a participant | Claude's "today an agent types it" is honest; a tool should write `candidate.md` (OD-6 point 2) |
 
-Assessment of `candidate.md`: SUPPORTED. It is the most externally corroborated artifact in Fable V2. Two refinements the evidence suggests: cite the SLSA Source track rather than build provenance if a rationale is ever written into the reference; and record `Persisted-by:` or a tool marker so that the agent-typed status of the identity is visible in the file itself, as review and audit artifacts already do.
+Assessment of `candidate.md`: SUPPORTED. It is the most externally corroborated artifact in Claude V2. Two refinements the evidence suggests: cite the SLSA Source track rather than build provenance if a rationale is ever written into the reference; and record `Persisted-by:` or a tool marker so that the agent-typed status of the identity is visible in the file itself, as review and audit artifacts already do.
 
 ---
 
 # 9. Human authorization and release control
 
-**The four-way distinction (request, decision, authentication, action).** SUPPORTED by mature systems. S43 separates the initiator (request), the required reviewer (decision, "users who initiate a deployment cannot approve"), the platform's identity of that reviewer (authentication), and the job that then receives the secrets (action). S46 separates the layout (who may act), the link (that they acted, signed), and verification. Fable's `approvals.md` already separates REQUEST / HUMAN AUTHORIZATION / RECORDED DECISION and states the authentication limit ("A record is agent-written text ... it authenticates nobody").
+**The four-way distinction (request, decision, authentication, action).** SUPPORTED by mature systems. S43 separates the initiator (request), the required reviewer (decision, "users who initiate a deployment cannot approve"), the platform's identity of that reviewer (authentication), and the job that then receives the secrets (action). S46 separates the layout (who may act), the link (that they acted, signed), and verification. Claude's `approvals.md` already separates REQUEST / HUMAN AUTHORIZATION / RECORDED DECISION and states the authentication limit ("A record is agent-written text ... it authenticates nobody").
 
-**What Fable calls "authorization" that is really weaker:**
+**What Claude calls "authorization" that is really weaker:**
 
-| Fable term or field | Actual provenance |
+| Claude term or field | Actual provenance |
 |---|---|
-| `HUMAN DECISION` (guarantee vocabulary) | HUMAN_RECORDED: a human replied in the host conversation; an agent wrote it down. Fable says this in the definition ("that an agent-written record of it authenticates that person" is what it cannot claim). The term itself reads stronger than the definition |
-| `--authorised-by`, `authorised_by`, `accepted_by` | AGENT_REPORTED (typed text). Fable says so in four files |
+| `HUMAN DECISION` (guarantee vocabulary) | HUMAN_RECORDED: a human replied in the host conversation; an agent wrote it down. Claude says this in the definition ("that an agent-written record of it authenticates that person" is what it cannot claim). The term itself reads stronger than the definition |
+| `--authorised-by`, `authorised_by`, `accepted_by` | AGENT_REPORTED (typed text). Claude says so in four files |
 | `meta/decisions.md` "Answer: the human's words, verbatim" | HUMAN_RECORDED by a role other than the requester. Correct labelling; no authentication |
 | `observation-accept.tsv` "by a human's own hand" | HUMAN_RECORDED at best; nothing verifies the hand |
 | "Push the candidate commit explicitly" by the approval agent | AGENT action under a HUMAN_RECORDED decision, with the agent's credential |
-| "Offer to let the human perform the action themselves" | The only path in Fable V2 where the action is bound to an authenticated human: the human's own SCM credential and, if configured, the SCM's own branch controls |
+| "Offer to let the human perform the action themselves" | The only path in Claude V2 where the action is bound to an authenticated human: the human's own SCM credential and, if configured, the SCM's own branch controls |
 
 **Strongest feasible model on RSTACK's host, given what is verified:**
 
-1. Release eligibility as a script over `candidate.md`, `suite.txt`, `ac.tsv`, `review.md`, lock and estate (DETERMINISTIC_CHECK). Fable's approval agent performs this by reading today.
-2. The human performs push and PR creation with their own credential by default (HUMAN authenticated by the SCM), the agent prepares the exact commands and text. Fable offers this as option (b); make it the default until the host provides a receipt.
+1. Release eligibility as a script over `candidate.md`, `suite.txt`, `ac.tsv`, `review.md`, lock and estate (DETERMINISTIC_CHECK). Claude's approval agent performs this by reading today.
+2. The human performs push and PR creation with their own credential by default (HUMAN authenticated by the SCM), the agent prepares the exact commands and text. Claude offers this as option (b); make it the default until the host provides a receipt.
 3. SCM-side controls as the last line: branch permissions, required reviewers, no self-approval, required builds. **These are Bitbucket features on RSTACK's host and none was verified in this review.** The GitHub evidence shows what to look for; it does not show what Bitbucket provides. HOST INFORMATION REQUIRED.
-4. Credentials for external writes absent from every role but the publisher, and ideally absent until eligibility holds (S43 secret withholding). Today Fable's approval agent holds `bitbucket-mcp` tools for the whole run; whether Copilot can scope MCP tools per state is unknown.
-5. The in-run "yes" remains the courtesy checkpoint and audit trail Fable already describes; it is not the control.
+4. Credentials for external writes absent from every role but the publisher, and ideally absent until eligibility holds (S43 secret withholding). Today Claude's approval agent holds `bitbucket-mcp` tools for the whole run; whether Copilot can scope MCP tools per state is unknown.
+5. The in-run "yes" remains the courtesy checkpoint and audit trail Claude already describes; it is not the control.
 
 This is the report's model with one difference: where the report assumes a platform approval event exists, this review says the human's own credential is the authenticated event available now.
 
@@ -249,13 +249,13 @@ This is the report's model with one difference: where the report assumes a platf
 
 # 10. Enforcement hierarchy
 
-The report's five terms and Fable's four map as follows. Fable's vocabulary is the more precise one on the axis that matters (who runs the check); the report's is more precise on provenance of a claim. Both are needed.
+The report's five terms and Claude's four map as follows. Claude's vocabulary is the more precise one on the axis that matters (who runs the check); the report's is more precise on provenance of a claim. Both are needed.
 
-| Fable guarantee | Held by | Report term | Block or detect |
+| Claude guarantee | Held by | Report term | Block or detect |
 |---|---|---|---|
 | Reviewer writes nothing | tool list (read and search only) | HOST_ENFORCED, "as far as the host honours the list" (VS Code: unavailable tools "ignored") | block |
 | No role has a PR-merge tool; only approval has PR creation | tool lists | HOST_ENFORCED | block |
-| Orchestrator may only spawn the six named roles | `agents:` list (VS Code: `[]` prevents subagent use) | HOST_ENFORCED, **currently unlabelled in Fable** | block |
+| Orchestrator may only spawn the six named roles | `agents:` list (VS Code: `[]` prevents subagent use) | HOST_ENFORCED, **currently unlabelled in Claude** | block |
 | Fresh roles receive only the allowlist | dispatcher discipline | PROMPT_CONTRACT | none |
 | Planner / tester / dev / approval lanes | `role-guard.mjs` self-run | DETERMINISTIC_CHECK, detect-after, self-run | detect |
 | Locked test unchanged | `test-lock.mjs --verify` cross-run | DETERMINISTIC_CHECK, cross-run | detect |
@@ -268,9 +268,9 @@ The report's five terms and Fable's four map as follows. Fable's vocabulary is t
 | Governance files untouched | edit auto-approve denies (user-scoped), prose | friction + PROMPT_CONTRACT | prompt |
 | Any write outside the workspace | `blockedDetectedFileWrites: outsideWorkspace` | host setting (block for the edit tool; "do not cover writes made by a terminal command") | partial |
 
-**Does the report's hierarchy reflect the evidence?** Yes for its ordering: S14 states the deterministic boundary is the backstop for probabilistic controls; S1 states the sandbox is the boundary and approvals are policy; S15 measures the prompt reduction. The hierarchy under-specifies one axis Fable already has: a DETERMINISTIC_CHECK that runs after the effect, by the judged role, is far weaker than one that runs before the effect, by the host. Recommendation: keep Fable's four terms, add a block/detect attribute to every `harness-map.md` row, and adopt the report's provenance labels (`OBSERVED_HOST`, `OBSERVED_TOOL`, `AGENT_REPORTED`, `HUMAN_RECORDED`, `INFERRED`, `UNAVAILABLE`) in `discovery-cost.md`, which today lacks `HUMAN_RECORDED` and does not distinguish host from tool observation.
+**Does the report's hierarchy reflect the evidence?** Yes for its ordering: S14 states the deterministic boundary is the backstop for probabilistic controls; S1 states the sandbox is the boundary and approvals are policy; S15 measures the prompt reduction. The hierarchy under-specifies one axis Claude already has: a DETERMINISTIC_CHECK that runs after the effect, by the judged role, is far weaker than one that runs before the effect, by the host. Recommendation: keep Claude's four terms, add a block/detect attribute to every `harness-map.md` row, and adopt the report's provenance labels (`OBSERVED_HOST`, `OBSERVED_TOOL`, `AGENT_REPORTED`, `HUMAN_RECORDED`, `INFERRED`, `UNAVAILABLE`) in `discovery-cost.md`, which today lacks `HUMAN_RECORDED` and does not distinguish host from tool observation.
 
-**Sandbox versus role guard.** The evidence supports the report exactly: `role-guard.mjs` is detection and audit; the sandbox is whatever the host and container provide. Fable says this in `write-boundaries.md` §5 and `approvals.md` §4 ("They do not contain a process that is trying to get out"). No correction needed to the text; the correction is to the adoption record, which must state what containment the corporate host actually provides (section 19, OD-4 / OD-5).
+**Sandbox versus role guard.** The evidence supports the report exactly: `role-guard.mjs` is detection and audit; the sandbox is whatever the host and container provide. Claude says this in `write-boundaries.md` §5 and `approvals.md` §4 ("They do not contain a process that is trying to get out"). No correction needed to the text; the correction is to the adoption record, which must state what containment the corporate host actually provides (section 19, OD-4 / OD-5).
 
 ---
 
@@ -278,20 +278,20 @@ The report's five terms and Fable's four map as follows. Fable's vocabulary is t
 
 **Evidence.** S23 (verbatim): instructions for "simple instructions relevant to almost every task", skills for "more detailed instructions that Copilot should only access when relevant". S21: name and description preloaded, body loaded on demand. S20a: context is a finite resource. S24 / cheat sheet: custom agents carry their own prompt and tool restrictions; subagents run in isolated context. Claude Code docs corroborate the same layering for another host.
 
-**Fable's placement:**
+**Claude's placement:**
 
-| Layer | Fable file(s) | Size | Assessment |
+| Layer | Claude file(s) | Size | Assessment |
 |---|---|---|---|
 | Always-on floor | `rstack-process.instructions.md` (`applyTo: '**'`) | 44 lines: external effects, fetched content, evidence floor, gaps first, role pointer | SUPPORTED. This is what S23 describes. It replaces the original `standing-rules.instructions.md` the report wanted shrunk |
 | Estate-level always-on | `estate-instructions.template.md` | 59 lines, three-line floor deliberately repeated | SUPPORTED; the duplication is justified by the "loads without the pipeline being chosen" argument and is listed as deliberate |
 | Orchestration contract | `pipeline/SKILL.md` | 192 lines, states, transitions, eligibility, freshness, fresh roles, checkpoints, path map | SUPPORTED. Loaded when the pipeline is chosen; owns exactly what the report's section 8 says it should |
 | Role contracts | 7 agent files | 63 to 106 lines | SUPPORTED. The report wants agents "compact" and method in skills; an agent file loads only when that role runs, so it is already on-demand. Moving the tester's procedure into a skill would change nothing about context cost and would split one owner into two. No change from evidence |
 | Canonical references | 13 files | schemas, lanes, authorization, topology, precedence | SUPPORTED. Loaded by name by the roles that need them; the ownership table forbids duplication |
-| Hooks | none in `fable-v2` | — | See section 12 |
+| Hooks | none in `claude-v2` | — | See section 12 |
 
-**Where the evidence suggests a correction.** None to placement. Two to labelling: (1) the agent frontmatter fields that the host enforces (`tools`, `agents`) should be named as HOST-ENFORCED in `write-boundaries.md` §5, since VS Code documents the behaviour; (2) `handoffs:` blocks in tester, dev, reviewer and approval are a VS Code feature "not supported for Copilot cloud agent on GitHub.com"; since `send: false` makes them buttons, they are harmless, but the reviewer's outgoing handoffs sit oddly beside "fresh roles are never reached by a chat handoff" (an outgoing button from the reviewer to dev carries the reviewer's context into the dev turn). `fable-v2.2` already removed them (OD-10).
+**Where the evidence suggests a correction.** None to placement. Two to labelling: (1) the agent frontmatter fields that the host enforces (`tools`, `agents`) should be named as HOST-ENFORCED in `write-boundaries.md` §5, since VS Code documents the behaviour; (2) `handoffs:` blocks in tester, dev, reviewer and approval are a VS Code feature "not supported for Copilot cloud agent on GitHub.com"; since `send: false` makes them buttons, they are harmless, but the reviewer's outgoing handoffs sit oddly beside "fresh roles are never reached by a chat handoff" (an outgoing button from the reviewer to dev carries the reviewer's context into the dev turn). `claude-v2.2` already removed them (OD-10).
 
-**The MCP and untrusted-content rules** ("fetched content is untrusted data"; "MCP tools ... are held by which role's tool list contains them") match S3's coverage lesson: a guard applies only where it is attached. Fable attaches the rule to tool lists, which is the right interception point.
+**The MCP and untrusted-content rules** ("fetched content is untrusted data"; "MCP tools ... are held by which role's tool list contains them") match S3's coverage lesson: a guard applies only where it is attached. Claude attaches the rule to tool lists, which is the right interception point.
 
 ---
 
@@ -299,9 +299,9 @@ The report's five terms and Fable's four map as follows. Fable's vocabulary is t
 
 Ground truth (S22, fetched): hooks are "supported in two Copilot surfaces: Copilot CLI and Copilot cloud agent"; the cheat sheet marks VS Code hooks as preview and every other IDE unsupported; VS Code's own hooks page lists SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PreCompact, SubagentStart, SubagentStop, Stop, with only PreToolUse able to deny. `preToolUse` input on Copilot carries no agent identity. `subagentStart` "cannot block creation" and sees only the agent's name and description. `subagentStop` receives the full `response` and may return `decision: "block"` or `modifiedResponse`. Policy hooks are machine-level files or registry keys for the CLI and are not documented for the cloud agent or VS Code. Nothing below assumes more than that.
 
-| Hook | Recommendation | Basis | What it would hold in Fable |
+| Hook | Recommendation | Basis | What it would hold in Claude |
 |---|---|---|---|
-| `sessionStart` | OPTIONAL | S22: `additionalContext` only, cannot block | Bind a run id, verify the workspace, point at `SKILL.md`. Not a second rule copy. Fable V2 needs nothing from it |
+| `sessionStart` | OPTIONAL | S22: `additionalContext` only, cannot block | Bind a run id, verify the workspace, point at `SKILL.md`. Not a second rule copy. Claude V2 needs nothing from it |
 | `preToolUse` (protected paths, external writes, destructive commands) | REQUIRED where the surface supports it; otherwise record as unavailable | S22 `permissionDecision: deny`; S14 deterministic boundary | Governance paths, `.rstack/boundaries.json`, `gh pr merge`, `git push` to shared branches, history rewrites: block-before, host-run, role-agnostic. Upgrades those rows of `write-boundaries.md` §5 from friction to block |
 | `preToolUse` (role lanes: dev may not edit tests) | EXPERIMENTAL | Copilot input has no agent field; would need an out-of-band role marker, unverified | Do not claim it. Keep self-run `role-guard.mjs` as the lane detector until the host exposes the caller |
 | `postToolUse` (terminal receipts) | EXPERIMENTAL, high value | S22 `toolResult.textResultForLlm`; S25 "audit" example | A host-written record of the test command's output is the first `OBSERVED_HOST` route for `suite.txt`. Answers half of OD-5 without inventing a wrapper. Must be tested: does the field carry the exit code, or only text? |
@@ -313,19 +313,19 @@ Ground truth (S22, fetched): hooks are "supported in two Copilot surfaces: Copil
 | Release-boundary hook | REMOVE as a hook | Report 9.9; nothing in S22 suits a multi-artifact gate | A named gate script plus the human's own action (section 9) |
 | Policy hooks (machine-owned) | HOST INFORMATION REQUIRED | S22: CLI paths and registry; not documented for VS Code or cloud agent | If RSTACK runs on Copilot CLI, `C:\ProgramData\GitHub\Copilot\policy.d\*.json` is a real admin-owned layer; otherwise do not plan around it |
 
-None of these is a change to `fable-v2` runtime files. They are entries for the adoption record and, once observed, rows in `harness-map.md` and `write-boundaries.md` §5.
+None of these is a change to `claude-v2` runtime files. They are entries for the adoption record and, once observed, rows in `harness-map.md` and `write-boundaries.md` §5.
 
 ---
 
 # 13. Testing architecture
 
-**Separate Tester.** Justified as a policy with medium-low external support. S31 shows a separate test-writing agent beats one agent writing both on function-level tasks (EMPIRICAL, preprint, GPT-3.5); S10 shows Anthropic protecting the feature list from the implementer (PROMPT_CONTRACT in a narrative). The strongest argument is structural and Fable states it: "The role that writes the implementation must never be able to rewrite the check that judges it." That is the same principle as prevent-self-review (S43), applied one level down. Keep.
+**Separate Tester.** Justified as a policy with medium-low external support. S31 shows a separate test-writing agent beats one agent writing both on function-level tasks (EMPIRICAL, preprint, GPT-3.5); S10 shows Anthropic protecting the feature list from the implementer (PROMPT_CONTRACT in a narrative). The strongest argument is structural and Claude states it: "The role that writes the implementation must never be able to rewrite the check that judges it." That is the same principle as prevent-self-review (S43), applied one level down. Keep.
 
 **RED-first.** No external evidence in the cited set. It is the discipline that makes the lock meaningful (a lock on a test that never failed proves nothing), so it is internally required, not externally proven. Keep; label RSTACK-specific.
 
-**Test lock.** The best-evidenced piece: S10's "unacceptable to remove or edit tests" instruction is the same intent, weaker mechanism. Fable's lock is a cross-run DETERMINISTIC_CHECK (hash, assertion count, skip count) plus a human-decided amendment path; Fable already calls the counts "a tripwire, not proof of strength". Keep. Change only when the real `test-lock.mjs` is read (OD-5).
+**Test lock.** The best-evidenced piece: S10's "unacceptable to remove or edit tests" instruction is the same intent, weaker mechanism. Claude's lock is a cross-run DETERMINISTIC_CHECK (hash, assertion count, skip count) plus a human-decided amendment path; Claude already calls the counts "a tripwire, not proof of strength". Keep. Change only when the real `test-lock.mjs` is read (OD-5).
 
-**Test Challenge (OD-1).** Classification: **EVIDENCE INSUFFICIENT; deferring is the evidence-consistent default.** No source evaluates a pre-implementation test critique. The coordination-cost evidence (S6, S9) argues against adding a dispatch without a measured need; S33b's low-coverage finding argues that test adequacy review matters, which Fable already assigns to the reviewer after implementation. Fable's own measure ("vacuous or missing checks found at review") is the right instrument. Keep A; measure; decide.
+**Test Challenge (OD-1).** Classification: **EVIDENCE INSUFFICIENT; deferring is the evidence-consistent default.** No source evaluates a pre-implementation test critique. The coordination-cost evidence (S6, S9) argues against adding a dispatch without a measured need; S33b's low-coverage finding argues that test adequacy review matters, which Claude already assigns to the reviewer after implementation. Claude's own measure ("vacuous or missing checks found at review") is the right instrument. Keep A; measure; decide.
 
 ---
 
@@ -333,11 +333,11 @@ None of these is a change to `fable-v2` runtime files. They are entries for the 
 
 **Plan audit.** Role supported (S8, S11 evaluator pattern); universality unsupported (section 6). The five lenses, falsifiability test and "attempted and found nothing" requirement are RSTACK-specific and uncontradicted.
 
-**Semantic review.** SUPPORTED, strongest. Candidate-bound, fresh, read-only, tests judged for discrimination before code is read for correctness. S18 says agent review supplements human review; Fable's PR body ("Reviewed: fresh independent context") and "no agent merges a pull request" keep the human PR review in place. The GitHub rule requiring an extra approval for unattributed Copilot PRs (S42) is a platform-side expression of the same policy on a host RSTACK may not use.
+**Semantic review.** SUPPORTED, strongest. Candidate-bound, fresh, read-only, tests judged for discrimination before code is read for correctness. S18 says agent review supplements human review; Claude's PR body ("Reviewed: fresh independent context") and "no agent merges a pull request" keep the human PR review in place. The GitHub rule requiring an extra approval for unattributed Copilot PRs (S42) is a platform-side expression of the same policy on a host RSTACK may not use.
 
-**Panel review.** Not in `fable-v2` (the reconstruction's `panel-reviewer` was not carried). S8 names parallel vulnerability review as a valid pattern; S6 and S9 price it. Correct to leave optional; nothing to add.
+**Panel review.** Not in `claude-v2` (the reconstruction's `panel-reviewer` was not carried). S8 names parallel vulnerability review as a valid pattern; S6 and S9 price it. Correct to leave optional; nothing to add.
 
-**Evidence audit.** Dropped in Fable (OD-9). The report's test ("what can it find that `gate.mjs` cannot deterministically detect ... does it merely re-read agent-authored reports?") is INFERENCE but a sound one; the reconstruction's `evidence-auditor` had no definition. Dropping it is weakly supported.
+**Evidence audit.** Dropped in Claude (OD-9). The report's test ("what can it find that `gate.mjs` cannot deterministically detect ... does it merely re-read agent-authored reports?") is INFERENCE but a sound one; the reconstruction's `evidence-auditor` had no definition. Dropping it is weakly supported.
 
 ---
 
@@ -345,7 +345,7 @@ None of these is a change to `fable-v2` runtime files. They are entries for the 
 
 **Evidence.** S17 distinguishes thread-scoped checkpoints from cross-thread stores (SOURCE FACT, a design distinction, not an outcome). S20a names structured note-taking as one long-horizon technique (VENDOR GUIDANCE). No cited source measures whether automatic memory improves coding-agent outcomes. The report is right to say so.
 
-**Fable OD-3.** Keep EXPERIMENTAL, off by default, human-written, never to fresh roles, entries as leads with a re-check. Evidence strength for this position: low but uncontradicted, and the alternative (automatic append) has no evidence either. Fable's `discovery-cost.md` decision test (three representative runs, a named human judging that an entry changed a decision) is the right threshold. Classification: EXTERNAL EVIDENCE WEAKLY SUPPORTS the current direction; RSTACK EXPERIMENT REQUIRED for any promotion.
+**Claude OD-3.** Keep EXPERIMENTAL, off by default, human-written, never to fresh roles, entries as leads with a re-check. Evidence strength for this position: low but uncontradicted, and the alternative (automatic append) has no evidence either. Claude's `discovery-cost.md` decision test (three representative runs, a named human judging that an entry changed a decision) is the right threshold. Classification: EXTERNAL EVIDENCE WEAKLY SUPPORTS the current direction; RSTACK EXPERIMENT REQUIRED for any promotion.
 
 ---
 
@@ -353,17 +353,17 @@ None of these is a change to `fable-v2` runtime files. They are entries for the 
 
 **Evidence.** None. No cited source discusses scalar risk tiers or surface-based scoping for agent review depth. NIST PW.8.2 says to "scope the testing", which is not a tiering model. The report's ablation D is its own INFERENCE.
 
-**Fable OD-2.** Entirely an RSTACK design choice. Fable's current position (tier is depth only, never removes a state, surfaces mandatory beside it, size never raises it, ratchets up) is internally consistent and cheap. Recommendation unchanged: keep both, record per run whether tier and surface list would have selected different depths. Classification: RSTACK EXPERIMENT REQUIRED, then OWNER POLICY.
+**Claude OD-2.** Entirely an RSTACK design choice. Claude's current position (tier is depth only, never removes a state, surfaces mandatory beside it, size never raises it, ratchets up) is internally consistent and cheap. Recommendation unchanged: keep both, record per run whether tier and surface list would have selected different depths. Classification: RSTACK EXPERIMENT REQUIRED, then OWNER POLICY.
 
 ---
 
 # 17. Metrics and experiments
 
-**Trace-based metrics.** SUPPORTED (S38 causal trace identity; S39 "tool call trajectory ... not only the final output"). Fable's `discovery-cost.md` already inherits provenance and marks tokens `UNAVAILABLE`; `otel-trail.mjs` is the only agent-independent input. Add the report's finding-quality taxonomy (true positive, false positive, duplicate, changed plan, changed code, already caught by test, human-only) as a per-finding label in `review.md` / `plan-audit.md` post-resolution; it is the input every ablation below needs.
+**Trace-based metrics.** SUPPORTED (S38 causal trace identity; S39 "tool call trajectory ... not only the final output"). Claude's `discovery-cost.md` already inherits provenance and marks tokens `UNAVAILABLE`; `otel-trail.mjs` is the only agent-independent input. Add the report's finding-quality taxonomy (true positive, false positive, duplicate, changed plan, changed code, already caught by test, human-only) as a per-finding label in `review.md` / `plan-audit.md` post-resolution; it is the input every ablation below needs.
 
 **Are the proposed experiments technically sensible?** Mostly. Two need changing:
 
-- **Ablation C (drop the agent reviewer on low-risk tickets)** conflicts with Fable's invariant that state 5 always runs. Run it as an observational study first: classify every reviewer finding on LOW tickets by the taxonomy; if unique material findings are near zero over N runs, the owner decides whether to relax the invariant. Do not remove the state to measure it.
+- **Ablation C (drop the agent reviewer on low-risk tickets)** conflicts with Claude's invariant that state 5 always runs. Run it as an observational study first: classify every reviewer finding on LOW tickets by the taxonomy; if unique material findings are near zero over N runs, the owner decides whether to relax the invariant. Do not remove the state to measure it.
 - **Ablation B (independent Tester vs developer-written tests)** needs seeded or retrospectively classified defects and a mutation score; without them "test strength" is a judgement. Run it after A, not in parallel, on the same ticket set.
 
 **Prioritised list.**
@@ -371,7 +371,7 @@ None of these is a change to `fable-v2` runtime files. They are entries for the 
 | # | Experiment | Decides | Why first |
 |---|---|---|---|
 | 1 | Capture receipt: compare tester-typed `suite.txt` against `postToolUse` terminal output for the same run | OD-5 (is `OBSERVED_HOST` capture available without a wrapper) | Every eligibility predicate rests on `AGENT_REPORTED` today |
-| 2 | Vacuous or missing checks found at review, per run | OD-1 | Fable's own measure; no design change needed to collect |
+| 2 | Vacuous or missing checks found at review, per run | OD-1 | Claude's own measure; no design change needed to collect |
 | 3 | Ablation A: plan auditor findings by taxonomy, cost per ticket | Plan Auditor universality | Highest-cost mandatory fresh dispatch |
 | 4 | Tier vs surfaces: record both per run, note divergent depth choices | OD-2 | Observational, free |
 | 5 | Ablation B: tester separation | Tester | Needs the taxonomy and defect seeding from 3 |
@@ -380,9 +380,9 @@ None of these is a change to `fable-v2` runtime files. They are entries for the 
 
 ---
 
-# 18. File-by-file Fable V2 matrix
+# 18. File-by-file Claude V2 matrix
 
-| Fable V2 file | Major design choice | External evidence | Assessment | Recommended follow-up |
+| Claude V2 file | Major design choice | External evidence | Assessment | Recommended follow-up |
 |---|---|---|---|---|
 | `agents/rstack-orchestrator.agent.md` | Dispatcher only; routes from artifacts; compares fields; relays questions verbatim | S7, S8, S6 (centralized control); S17 (resume semantics) | SUPPORTED | Label `agents:` list as host-enforced; add unknown-external-effect rule (via SKILL); record VS Code subagent limits in adoption record |
 | `agents/rstack-planner.agent.md` | Plan before code; verbatim ticket; no self-audit; claims index for the auditor | S8 chaining with gates; S11 planner; S4 input filtering | SUPPORTED | None from evidence |
@@ -408,7 +408,7 @@ None of these is a change to `fable-v2` runtime files. They are entries for the 
 
 ---
 
-# 19. Fable open decisions
+# 19. Claude open decisions
 
 | OD | Question | Classification | What the evidence adds |
 |---|---|---|---|
@@ -426,9 +426,9 @@ None of these is a change to `fable-v2` runtime files. They are entries for the 
 
 ---
 
-# 20. What Fable should change next
+# 20. What Claude should change next
 
-Conceptual changes, to be applied to the **active source** (`fable-v2.2`), not to `fable-v2`; nothing is changed by this review.
+Conceptual changes, to be applied to the **active source** (`claude-v2.2`), not to `claude-v2`; nothing is changed by this review.
 
 1. **`pipeline/SKILL.md`** — add one rule under Human checkpoints or Loops: an external action whose result is unknown (push, PR creation, tracker write) is never retried; the run stops as `NEEDS_HUMAN` with a remote re-read. Basis: S17 idempotency on resume. (Section 7.)
 2. **`references/handoff-contracts.md`** — `approval.md` gains a `Publication result` line per action: `SUCCEEDED | FAILED | UNKNOWN | PARTIAL`, with the remote object read back. Basis: same.
@@ -442,7 +442,7 @@ Conceptual changes, to be applied to the **active source** (`fable-v2.2`), not t
 
 ---
 
-# 21. What Fable should NOT change based only on this research
+# 21. What Claude should NOT change based only on this research
 
 1. **Do not remove or make conditional the Plan Auditor, the Tester, or state 5.** The evidence for reducing agent count is from non-software benchmarks and one 20-instance slice; the evidence for independent judgement is narrative. Neither settles RSTACK's case. Measure first (section 17).
 2. **Do not add a Test Challenge state, a reviewer panel, an evidence auditor, learnings automation, numeric risk scoring, or a model-diversity router.** No source supports any of them; the coordination-cost evidence opposes unmeasured additions.
@@ -458,10 +458,10 @@ Conceptual changes, to be applied to the **active source** (`fable-v2.2`), not t
 
 # 22. Evidence matrix
 
-| Recommendation | Source | Source type | Direct / indirect | Evidence strength | Limitation | Fable impact |
+| Recommendation | Source | Source type | Direct / indirect | Evidence strength | Limitation | Claude impact |
 |---|---|---|---|---|---|---|
-| Bind evidence, review, authorization to an immutable commit; stale on change | S41, S42, S45, S46 | Platform docs, standards | Direct analogue | Very high | Fable's identity is agent-typed today | `candidate.md`, freshness rule: keep |
-| Integrate base before final verify and review | S42 strict mode | Platform doc | Direct analogue | Very high | Fable's overlap rule is looser | State F order: keep; deviation stays owner policy |
+| Bind evidence, review, authorization to an immutable commit; stale on change | S41, S42, S45, S46 | Platform docs, standards | Direct analogue | Very high | Claude's identity is agent-typed today | `candidate.md`, freshness rule: keep |
+| Integrate base before final verify and review | S42 strict mode | Platform doc | Direct analogue | Very high | Claude's overlap rule is looser | State F order: keep; deviation stays owner policy |
 | Human authorization is a platform event, not agent text | S43, S46 | Platform doc, standard | Direct | Very high | Bitbucket equivalents unverified | approvals, approval agent: default to human-performed action |
 | Withhold release credentials until eligibility | S43 | Platform doc | Direct | Very high | Copilot per-state MCP scoping unknown | Adoption record question |
 | Sandbox is the boundary; approvals are friction; detectors are audit | S1, S14, S15 | Vendor production security | Direct | High | Vendor telemetry, undisclosed methods | write-boundaries §5, approvals §3–4: already stated |
@@ -486,12 +486,12 @@ Conceptual changes, to be applied to the **active source** (`fable-v2.2`), not t
 
 # 23. Final recommendation
 
-**Should Fable V2 remain the working architecture? YES WITH CORRECTIONS.**
+**Should Claude V2 remain the working architecture? YES WITH CORRECTIONS.**
 
-Why. Every conclusion in the research report that survived verification at grade A (platform mechanisms and standards) is already embodied in Fable V2: immutable candidate identity, freshness invalidation, integration before final proof, separate review and release eligibility, honest authorization provenance, no self-waiver, no agent merge, small global floor, orchestrator as dispatcher, fresh reviewer, learnings off. The report's own alignment list in its section 4.2 is confirmed, not merely restated.
+Why. Every conclusion in the research report that survived verification at grade A (platform mechanisms and standards) is already embodied in Claude V2: immutable candidate identity, freshness invalidation, integration before final proof, separate review and release eligibility, honest authorization provenance, no self-waiver, no agent merge, small global floor, orchestrator as dispatcher, fresh reviewer, learnings off. The report's own alignment list in its section 4.2 is confirmed, not merely restated.
 
 The corrections are of three kinds. First, labelling: `HUMAN DECISION` reads stronger than its definition; host-enforced frontmatter fields go unlabelled; provenance labels lack `HUMAN_RECORDED`. Second, one missing rule with direct evidence: reconcile an external effect of unknown result instead of retrying it. Third, a default: the human performs the publication action with their own credential until the host proves it can authenticate a reply. None of these alters a state, a role, or an invariant.
 
 The report's weaker claims, on multi-agent coordination, separate testing, and plan auditing, do not justify removing anything either. They justify measuring: the pipeline currently pays seven dispatches per ticket on a theory of adversarial independence that no cited study tests. Section 17's experiments are the price of keeping that theory.
 
-Two things this review could not settle and did not invent: what containment, hooks and authorization receipts the corporate Copilot surface actually provides, and what branch controls Bitbucket offers. Until the owner supplies them, every enforcement row in Fable V2 stays exactly as honest as it is now.
+Two things this review could not settle and did not invent: what containment, hooks and authorization receipts the corporate Copilot surface actually provides, and what branch controls Bitbucket offers. Until the owner supplies them, every enforcement row in Claude V2 stays exactly as honest as it is now.

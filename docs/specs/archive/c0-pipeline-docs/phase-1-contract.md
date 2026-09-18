@@ -231,7 +231,7 @@ timestamps* {startedAtEpoch: integer|null, completedAtEpoch: integer|null, sourc
 
 `state.schema.json` outline: `runId*`, `status*` (run statuses incl. AWAITING_DEVELOPER, IN_PROGRESS), `currentStage*`, `invocation*`, `stages*` (map stage id → `{status*, attempts*, evidenceFile, note}`), `gates*` (map → `{status PENDING|ANSWERED|SKIPPED, answer, answeredVia}`), `selectedRepositories[]`, `repositories` (map → `{preparationStatus, decision}`), `branch`, `blockers[]`, `history[]` (previous runs: `{invocation, stages, gates, endedReason}`), `timestamps`.
 
-Invariants (checked by the coordinator before writing, and by the Fable conformance review):
+Invariants (checked by the coordinator before writing, and by the Claude conformance review):
 - `status = COMPLETE` ⇔ every `selectedRepositories[]` entry has `repositoryPreparation.status ∈ {PREPARED, REUSED_EXISTING}`.
 - `status = PARTIAL` ⇔ ≥ 1 selected repo is `PREPARED`/`REUSED_EXISTING` and ≥ 1 is not.
 - `status = BLOCKED` ⇔ 0 selected repos are `PREPARED`/`REUSED_EXISTING` and the run is not FAILED.

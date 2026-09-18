@@ -52,7 +52,7 @@ Review: `../reviews/2026-09-17-v2.2-review.md`. The rows above are kept as first
 | OD-18 | SETTLED BY OWNER: owner-first at both targets (R22-02) | Asked in the host conversation on 2026-09-17; the owner chose "owner-first everywhere". A failure owned by a role in this run returns to that role before freeze and before review; only not-in-run and UNKNOWN-attribution failures are carried forward, disclosed. This line is an agent-written record of that answer, not authentication of it |
 | OD-19 | CONTRACT IMPLEMENTED, provenance-limited (R22-03) | Audit currency is decided by plan sha256: the dispatcher measures it at dispatch, the auditor measures the file it read and returns both in its envelope, approval compares them with the digest frozen in candidate.md. The identity lives in the envelope so the parser-owned audit body is unchanged. Both digests are agent-measured; a host-computed identity would be stronger and is not available |
 
-OD-14, OD-15, OD-16 and OD-20 are unchanged and still open. The review's notes on them are recorded as questions in `FABLE-RESPONSE-2026-09-17-R22.md`, not acted on.
+OD-14, OD-15, OD-16 and OD-20 are unchanged and still open. The review's notes on them are recorded as questions in `CLAUDE-RESPONSE-2026-09-17-R22.md`, not acted on.
 
 ## External Evidence Reconciliation (2026-09-17)
 

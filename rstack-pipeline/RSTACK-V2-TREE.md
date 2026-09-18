@@ -168,7 +168,7 @@ copilot-agentic-workflow/
 │           │   ├── [ARCHIVE] decisions.md
 │           │   └── [ARCHIVE] phase-1-contract.md
 │           └── [ARCHIVE] README.md
-├── [ARCHIVE] Fable_Harness_Reconciliation_Review.md
+├── [ARCHIVE] Claude_Harness_Reconciliation_Review.md
 ├── [ARCHIVE] Official_References_Pipeline_Recommendations.md
 └── [KEEP] README.md
 ```

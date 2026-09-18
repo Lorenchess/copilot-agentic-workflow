@@ -88,7 +88,7 @@ Within each batch, photo N is N-Photo-N.jpg. Line ranges are approximate visible
 
 - No runtime execution, hook invocation, effective grants, model selection, parser tests, benchmark or behavioral improvement was observed in this task.
 - Actual lock storage and amendment behavior, role/estate boundaries, replay producer, OTel verifier/store semantics, response checker, capture wrapper and installer are not supplied as complete source.
-- Agent and reference drafts originate in the preserved Fable/reconstruction material. They are candidate design, not photographs of every underlying original file.
+- Agent and reference drafts originate in the preserved Claude/reconstruction material. They are candidate design, not photographs of every underlying original file.
 - Session-context/standing-rule/probe observations also use the earlier reconstruction material; they are not among these 44 photographs. Probe fixes are port requirements only.
 - Current review-diff/ac-matrix skill bodies and models/settings sources are not established by the photographed script. Their integration remains an adoption dependency.
 - Historical incidents and timing figures in photographed comments were not independently verified.

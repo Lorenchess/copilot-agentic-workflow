@@ -1,10 +1,10 @@
 # Changes
 
-Two records. The first, **Changes from fable-v2**, is the rstack-v2.1 record and is kept as written, including its preservation paragraph, which describes the v2.1 task. The second, **Round 2.2**, lists what this folder changes relative to `../rstack-v2.1`.
+Two records. The first, **Changes from claude-v2**, is the rstack-v2.1 record and is kept as written, including its preservation paragraph, which describes the v2.1 task. The second, **Round 2.2**, lists what this folder changes relative to `../rstack-v2.1`.
 
-## Changes from fable-v2 (rstack-v2.1 record)
+## Changes from claude-v2 (rstack-v2.1 record)
 
-This revision is an editable candidate built from the preserved Fable draft and the 44 photographs. It changes the contract where the draft contradicted visible code, and records the runtime work needed to enforce stronger guarantees. It does not claim that the proposed controls already run.
+This revision is an editable candidate built from the preserved Claude draft and the 44 photographs. It changes the contract where the draft contradicted visible code, and records the runtime work needed to enforce stronger guarantees. It does not claim that the proposed controls already run.
 
 | Change | Files | Reason / evidence |
 |---|---|---|
@@ -35,11 +35,11 @@ The normal release route permits no accepted observation gaps. A separate, disab
 
 ### Preservation and validation boundary (v2.1 task)
 
-Original reconstruction files, Astra reviews and fable-v2 remain unchanged. New files live only in rstack-v2.1. No executable script, generated workplace copy, host setting or installed skill was modified. No build, lint, test, browser, agent evaluation, commit, push or deployment was run for this revision.
+Original reconstruction files, ChatGPT reviews and claude-v2 remain unchanged. New files live only in rstack-v2.1. No executable script, generated workplace copy, host setting or installed skill was modified. No build, lint, test, browser, agent evaluation, commit, push or deployment was run for this revision.
 
 ## Round 2.2 — changes from rstack-v2.1 (2026-09-17)
 
-Contract text only. No runtime script, host setting or installed file was created or changed, and nothing here has been executed. Finding ids refer to `FABLE-IMPLEMENTATION-REPORT.md`, which gives line references and before/after behavior.
+Contract text only. No runtime script, host setting or installed file was created or changed, and nothing here has been executed. Finding ids refer to `CLAUDE-IMPLEMENTATION-REPORT.md`, which gives line references and before/after behavior.
 
 | Change | Files | Finding / evidence |
 |---|---|---|
@@ -63,11 +63,11 @@ Unchanged from v2.1 because no defect was found: the eight-column sha-based AC s
 
 ### Preservation and validation boundary (round 2.2)
 
-Everything outside `fable-v2.2` — original reconstructions, Astra reviews, fable-v2 and rstack-v2.1 — is unchanged; hashes are in `FABLE-CHANGE-MANIFEST.md`. No build, lint, test, browser check, agent evaluation, runtime script, commit, stage, push, merge, installation or host-setting change was made.
+Everything outside `claude-v2.2` — original reconstructions, ChatGPT reviews, claude-v2 and rstack-v2.1 — is unchanged; hashes are in `CLAUDE-CHANGE-MANIFEST.md`. No build, lint, test, browser check, agent evaluation, runtime script, commit, stage, push, merge, installation or host-setting change was made.
 
 ## Correction round after the independent review (2026-09-17)
 
-Review verdict CHANGES REQUESTED, findings R22-01 to R22-05. Corrected in place; contract text only; nothing executed. Exact changes, line references and hashes: `FABLE-RESPONSE-2026-09-17-R22.md`. The two records above are unchanged.
+Review verdict CHANGES REQUESTED, findings R22-01 to R22-05. Corrected in place; contract text only; nothing executed. Exact changes, line references and hashes: `CLAUDE-RESPONSE-2026-09-17-R22.md`. The two records above are unchanged.
 
 | Finding | Correction | Files |
 |---|---|---|
@@ -79,7 +79,7 @@ Review verdict CHANGES REQUESTED, findings R22-01 to R22-05. Corrected in place;
 
 ## External Evidence Reconciliation (2026-09-17)
 
-Specification: `../EXTERNAL-EVIDENCE-REVIEW.md`, section 20 (verdict on the architecture: YES WITH CORRECTIONS). Corrected in place; contract text only; nothing executed; no runtime script, host setting, state, agent or role added or removed. The records above are unchanged. Before/after hashes and byte counts: `FABLE-CHANGE-MANIFEST.md`, addendum of the same date.
+Specification: `../EXTERNAL-EVIDENCE-REVIEW.md`, section 20 (verdict on the architecture: YES WITH CORRECTIONS). Corrected in place; contract text only; nothing executed; no runtime script, host setting, state, agent or role added or removed. The records above are unchanged. Before/after hashes and byte counts: `CLAUDE-CHANGE-MANIFEST.md`, addendum of the same date.
 
 | Correction | Source in the evidence review | Files |
 |---|---|---|
@@ -103,7 +103,7 @@ Host-dependent questions this batch leaves open are listed at the end of the mat
 
 ## Correction pass after the batch review (2026-09-17)
 
-Review: `../reviews/2026-09-17-v2.2-external-evidence-batch-review.md` — verdict READY WITH TARGETED CORRECTIONS, findings C1 to C3, six operational files. Corrected in place; contract text only; nothing executed; no state, role, script, hook or setting added. The records above are unchanged; where their summaries were overstated the review says so and this section does not rewrite them: "one-line reminders only" and "no procedure was duplicated" were too strong — approval's release step 10 had repeated the recovery sequence, and the skill carried the concrete reads. Both are now corrected as described below. Hashes: `FABLE-CHANGE-MANIFEST.md`, second addendum.
+Review: `../reviews/2026-09-17-v2.2-external-evidence-batch-review.md` — verdict READY WITH TARGETED CORRECTIONS, findings C1 to C3, six operational files. Corrected in place; contract text only; nothing executed; no state, role, script, hook or setting added. The records above are unchanged; where their summaries were overstated the review says so and this section does not rewrite them: "one-line reminders only" and "no procedure was duplicated" were too strong — approval's release step 10 had repeated the recovery sequence, and the skill carried the concrete reads. Both are now corrected as described below. Hashes: `CLAUDE-CHANGE-MANIFEST.md`, second addendum.
 
 | Finding | Correction | Files |
 |---|---|---|

@@ -1,4 +1,4 @@
-# ASTRA — PHASE 4 P4-C2 IMPLEMENTATION REVIEW
+# CHATGPT — PHASE 4 P4-C2 IMPLEMENTATION REVIEW
 
 Reviewed revision: `713a302103bc2b02d00949d78f0eeefe0399c1d8`.
 
@@ -6,9 +6,9 @@ Reviewed revision: `713a302103bc2b02d00949d78f0eeefe0399c1d8`.
 
 ## Scope and provenance
 
-Reviewed the actual C2 delta from accepted C1 `d525456f8f98c8f9d6c63f726b2c8f2e3ffa6fe6`, including original C2 commit `a5af1725197922d3cbacf2e7959ee2703c170606` and the four-file correction `713a302`. The handoff's checkpoint status was stale: the original C2 implementation was already committed when Astra took over. It was reviewed, not recreated.
+Reviewed the actual C2 delta from accepted C1 `d525456f8f98c8f9d6c63f726b2c8f2e3ffa6fe6`, including original C2 commit `a5af1725197922d3cbacf2e7959ee2703c170606` and the four-file correction `713a302`. The handoff's checkpoint status was stale: the original C2 implementation was already committed when ChatGPT took over. It was reviewed, not recreated.
 
-The original checkpoint and its first correction remain attributed to Sonnet/Fable as recorded in that commit. After the owner handoff, GPT-5.6 Sol made the second and final C2 correction under Astra supervision. Before permitting edits, Astra verified `model: gpt-5.6-sol` in the delegated session's actual `turn_context` metadata, not just the worker's self-report. Astra inspected the resulting patch, staged exactly four files, and committed after acceptance. This review is authored by Astra and remains untracked.
+The original checkpoint and its first correction remain attributed to Sonnet/Claude as recorded in that commit. After the owner handoff, GPT-5.6 Sol made the second and final C2 correction under ChatGPT supervision. Before permitting edits, ChatGPT verified `model: gpt-5.6-sol` in the delegated session's actual `turn_context` metadata, not just the worker's self-report. ChatGPT inspected the resulting patch, staged exactly four files, and committed after acceptance. This review is authored by ChatGPT and remains untracked.
 
 ## Acceptance against contract §6 P4-C2
 

@@ -9,7 +9,7 @@ This note records the published web rendering of the persistent-knowledge-layer 
 - **URL:** https://claude.ai/code/artifact/9c150fa7-4831-49a7-ab2b-82e723e3fca2
 - **Visibility:** private to the owner unless shared from the page's share menu.
 - **Source of truth:** the repository file [`docs/specs/2026-09-14-persistent-knowledge-layer-architecture-investigation.md`](2026-09-14-persistent-knowledge-layer-architecture-investigation.md). Where the page and the file ever differ, the file is the record.
-- **Author / role:** Fable 5.1 as architect, 2026-09-14, on the owner's instruction to investigate and design, not implement.
+- **Author / role:** Claude 5.1 as architect, 2026-09-14, on the owner's instruction to investigate and design, not implement.
 - **Status of the content:** INVESTIGATION DRAFT, revision 2, NOT APPROVED; owner disposition after independent review: DEFER PENDING BASELINE EVIDENCE. Nothing in it is implemented or authorized by its existence.
 
 ## Version history

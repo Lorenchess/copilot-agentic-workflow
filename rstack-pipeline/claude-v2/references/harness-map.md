@@ -38,7 +38,7 @@ Never write "the harness prevents", "enforced" or "guaranteed" for a PROSE CONTR
 | Cross-run memory (experimental) | `learnings.md` | `learnings-check.mjs`, shape only |
 | Each role's method | that role's agent file | — |
 
-Full ownership table with local reminders: `FABLE-V2-RULE-OWNERSHIP.md` (maintainer document, not runtime input).
+Full ownership table with local reminders: `CLAUDE-V2-RULE-OWNERSHIP.md` (maintainer document, not runtime input).
 
 ## Scripts named by the reconstructed design
 

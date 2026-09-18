@@ -1,5 +1,5 @@
 # Phase 1 — Intake, Workspace Discovery & Branch Preparation
-## Architecture & Implementation Contract (Fable → Sonnet handoff)
+## Architecture & Implementation Contract (Claude → Sonnet handoff)
 
 ## Context
 
@@ -64,7 +64,7 @@ Legend: **CONFIRMED** (official docs, fetched today) · **ASSUMPTION** · **LIMI
 | 2.19 | Bitbucket-hosted repos | CONFIRMED (by scoped restriction) | Only the Copilot cloud/coding agent "only works with repositories hosted on GitHub". No hosting requirement is documented for VS Code agent mode, custom agents, or MCP. |
 | 2.20 | Atlassian Rovo MCP | CONFIRMED (informational) | v2 endpoint `https://mcp.atlassian.com/v2/mcp`; Jira read tools include `getJiraIssue`, `searchJiraIssuesUsingJql`, `listJiraIssueComments`, `listJiraIssueRemoteIssueLinks`; Bitbucket Cloud read/write groups exist; Data Center is not supported. Per-tool parameter schemas are not officially published. |
 | 2.21 | Model roster | OPEN QUESTION | "Sonnet-5, Opus-5, Haiku 4.5, GPT-5.6 Sol, Terra, Luna" do not appear in VS Code docs. Docs show cost tiers (Low/Medium/High) in the model picker. The `model:` value must match the picker name exactly; C1 records the exact Sonnet-5 name and every Phase 1 agent uses it. |
-| 2.22 | JSON validation | ASSUMPTION | `json.schemas` in workspace settings validates artifacts when a human opens them in the editor. Agents do not rely on it; conformance is checked by the coordinator's invariant checklist and the Fable review. |
+| 2.22 | JSON validation | ASSUMPTION | `json.schemas` in workspace settings validates artifacts when a human opens them in the editor. Agents do not rely on it; conformance is checked by the coordinator's invariant checklist and the Claude review. |
 | 2.23 | Agent selection persistence | ASSUMPTION | Docs describe agent selection as chat-scoped; no sentence guarantees it stays selected across turns. Design tolerates this: every `/pipeline` invocation re-checks role and re-reads `state.json`. |
 | 2.24 | Timestamps | LIMITATION | The coordinator has no clock. Timestamps come only from terminal output captured by the git subagent (`git var GIT_COMMITTER_IDENT` yields an epoch). Model-generated timestamps are forbidden; fields are nullable. |
 | 2.25 | Terminal cwd | ASSUMPTION | With a single root folder, the terminal tool runs in the workspace root. The git subagent verifies this at the start of every call (§11.5) and aborts if `git rev-parse --show-toplevel` is not the workspace root. |
@@ -458,7 +458,7 @@ timestamps* {startedAtEpoch: integer|null, completedAtEpoch: integer|null, sourc
 
 `state.schema.json` outline: `runId*`, `status*` (run statuses incl. AWAITING_DEVELOPER, IN_PROGRESS), `currentStage*`, `invocation*`, `stages*` (map stage id → `{status*, attempts*, evidenceFile, note}`), `gates*` (map → `{status PENDING|ANSWERED|SKIPPED, answer, answeredVia}`), `selectedRepositories[]`, `repositories` (map → `{preparationStatus, decision}`), `branch`, `blockers[]`, `history[]` (previous runs: `{invocation, stages, gates, endedReason}`), `timestamps`.
 
-Invariants (checked by the coordinator before writing, and by the Fable conformance review):
+Invariants (checked by the coordinator before writing, and by the Claude conformance review):
 - `status = COMPLETE` ⇔ every `selectedRepositories[]` entry has `repositoryPreparation.status ∈ {PREPARED, REUSED_EXISTING}`.
 - `status = PARTIAL` ⇔ ≥ 1 selected repo is `PREPARED`/`REUSED_EXISTING` and ≥ 1 is not.
 - `status = BLOCKED` ⇔ 0 selected repos are `PREPARED`/`REUSED_EXISTING` and the run is not FAILED.
@@ -611,7 +611,7 @@ Files: `.github/pipeline/docs/phase-1-runbook.md` (single-folder setup, session 
 Acceptance: scenarios pass and are logged: (1) one repo happy path; (2) two repos happy path, same branch in both, no approval prompts; (3) dirty repo → G3 → `EXCLUDE_REPO` → PARTIAL with the repo still listed as selected; (4) existing local branch → G3 → `REUSE_EXISTING` → REUSED_EXISTING with aheadBehind; (5) interrupt after repo A prepared → `/pipeline` again → G0 Resume → only repo B touched, A verified not recreated; (6) invalid key; (7) unreachable remote (point `origin` at a nonexistent path) → G3, no branch created; (8) resume with different keys → Resume not offered, start-over options shown; (9) G3 `ABORT_RUN` with nothing prepared → BLOCKED artifact written.
 Must not: mark Phase 1 done with any scenario unlogged.
 
-**Handoff after C9**: Fable conformance review against §12 invariants and §17; then Astra review; then remediation.
+**Handoff after C9**: Claude conformance review against §12 invariants and §17; then ChatGPT review; then remediation.
 
 **Optional post-C9 benchmark (not Phase 1 acceptance)**: re-run scenarios 1, 2, and 4 with Haiku 4.5 on `pipeline-jira-reader` and `pipeline-repo-discovery` only; compare extract validity, evidence quality, and cost; record in `docs/testing/model-benchmark.md`. No model change is made without a new owner decision.
 

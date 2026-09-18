@@ -1,4 +1,4 @@
-# ASTRA — PHASE 4 CONTRACT REVISION 2 REVIEW
+# CHATGPT — PHASE 4 CONTRACT REVISION 2 REVIEW
 
 **Recommendation: `PROCEED` — revision 2 is ready for owner approval.**  
 **C1: CLOSED · C2: CLOSED · C3: CLOSED**  

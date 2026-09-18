@@ -54,7 +54,7 @@ The resume rule looks for a gate with **no recorded answer**, while regeneration
 
 **Failure scenario:** G3 approves plan A. The developer requests a revision; plan B and its approving adversary review are produced. Execution stops before fresh G3 approval. On resume, the old G3 answer still exists and testing is the first missing stage. The documented selection rule can advance to testing without approval of B.
 
-**Minimum direction:** Make dependent approvals stale when their basis changes, and require a current affirmative answer before resuming past the gate. Record which plan/review revision G3 approved. Apply this consistently to the orchestrator, flow, pipeline skill, and RUN contract. Existing artifact bookkeeping is sufficient; no new runtime is needed. Fable should determine the precise implementation plan.
+**Minimum direction:** Make dependent approvals stale when their basis changes, and require a current affirmative answer before resuming past the gate. Record which plan/review revision G3 approved. Apply this consistently to the orchestrator, flow, pipeline skill, and RUN contract. Existing artifact bookkeeping is sufficient; no new runtime is needed. Claude should determine the precise implementation plan.
 
 ### R2 — HIGH: Existing PR reuse does not establish the requested operation's guarantees
 
@@ -139,4 +139,4 @@ The worked example is explicitly fictional, as stated in its [README, line 5](ht
 
 **TARGETED_CORRECTION_REQUIRED**
 
-The remaining work is targeted procedural and documentation correction within Phase 1. Fable should evaluate R1–R6 and propose the implementation scope separately. This review authorizes no implementation changes and does not begin Phase 2.
+The remaining work is targeted procedural and documentation correction within Phase 1. Claude should evaluate R1–R6 and propose the implementation scope separately. This review authorizes no implementation changes and does not begin Phase 2.

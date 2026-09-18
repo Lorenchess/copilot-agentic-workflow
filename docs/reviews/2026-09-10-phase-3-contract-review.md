@@ -1,4 +1,4 @@
-# ASTRA — PHASE 3 DRAFT CONTRACT REVIEW
+# CHATGPT — PHASE 3 DRAFT CONTRACT REVIEW
 
 **Recommendation: PROCEED_WITH_CHANGES.**  
 **Contract approval: targeted text corrections required before authorizing P3-C1.**  
@@ -101,7 +101,7 @@ Preserve the improvements already made: outcome-first reviewer reasoning, indepe
 
 **Do not authorize P3-C1 against this exact draft yet.** Recommend D6(a), resolve C1–C3 and the small file-scope contradiction, and then approve the reconciled contract before delegation. No new architecture cycle or broader Phase 3 redesign is needed.
 
-Suggested message for Fable:
+Suggested message for Claude:
 
 > Use D6(a) as the proposed conservative rule: INCOMPLETE never reaches G4. Read docs/reviews/2026-09-10-phase-3-contract-review.md and correct C1–C3 in the draft contract, plus the pipeline-skill exclusion wording. Keep the proposal, locked baselines, and existing review artifacts unchanged. Do not invoke Sonnet or implement P3-C1 yet. Return the revised contract for approval; implementation delegation remains pending.
 
