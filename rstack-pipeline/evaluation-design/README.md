@@ -16,14 +16,15 @@ The current active V2 refactoring reference remains `../claude-v2.2/` as identif
 
 1. [Evaluation Design Context](RSTACK-EVALUATION-DESIGN-CONTEXT.md)
 2. [Post-Run Evaluation Workflow](RSTACK-POST-RUN-EVALUATION-WORKFLOW.md)
-3. [Failure Taxonomy](RSTACK-FAILURE-TAXONOMY.md)
-4. [Evaluation Labeling Guide](RSTACK-EVALUATION-LABELING-GUIDE.md)
-5. [Host Capability Matrix](RSTACK-HOST-CAPABILITY-MATRIX.md)
-6. [Evaluation Data Dictionary](RSTACK-EVALUATION-DATA-DICTIONARY.md)
-7. [Golden Evaluation Corpus](RSTACK-GOLDEN-EVAL-CORPUS.md)
-8. [Evaluator Calibration](RSTACK-EVALUATOR-CALIBRATION.md)
-9. [Evaluation Governance](RSTACK-EVALUATION-GOVERNANCE.md)
-10. [Experiment Registry](RSTACK-EXPERIMENT-REGISTRY.md)
+3. [Artifact, Metadata, and Handoff Efficiency Review](RSTACK-ARTIFACT-HANDOFF-EFFICIENCY-REVIEW.md)
+4. [Failure Taxonomy](RSTACK-FAILURE-TAXONOMY.md)
+5. [Evaluation Labeling Guide](RSTACK-EVALUATION-LABELING-GUIDE.md)
+6. [Host Capability Matrix](RSTACK-HOST-CAPABILITY-MATRIX.md)
+7. [Evaluation Data Dictionary](RSTACK-EVALUATION-DATA-DICTIONARY.md)
+8. [Golden Evaluation Corpus](RSTACK-GOLDEN-EVAL-CORPUS.md)
+9. [Evaluator Calibration](RSTACK-EVALUATOR-CALIBRATION.md)
+10. [Evaluation Governance](RSTACK-EVALUATION-GOVERNANCE.md)
+11. [Experiment Registry](RSTACK-EXPERIMENT-REGISTRY.md)
 
 Then inspect the active RSTACK V2 source and execute the root evaluation-system design prompt.
 
@@ -33,6 +34,7 @@ Then inspect the active RSTACK V2 source and execute the root evaluation-system 
 |---|---|
 | Design Context | goals, constraints, architecture principles, authoritative-source discipline |
 | Post-Run Evaluation Workflow | separates Copilot execution from fresh-context Claude evaluation and defines run collection/immutability |
+| Artifact, Metadata, and Handoff Efficiency Review | evaluates artifact volume, duplication, hot context, handoff payloads, persistence, and cost-efficiency without sacrificing auditability |
 | Failure Taxonomy | stable language for observed failure modes |
 | Labeling Guide | consistent claim/finding/materiality/human labels |
 | Host Capability Matrix | prevents assuming unavailable host telemetry/control |
@@ -51,6 +53,8 @@ The design agent should use it to create a **small measurement architecture**.
 Runtime agents should receive only the evaluation-related information necessary for their own role.
 
 The intended operating model is: Copilot/RSTACK produces the run evidence; a separate fresh-context evaluator, initially Claude Code, evaluates the completed run afterward. The evaluator treats original run artifacts as read-only and writes only to the run's approved evaluation area.
+
+Artifact design should follow the additional principle: **rich persistent evidence, thin execution context**. Persist what is needed for audit/reconstruction, but load or hand off only the minimum role-specific information required for the next decision.
 
 ## First implementation target
 
