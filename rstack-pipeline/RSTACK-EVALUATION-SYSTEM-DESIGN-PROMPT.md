@@ -29,7 +29,7 @@ The intended outcome is an evaluation architecture that supports:
 Before doing any work:
 
 1. Read this file completely.
-2. Read `rstack-pipeline/evaluation-design/README.md` and the full evaluation-design pack, including `RSTACK-POST-RUN-EVALUATION-WORKFLOW.md`.
+2. Read `rstack-pipeline/evaluation-design/README.md` and the full evaluation-design pack, including `RSTACK-POST-RUN-EVALUATION-WORKFLOW.md` and `RSTACK-ARTIFACT-HANDOFF-EFFICIENCY-REVIEW.md`.
 3. Inspect the current RSTACK implementation in the repository. Do not answer from memory.
 4. Treat existing RSTACK artifacts, references, scripts, hooks, and run-state files as the starting point.
 5. Produce the requested evaluation-design documents only.
@@ -77,6 +77,9 @@ Do not start with dashboards, telemetry code, schemas, graders, or prompt rewrit
 - **Fresh evaluator context.** Design post-run evaluation so the evaluator does not inherit the live execution conversation or implementation persuasion.
 - **Immutable subject.** The evaluator must treat the submitted run package as read-only and write only to an approved evaluation-owned area.
 - **No same-run feedback contamination.** Evaluator output must not influence the already-completed run being judged; any response occurs in a future run, experiment, or explicit follow-up.
+- **Rich persistent evidence, thin execution context.** Design for auditability without requiring every downstream agent to reread all persisted evidence.
+- **Reference before restating.** Where safe, prefer stable IDs/paths/hashes over duplicating upstream prose in every handoff.
+- **Measure artifact efficiency.** Evaluate storage volume, exact duplication, handoff payload size, repeated narrative, and observed host cost/latency where available, with correctness and auditability as guardrails.
 
 # Prompt for Claude Code
 
@@ -429,6 +432,23 @@ Do not persist hidden reasoning or chain-of-thought as telemetry.
 Do not use narrative agent summaries as a substitute for events that can be deterministically observed.
 
 ---
+
+# Task 3A — Evaluate artifact, metadata, and handoff efficiency
+
+Follow `rstack-pipeline/evaluation-design/RSTACK-ARTIFACT-HANDOFF-EFFICIENCY-REVIEW.md`.
+
+The design must distinguish:
+
+- runtime state,
+- hot handoff context,
+- persistent evidence,
+- compatibility copies,
+- immutable archives,
+- and post-run evaluation data.
+
+Inspect whether current roles restate upstream artifacts unnecessarily, whether large evidence can remain cold/on-demand, which duplicates are intentional for reconstruction, and which fields should have one canonical owner.
+
+Do not optimize for fewer files or shorter Markdown in isolation. Preserve independent auditability, candidate binding, parser compatibility, and fresh-context role independence.
 
 # Task 4 — Establish evaluation dimensions
 
