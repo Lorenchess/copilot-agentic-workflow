@@ -29,14 +29,15 @@ The intended outcome is an evaluation architecture that supports:
 Before doing any work:
 
 1. Read this file completely.
-2. Inspect the current RSTACK implementation in the repository. Do not answer from memory.
-3. Treat existing RSTACK artifacts, references, scripts, hooks, and run-state files as the starting point.
-4. Produce the requested evaluation-design documents only.
-5. Do **not** modify operational agents, pipeline behavior, scripts, hooks, or runtime code during this pass.
-6. Do **not** "fine tune" agent Markdown as a side effect of evaluation design.
-7. Do **not** add a new evaluation agent unless later evidence proves one is necessary.
-8. Stop after the design artifacts are complete and return them for human review.
-9. Wait for explicit approval before implementing the evaluation system.
+2. Read `rstack-pipeline/evaluation-design/README.md` and the full evaluation-design pack, including `RSTACK-POST-RUN-EVALUATION-WORKFLOW.md`.
+3. Inspect the current RSTACK implementation in the repository. Do not answer from memory.
+4. Treat existing RSTACK artifacts, references, scripts, hooks, and run-state files as the starting point.
+5. Produce the requested evaluation-design documents only.
+6. Do **not** modify operational agents, pipeline behavior, scripts, hooks, or runtime code during this pass.
+7. Do **not** "fine tune" agent Markdown as a side effect of evaluation design.
+8. Do **not** add a new evaluation agent unless later evidence proves one is necessary.
+9. Stop after the design artifacts are complete and return them for human review.
+10. Wait for explicit approval before implementing the evaluation system.
 
 The required working sequence is:
 
@@ -72,6 +73,10 @@ Do not start with dashboards, telemetry code, schemas, graders, or prompt rewrit
 - **Do not optimize for passing.** Fewer findings, faster runs, shorter prompts, fewer agents, or higher judge scores are not automatically improvements.
 - **Preserve host portability.** GitHub Copilot is the current host, not the canonical evaluation architecture.
 - **No hidden reasoning telemetry.** Persist observable events, artifacts, classifications, and evidence—not private chain-of-thought.
+- **Separate execution from evaluation.** Copilot/RSTACK owns execution evidence; a separate post-run evaluator, initially Claude Code, owns semantic evaluation.
+- **Fresh evaluator context.** Design post-run evaluation so the evaluator does not inherit the live execution conversation or implementation persuasion.
+- **Immutable subject.** The evaluator must treat the submitted run package as read-only and write only to an approved evaluation-owned area.
+- **No same-run feedback contamination.** Evaluator output must not influence the already-completed run being judged; any response occurs in a future run, experiment, or explicit follow-up.
 
 # Prompt for Claude Code
 
@@ -264,6 +269,32 @@ Do **not** begin by creating telemetry code, dashboards, schemas, evaluators, or
 Do **not** modify operational agent prompts in this task.
 
 ---
+
+# Required post-run operating model
+
+The evaluation architecture must implement the workflow defined in `rstack-pipeline/evaluation-design/RSTACK-POST-RUN-EVALUATION-WORKFLOW.md`.
+
+At minimum, the design must preserve this separation:
+
+~~~text
+Copilot/RSTACK execution
+        ↓
+completed .rstack run package
+        ↓
+evidence freeze / run binding
+        ↓
+fresh-context Claude Code evaluation
+        ↓
+evaluation output written beside the collected run
+        ↓
+human sampling/validation
+        ↓
+cross-run dataset
+        ↓
+evidence-backed pipeline experiments
+~~~
+
+Claude Code is the initial evaluator implementation, not the permanent definition of evaluation. The run package, labels, rubrics, schemas, and calibration method must remain portable to Devspace, Bedrock, or another approved evaluator.
 
 # Task 1 — Inventory the existing system
 
