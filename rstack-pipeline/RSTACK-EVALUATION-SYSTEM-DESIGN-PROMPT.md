@@ -24,6 +24,55 @@ The intended outcome is an evaluation architecture that supports:
 
 ---
 
+# Execution instructions for Claude Code
+
+Before doing any work:
+
+1. Read this file completely.
+2. Inspect the current RSTACK implementation in the repository. Do not answer from memory.
+3. Treat existing RSTACK artifacts, references, scripts, hooks, and run-state files as the starting point.
+4. Produce the requested evaluation-design documents only.
+5. Do **not** modify operational agents, pipeline behavior, scripts, hooks, or runtime code during this pass.
+6. Do **not** "fine tune" agent Markdown as a side effect of evaluation design.
+7. Do **not** add a new evaluation agent unless later evidence proves one is necessary.
+8. Stop after the design artifacts are complete and return them for human review.
+9. Wait for explicit approval before implementing the evaluation system.
+
+The required working sequence is:
+
+```text
+INSPECT CURRENT SYSTEM
+        ↓
+INVENTORY EXISTING DATA
+        ↓
+DEFINE DECISIONS THE EVALUATION MUST SUPPORT
+        ↓
+DEFINE METRICS
+        ↓
+DEFINE MINIMAL ARTIFACTS
+        ↓
+DEFINE EVALUATION RUBRICS
+        ↓
+DEFINE EXPERIMENTS
+        ↓
+CHALLENGE THE DESIGN
+        ↓
+STOP FOR REVIEW
+```
+
+Do not start with dashboards, telemetry code, schemas, graders, or prompt rewrites.
+
+## Additional guardrails
+
+- **Reuse before adding.** Before proposing a new artifact, field, event, or schema, identify whether the information already exists and who currently owns it.
+- **Every metric must support a decision.** If a metric does not help choose between pipeline alternatives or detect a meaningful regression, reject it.
+- **Every artifact must have a consumer.** Define who writes it, who reads it, what decision it supports, and whether it is mutable.
+- **Separate evidence types.** Keep deterministic observations, AI-judge judgments, human labels, and unknowns distinct.
+- **AI judge output is not ground truth.** Preserve the original judgment even when a later human label disagrees.
+- **Do not optimize for passing.** Fewer findings, faster runs, shorter prompts, fewer agents, or higher judge scores are not automatically improvements.
+- **Preserve host portability.** GitHub Copilot is the current host, not the canonical evaluation architecture.
+- **No hidden reasoning telemetry.** Persist observable events, artifacts, classifications, and evidence—not private chain-of-thought.
+
 # Prompt for Claude Code
 
 You are acting as a senior AI systems architect, evaluation engineer, and software-delivery observability engineer.
@@ -1186,3 +1235,32 @@ and did so at an acceptable cost and latency."
 ```
 
 Only after the design has been reviewed and accepted should implementation begin.
+
+
+---
+
+# Mandatory stop condition
+
+Once the six required design documents are complete, **STOP**.
+
+Do not:
+
+- implement the proposed schemas,
+- add instrumentation,
+- modify RSTACK agents,
+- modify the pipeline skill,
+- change hooks or scripts,
+- alter runtime behavior,
+- add dashboards,
+- or begin prompt refactoring.
+
+Return a concise completion report containing:
+
+1. files created,
+2. major architectural recommendations,
+3. the proposed first implementation slice,
+4. unresolved design questions,
+5. assumptions that require host validation,
+6. items classified as KEEP NOW / DEFER / REJECT.
+
+Wait for explicit human approval before any implementation work begins.
