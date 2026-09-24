@@ -15,14 +15,15 @@ The current active V2 refactoring reference remains `../claude-v2.2/` as identif
 ## Recommended reading order for the design agent
 
 1. [Evaluation Design Context](RSTACK-EVALUATION-DESIGN-CONTEXT.md)
-2. [Failure Taxonomy](RSTACK-FAILURE-TAXONOMY.md)
-3. [Evaluation Labeling Guide](RSTACK-EVALUATION-LABELING-GUIDE.md)
-4. [Host Capability Matrix](RSTACK-HOST-CAPABILITY-MATRIX.md)
-5. [Evaluation Data Dictionary](RSTACK-EVALUATION-DATA-DICTIONARY.md)
-6. [Golden Evaluation Corpus](RSTACK-GOLDEN-EVAL-CORPUS.md)
-7. [Evaluator Calibration](RSTACK-EVALUATOR-CALIBRATION.md)
-8. [Evaluation Governance](RSTACK-EVALUATION-GOVERNANCE.md)
-9. [Experiment Registry](RSTACK-EXPERIMENT-REGISTRY.md)
+2. [Post-Run Evaluation Workflow](RSTACK-POST-RUN-EVALUATION-WORKFLOW.md)
+3. [Failure Taxonomy](RSTACK-FAILURE-TAXONOMY.md)
+4. [Evaluation Labeling Guide](RSTACK-EVALUATION-LABELING-GUIDE.md)
+5. [Host Capability Matrix](RSTACK-HOST-CAPABILITY-MATRIX.md)
+6. [Evaluation Data Dictionary](RSTACK-EVALUATION-DATA-DICTIONARY.md)
+7. [Golden Evaluation Corpus](RSTACK-GOLDEN-EVAL-CORPUS.md)
+8. [Evaluator Calibration](RSTACK-EVALUATOR-CALIBRATION.md)
+9. [Evaluation Governance](RSTACK-EVALUATION-GOVERNANCE.md)
+10. [Experiment Registry](RSTACK-EXPERIMENT-REGISTRY.md)
 
 Then inspect the active RSTACK V2 source and execute the root evaluation-system design prompt.
 
@@ -31,6 +32,7 @@ Then inspect the active RSTACK V2 source and execute the root evaluation-system 
 | File | Role |
 |---|---|
 | Design Context | goals, constraints, architecture principles, authoritative-source discipline |
+| Post-Run Evaluation Workflow | separates Copilot execution from fresh-context Claude evaluation and defines run collection/immutability |
 | Failure Taxonomy | stable language for observed failure modes |
 | Labeling Guide | consistent claim/finding/materiality/human labels |
 | Host Capability Matrix | prevents assuming unavailable host telemetry/control |
@@ -47,6 +49,8 @@ Do not let this pack become another large runtime instruction bundle.
 The design agent should use it to create a **small measurement architecture**.
 
 Runtime agents should receive only the evaluation-related information necessary for their own role.
+
+The intended operating model is: Copilot/RSTACK produces the run evidence; a separate fresh-context evaluator, initially Claude Code, evaluates the completed run afterward. The evaluator treats original run artifacts as read-only and writes only to the run's approved evaluation area.
 
 ## First implementation target
 
