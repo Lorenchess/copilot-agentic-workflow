@@ -29,6 +29,12 @@ The current active V2 refactoring reference remains `../claude-v2.2/` as identif
 
 Then inspect the active RSTACK V2 source and execute the root evaluation-system design prompt.
 
+## Targeted model and effort review
+
+For model allocation, reasoning-effort selection, and agent performance comparisons, use [RSTACK Model and Effort Allocation Review](RSTACK-MODEL-EFFORT-ALLOCATION-REVIEW.md). It contains a dated research synthesis, role-by-role hypotheses, effort experiments, cost and quality measures, and an analysis-only assignment for Claude Code to produce one independent review report.
+
+The existing [model-allocation trial](../MODEL-ALLOCATION-TRIAL.md) still owns the selected A/B/C trial. The review document does not change model pins, effort settings, workflow rules, or workplace authorization. Read it when evaluating these choices, not as mandatory context for every pipeline run.
+
 ## What each file contributes
 
 | File | Role |
@@ -37,6 +43,7 @@ Then inspect the active RSTACK V2 source and execute the root evaluation-system 
 | Post-Run Evaluation Workflow | separates Copilot execution from fresh-context Claude evaluation and defines run collection/immutability |
 | Artifact, Metadata, and Handoff Efficiency Review | evaluates artifact volume, duplication, hot context, handoff payloads, persistence, and cost-efficiency without sacrificing auditability |
 | Decision-Layer Efficiency Audit | audits every important pipeline decision as L0 deterministic, L1 constrained semantic, or L2 full reasoning; identifies overuse of expensive agents, routing duplication, context waste, and escalation requirements |
+| Model and Effort Allocation Review | independently challenges role/model fit, host-specific effort controls, cost, quality, and the existing allocation trial |
 | Failure Taxonomy | stable language for observed failure modes |
 | Labeling Guide | consistent claim/finding/materiality/human labels |
 | Host Capability Matrix | prevents assuming unavailable host telemetry/control |
