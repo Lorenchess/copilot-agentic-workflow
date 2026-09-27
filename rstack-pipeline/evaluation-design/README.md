@@ -35,6 +35,12 @@ For model allocation, reasoning-effort selection, and agent performance comparis
 
 The existing [model-allocation trial](../MODEL-ALLOCATION-TRIAL.md) still owns the selected A/B/C trial. The review document does not change model pins, effort settings, workflow rules, or workplace authorization. Read it when evaluating these choices, not as mandatory context for every pipeline run.
 
+## Targeted Planner–Auditor–Human loop redesign
+
+For the owner-requested change to show the HTML plan after audit, require a human decision before a second round, and reduce repeated agent narratives, use [Planner–Auditor–Human Loop Redesign](RSTACK-PLANNER-AUDITOR-HUMAN-LOOP-REDESIGN.md). It includes compact structured examples, final human-amendment handling, downstream Tester/eligibility impacts, and an analysis-first assignment producing one change review.
+
+This is a proposed workflow change, not an installed override of the current routing or audit requirements. Read it for this targeted work; do not add it to every execution agent's context.
+
 ## What each file contributes
 
 | File | Role |
@@ -44,6 +50,7 @@ The existing [model-allocation trial](../MODEL-ALLOCATION-TRIAL.md) still owns t
 | Artifact, Metadata, and Handoff Efficiency Review | evaluates artifact volume, duplication, hot context, handoff payloads, persistence, and cost-efficiency without sacrificing auditability |
 | Decision-Layer Efficiency Audit | audits every important pipeline decision as L0 deterministic, L1 constrained semantic, or L2 full reasoning; identifies overuse of expensive agents, routing duplication, context waste, and escalation requirements |
 | Model and Effort Allocation Review | independently challenges role/model fit, host-specific effort controls, cost, quality, and the existing allocation trial |
+| Planner–Auditor–Human Loop Redesign | moves the human brief after audit, makes round 2 opt-in, and separates compact machine records, human decisions, and audit coverage |
 | Failure Taxonomy | stable language for observed failure modes |
 | Labeling Guide | consistent claim/finding/materiality/human labels |
 | Host Capability Matrix | prevents assuming unavailable host telemetry/control |
