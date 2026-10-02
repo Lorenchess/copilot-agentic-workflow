@@ -28,6 +28,7 @@ The current active V2 refactoring reference remains `../claude-v2.2/` as identif
 12. [Experiment Registry](RSTACK-EXPERIMENT-REGISTRY.md)
 13. [Instruction Architecture Hardening Guide](RSTACK-INSTRUCTION-ARCHITECTURE-HARDENING-GUIDE.md)
 14. [Instruction Architecture Evaluation Plan](RSTACK-INSTRUCTION-ARCHITECTURE-EVAL-PLAN.md)
+15. [Repository Architecture Refactor Guide](RSTACK-REPOSITORY-ARCHITECTURE-REFACTOR-GUIDE.md)
 
 Then inspect the active RSTACK V2 source and execute the root evaluation-system design prompt.
 
@@ -63,6 +64,7 @@ This is a proposed workflow change, not an installed override of the current rou
 | Experiment Registry | controlled model/prompt/workflow comparisons |
 | Instruction Architecture Hardening Guide | progressive disclosure, degrees of freedom, TOC/reference design, canonical ownership, deterministic hardening, and model-specific instruction architecture |
 | Instruction Architecture Evaluation Plan | static, retrieval, behavioral, and end-to-end A/B tests for instruction refactors, with role-specific fixtures and rollback criteria |
+| Repository Architecture Refactor Guide | maps RSTACK into control, execution, host-adapter, evaluation, distribution, generated, test, docs, and runtime concerns; defines the target AI-factory structure and a no-behavior-change migration audit |
 
 ## Core rule
 
@@ -79,6 +81,8 @@ Artifact design should follow the additional principle: **rich persistent eviden
 The decision-layer audit adds a complementary principle: **use the least complex mechanism that can make a decision reliably**. Prefer deterministic rules for machine-verifiable facts, constrained semantic decisions where interpretation is needed, and full reasoning agents only where genuine reasoning complexity justifies them.
 
 The instruction-architecture guides add: **progressive disclosure and explicit degrees of freedom are control mechanisms**. Runtime agents should keep only role-critical instructions always loaded, reach detailed references directly when needed, and rely on deterministic checks for objective rules rather than accumulating prose.
+
+The repository-architecture guide adds a complementary factory-level boundary: **canonical source, generated host output, execution/runtime evidence, and evaluation must be visibly distinct**. It asks the design agent to map the existing tree before moving anything and to preserve behavior while reorganizing ownership.
 
 ## First implementation target
 
