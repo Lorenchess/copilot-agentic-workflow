@@ -30,6 +30,7 @@ The current active V2 refactoring reference remains `../claude-v2.2/` as identif
 14. [Instruction Architecture Evaluation Plan](RSTACK-INSTRUCTION-ARCHITECTURE-EVAL-PLAN.md)
 15. [Repository Architecture Refactor Guide](RSTACK-REPOSITORY-ARCHITECTURE-REFACTOR-GUIDE.md)
 16. [Safe Refactor Execution Order](RSTACK-SAFE-REFACTOR-EXECUTION-ORDER.md)
+17. [Parallel Claude Session Prompts](RSTACK-PARALLEL-CLAUDE-SESSION-PROMPTS.md)
 
 Then inspect the active RSTACK V2 source and execute the root evaluation-system design prompt.
 
@@ -67,6 +68,7 @@ This is a proposed workflow change, not an installed override of the current rou
 | Instruction Architecture Evaluation Plan | static, retrieval, behavioral, and end-to-end A/B tests for instruction refactors, with role-specific fixtures and rollback criteria |
 | Repository Architecture Refactor Guide | maps RSTACK into control, execution, host-adapter, evaluation, distribution, generated, test, docs, and runtime concerns; defines the target AI-factory structure and a no-behavior-change migration audit |
 | Safe Refactor Execution Order | defines the required batch sequence, preconditions, rollback gates, stop conditions, and validation checkpoints for safely applying architecture and instruction changes |
+| Parallel Claude Session Prompts | provides coordinated prompts for parallel architecture, baseline, artifact-efficiency, and instruction-inventory sessions while keeping shared runtime changes serialized |
 
 ## Core rule
 
@@ -87,6 +89,8 @@ The instruction-architecture guides add: **progressive disclosure and explicit d
 The repository-architecture guide adds a complementary factory-level boundary: **canonical source, generated host output, execution/runtime evidence, and evaluation must be visibly distinct**. It asks the design agent to map the existing tree before moving anything and to preserve behavior while reorganizing ownership.
 
 The safe-refactor order is the execution coordinator for these guides. It requires architecture mapping first, baseline capture second, canonical/generated hardening third, then role-by-role instruction changes, central-control refactors, deterministic hardening, artifact optimization, and only later the physical repository migration.
+
+The parallel-session prompt file allows Sessions A–D to gather evidence concurrently while preserving one key constraint: parallelize analysis, but serialize implementation of shared runtime contracts.
 
 ## First implementation target
 
