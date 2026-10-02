@@ -31,6 +31,7 @@ The current active V2 refactoring reference remains `../claude-v2.2/` as identif
 15. [Repository Architecture Refactor Guide](RSTACK-REPOSITORY-ARCHITECTURE-REFACTOR-GUIDE.md)
 16. [Safe Refactor Execution Order](RSTACK-SAFE-REFACTOR-EXECUTION-ORDER.md)
 17. [Parallel Claude Session Prompts](RSTACK-PARALLEL-CLAUDE-SESSION-PROMPTS.md)
+18. [Parallel Analysis Convergence Guide](RSTACK-PARALLEL-ANALYSIS-CONVERGENCE-GUIDE.md)
 
 Then inspect the active RSTACK V2 source and execute the root evaluation-system design prompt.
 
@@ -69,6 +70,7 @@ This is a proposed workflow change, not an installed override of the current rou
 | Repository Architecture Refactor Guide | maps RSTACK into control, execution, host-adapter, evaluation, distribution, generated, test, docs, and runtime concerns; defines the target AI-factory structure and a no-behavior-change migration audit |
 | Safe Refactor Execution Order | defines the required batch sequence, preconditions, rollback gates, stop conditions, and validation checkpoints for safely applying architecture and instruction changes |
 | Parallel Claude Session Prompts | provides coordinated prompts for parallel architecture, baseline, artifact-efficiency, and instruction-inventory sessions while keeping shared runtime changes serialized |
+| Parallel Analysis Convergence Guide | defines the mandatory post-parallel reconciliation phase: evidence precedence, conflict resolution, baseline freezing, dependency ordering, Batch 2 readiness, and human approval before implementation |
 
 ## Core rule
 
@@ -91,6 +93,8 @@ The repository-architecture guide adds a complementary factory-level boundary: *
 The safe-refactor order is the execution coordinator for these guides. It requires architecture mapping first, baseline capture second, canonical/generated hardening third, then role-by-role instruction changes, central-control refactors, deterministic hardening, artifact optimization, and only later the physical repository migration.
 
 The parallel-session prompt file allows Sessions A–D to gather evidence concurrently while preserving one key constraint: parallelize analysis, but serialize implementation of shared runtime contracts.
+
+After Sessions A–D finish, the convergence guide requires one fresh integration pass to reconcile their evidence, freeze the accepted baseline, assign findings to the earliest safe batch, and propose Batch 2 scope before any implementation resumes.
 
 ## First implementation target
 
