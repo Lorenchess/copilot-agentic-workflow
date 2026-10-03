@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "record_type": "app-config",
+  "test": { "runner": "node-test", "patterns": ["tests/**/*.test.js"], "timeout_seconds": 60 },
+  "controlled_tests_dir": "tests/controlled",
+  "protected": ["rstack.app.json", "package.json"]
+}

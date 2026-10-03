@@ -1,0 +1,5 @@
+{
+  "name": "sample-export-app",
+  "private": true,
+  "type": "module"
+}

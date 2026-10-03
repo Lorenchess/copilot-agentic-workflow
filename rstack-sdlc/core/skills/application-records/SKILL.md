@@ -1,0 +1,82 @@
+# Application records
+
+Exact formats for the records a role delivers when working on the application. The engine validates each one and runs the application's tests itself; it refuses a record that does not match or that its own run contradicts.
+
+## rstack.app.json — read only
+
+In the application copy. It names the test runner and patterns, the controlled-tests directory, and protected files. No role may change it.
+
+## proof.json — tester
+
+```json
+{
+  "schema_version": 1,
+  "record_type": "proof",
+  "criteria": [
+    {
+      "criterion": "AC-1",
+      "route": "RED_GREEN",
+      "tests": ["<exact test name>"],
+      "rationale": "<why this route, in one sentence>"
+    },
+    {
+      "criterion": "AC-2",
+      "route": "ALREADY_SATISFIED",
+      "tests": ["<exact test name>"],
+      "rationale": "<what exists today and must be preserved>"
+    }
+  ]
+}
+```
+
+Rules the engine applies:
+
+- Every acceptance criterion of the specification appears exactly once; no other id appears.
+- Each test name is unique and is reported by the test run exactly as written.
+- `RED_GREEN`: against the unchanged application at least one named test fails by a failed assertion. A test that throws another error, or a file that cannot be loaded, is refused.
+- `ALREADY_SATISFIED`: against the unchanged application every named test passes.
+- Tests outside the proof must pass against the unchanged application.
+- Against the candidate, every test must pass.
+
+## review.json — reviewer
+
+```json
+{
+  "schema_version": 1,
+  "record_type": "review-result",
+  "subject": {
+    "candidate": "<inputs.candidate>",
+    "verification": "<inputs.verification>",
+    "spec": "<inputs.spec>",
+    "proof": "<inputs.proof>"
+  },
+  "verdict": "ACCEPT",
+  "coverage": [
+    { "item": "<what was examined>", "status": "CHECKED", "evidence": "<what you looked at>", "note": "" },
+    { "item": "<what was not>", "status": "NOT_CHECKED", "evidence": "", "note": "<why not>" }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "target": "<criterion, file, or behavior>",
+      "classification": "BLOCKING",
+      "evidence": "<what shows it>",
+      "consequence": "<what goes wrong>",
+      "resolution": "<the condition that resolves it>"
+    }
+  ],
+  "limitations": ["<what could not be examined>"]
+}
+```
+
+`verdict` is `ACCEPT`, `REJECT`, or `INCONCLUSIVE`. `ACCEPT` needs at least one `CHECKED` item; `REJECT` needs at least one finding; `INCONCLUSIVE` needs at least one limitation. A `CHECKED` item must have `evidence`; a `NOT_CHECKED` item must have empty `evidence` and a `note`. `classification` is `BLOCKING`, `MAJOR`, or `MINOR`. `findings` may be `[]`.
+
+## Identities you will see
+
+- A tree identity (`base`, `proof_tree`, `candidate`) names a record listing every file with its hash. It identifies exact content, including uncommitted changes. It is not a commit id.
+- An execution record (`proof_baseline`, `verification`) says what command ran, on which tree, in which environment, with which result for each test, and where the raw output is retained.
+
+## Rules for all records
+
+- No fields beyond those shown. Text fields are plain text.
+- Identities are copied exactly from the envelope; never retyped from memory.
