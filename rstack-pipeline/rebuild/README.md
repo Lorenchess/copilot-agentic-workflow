@@ -4,6 +4,8 @@
 
 The owner has chosen a fresh RSTACK implementation rather than continuing the in-place V2 refactor. Preserve the old system as recoverable legacy and carry forward its proven controls and regression cases, not all its historical formats and workarounds. A rebuild is the selected direction, not evidence that a replacement already outperforms V2.
 
+**Data boundary:** GitHub reports this repository as private on 2026-10-02. Older guides describing it as public are not current visibility evidence. A private personal repository is still not automatically an approved location for employer code, tickets, traces, or credentials. Use synthetic examples here unless the actual data transfer is explicitly approved.
+
 ## The four-file package
 
 | File | Read when | Owns |
@@ -45,7 +47,7 @@ Copy the following into a fresh Claude Code session in the **actual repository t
 >
 > Persist enough evidence to reconstruct each run without repeatedly loading all of it into each agent. Use separate run IDs, immutable reviewed subjects, measured identities, bounded attempts, and current-state validation. Unknown outcomes never become success. Reconcile potentially completed external actions before retrying.
 >
-> Include independent post-run evaluation from the beginning of the runnable slices. Claude is initially the external judge, not a self-grading execution phase. Evaluation writes only inside the collected run's evaluation area, leaves execution evidence unchanged, preserves human corrections, and supports cross-run comparisons. Keep real corporate data in approved internal storage; use synthetic examples in this public repository.
+> Include independent post-run evaluation from the beginning of the runnable slices. Claude is initially the external judge, not a self-grading execution phase. Evaluation writes only inside the collected run's evaluation area, leaves execution evidence unchanged, preserves human corrections, and supports cross-run comparisons. Keep real corporate data in approved internal storage; use synthetic examples in this reference repository unless actual data transfer has been authorized.
 >
 > For every batch, declare scope and a rollback point, implement only the assigned concern, run the required deterministic and behavioral checks, and compare to the recorded baseline. No hidden cleanup, model swap, effort change, uncontrolled parallel writer, or retrospective fixture weakening. Record real failures and missing tests. Recommend KEEP, REVERT, or INCONCLUSIVE, then stop for human approval of the next batch. Local commits must contain only authorized batch work and follow repository policy. Remote publication, live installation, production use, and merge need their applicable separate authorization.
 >
@@ -57,7 +59,7 @@ For this new build, this package replaces the old requirement to finish in-place
 
 Use prior guidance selectively: preserve candidate freshness, protected proof, bounded human-controlled audit loops, independent post-run evals, safe batching, and evidence discipline. Redesign legacy parser compatibility, repeated narrative, historical directory layouts, duplicated rules, and host-specific prompt syntax where the new contracts make them unnecessary.
 
-The current public repository identifies V2 as a refactoring reference with workplace implementation unverified at the inspected baseline. It is not a reliable map of every installed workplace tree. See [the pinned baseline entry point](https://github.com/Lorenchess/copilot-agentic-workflow/blob/181b600d1d1c1688cd4995370d1aff83c9b82461/rstack-pipeline/README.md). Do not archive a claimed production pipeline that is not actually present.
+The reference repository identifies V2 as a refactoring reference with workplace implementation unverified at the inspected baseline. It is not a reliable map of every installed workplace tree. See [the pinned baseline entry point](https://github.com/Lorenchess/copilot-agentic-workflow/blob/181b600d1d1c1688cd4995370d1aff83c9b82461/rstack-pipeline/README.md). Do not archive a claimed production pipeline that is not actually present.
 
 ## Initial milestones
 
