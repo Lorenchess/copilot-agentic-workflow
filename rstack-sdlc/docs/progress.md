@@ -1203,12 +1203,45 @@ Each entry is the SHA-256 of the file's bytes, two spaces, and the repository-re
 
 **Finding S6-P1: the package identity depends on the profile file's line endings.** `scripts/generate-package.ts` passes the profile through as read, while every other source is read with line endings normalized. A CRLF copy of `profiles/trial-v1.json`, which a checkout with `core.autocrlf=true` produces, gives manifest `4d1fae92e1018e077a3fb00884458dd9fcecfb46e47b23a675840729edc8c6b1` in place of `1f5eaef8…08fa`; two files differ, the profile copy and the manifest (probe result and both manifests in `.rstack/s6-prep/`). On the build machine the working tree has LF there and the identity is the verified one. No source was changed. The script's rebuild stage clones with line-ending conversion off and blocks on a hash mismatch. A repair is the owner's decision (D-S6).
 
-**Checked for the rebuild stage, without a clone.** The 40 files the package and the fixture are made from are byte-identical between the committed blobs and the working tree and contain no CR. `Copy-Item -Recurse` reproduces the package and the application byte for byte.
+**Checked for the rebuild stage, without a clone.** The 40 files the package and the fixture are made from are byte-identical between the committed blobs and the working tree and contain no CR. `Copy-Item -Recurse` reproduces the package and the application byte for byte. (Note added 2026-10-04 with the docs-only correction: both checks were made on the build machine only. A rebuild on another machine or checkout has not been demonstrated.)
 
 **Not done.** No Copilot chat step, no host observation, no Jira or Bitbucket contact. No run exists in `C:\rstack-sdlc-smoke\workspace`. The line-ending probe generated into the ignored `tests/.tmp/` and that output was removed afterwards; nothing else under `tests/.tmp/` or `.rstack/` was touched. Builder evidence for this preparation is in `.rstack/s6-prep/` (ignored), with `identities.txt` listing each file's SHA-256. The owner script as committed has SHA-256 `00369e5f81e4481ef5c713d093624716ddcb6b3089530aa9212f81008a1bd39a`.
 
-**Open for the owner before the live run** (s6-host-validation.md section 4): the machine and checkout for the live run; whether the baseline run on the Coordinator chat's model for every role is acceptable, since no selector is written; whether S6-P1 is repaired or handled by the clone rule.
+**Open for the owner before the live run** (s6-host-validation.md section 4): the machine and checkout for the live run; whether the baseline run on the Coordinator chat's model for every role is acceptable, since no selector is written; whether S6-P1 is repaired or handled by the clone rule. (Note added 2026-10-04: the owner decided the second and third later the same day; see "S6 owner decisions and docs-only correction" below.)
 
 **First live action.** In [s6-owner-script.md](s6-owner-script.md): stage 0 only if `C:\rstack-sdlc-smoke\` is absent on the machine used; otherwise stage 1, step 1 (`Help → About` in VS Code, text copied into `C:\rstack-sdlc-smoke\evidence\notes.md`). Stage 1, step 4 decides entitlement: if Copilot refuses, the result is `COPILOT_VALIDATION_BLOCKED_BY_ENTITLEMENT` and live S6 stops there.
 
 **Rollback of this preparation:** delete `C:\rstack-sdlc-smoke\` (disposable; nothing else refers to it) and revert the records-only commit that carries this record and the script. The checkpoint `07de93a` and the package identity are unaffected.
+
+## S6 owner decisions and docs-only correction — 2026-10-04
+
+**Status: S6 IN PROGRESS — LIVE HOST EXECUTION PENDING ACCESS. `COPILOT_VALIDATED`: NO.** Unchanged. Nothing below is host evidence. Docs only: no production, source, test, profile, or generated package file was changed, no model selector, and no package identity.
+
+**Owner decisions**, given after the offline preparation and the records push `b45a690` were accepted. Recorded in full in [decisions.md](decisions.md), D-S6, "Owner decisions after preparation".
+
+- Baseline model policy: observe the actual host model; no selector change. The baseline run uses whatever model the Coordinator chat actually has selected. A missing intended Opus, Sol, or Sonnet model is an observation, not a blocker. A real host refusal (tier, policy, entitlement, or unsupported dispatch) blocks that path. The profile is unchanged and no fallback selector is introduced.
+- Finding S6-P1 (line endings and package identity): `FUTURE_HARDENING / PORTABILITY`. No source repair before baseline S6. The identity check in the owner script's stage 0 remains the gate.
+
+Both were listed as open for the owner in the preparation record above and in [s6-host-validation.md](s6-host-validation.md) section 4. They are closed. The choice of machine and checkout for the live run stays with the owner at that time.
+
+**Correction.** The owner authorized one bounded docs-only change so that the committed S6 instructions match those decisions. BUILD-02 made it alone. BUILD-03 was told by direct session message, handed the owner script over for this one commit, and confirmed that it remains stopped, with no process running and no edit held.
+
+| File | What changed |
+|---|---|
+| `docs/s6-owner-script.md` | Stage 3: the instruction to choose the model closest to Sonnet 5, and the block when that model is not listed, are removed. The rule is now: keep the model the Coordinator chat has selected, record its exact label, and record each role's effective model where the host shows it; a missing intended model is an observation; only a real host refusal blocks. PASS and BLOCKED follow that rule, and so do the model lines of stage 4. Stages 0 and 2: the statements that hashes are identical on any machine with the same paths are replaced by what is known. Stage 0 recomputes the identities on the machine used; the run proceeds only on a match; a mismatch stops the run and is kept as portability evidence; reproducibility across machines has not been demonstrated. No existing command, path, or expected engine reply changed. SHA-256 after the correction: `852da1d5a31e8de9e23b514b147597196cf56539e0e181589f382410e071f7ba` (before: `00369e5f…d39a`) |
+| `docs/s6-host-validation.md` | Section 3.1 (steps P0, M1, N1, and the order paragraph), section 3.2 (the model row), section 3.3 (the rebuild paragraph), section 4 (the two decisions recorded as closed), two log rows. Section 5, the earlier preliminary G0 observations, is byte-identical to the committed text, and so are the earlier log rows |
+| `docs/decisions.md` | D-S6: the owner decisions after preparation; finding S6-P1 no longer marked open; one layout sentence no longer says the folder can be rebuilt identically elsewhere |
+| `docs/progress.md` | This record, and two dated notes in the preparation record above: a pointer from its open points to this record, and the limit of the rebuild check |
+
+**What was stated too strongly before.** The preparation records said that a checkout with line-ending conversion off reproduces the package inputs, and that installed hashes hold on any machine using the same paths. Both were inferences from checks made on the build machine only. No second checkout and no second machine has been used. The line-ending probe covered the profile file; the same effect on the fixture files is expected and was not probed.
+
+**Checked before the commit** (2026-10-04T20:18Z).
+
+- Changed files: exactly the four above. Against checkpoint `07de93a`, the working tree differs in those four records files and nowhere else; `adapters/`, `core/`, `scripts/`, `profiles/`, `tests/`, `package.json`, and `README.md` are identical to the checkpoint.
+- Package: manifest SHA-256 `1f5eaef83d2309b7daddaec978fe147128d06cbe5b35a4efb8e4f1513e6208fa` in `dist/copilot-vscode/` and in `C:\rstack-sdlc-smoke\package\`; the two trees are identical, 33 files each; the newest file in either was written during the preparation (18:30Z and 18:33Z). The profile is `3338b15a…67a8`, unchanged. Nothing was regenerated, and no test, generator, installer, or engine command was run.
+- Disposable folder: untouched. `C:\rstack-sdlc-smoke\workspace` holds only `.github`; no run exists.
+- Processes: no process whose command line names this repository, the package, or the disposable folder was running, other than the shell making the check.
+
+**Live resume point, unchanged.** [s6-owner-script.md](s6-owner-script.md), stage 1 (G0 host gate), every item established fresh. Both builders remain stopped until the owner has live Copilot access. No Copilot, Jira, or Bitbucket contact was made.
+
+**Rollback of this record only:** revert the docs-only commit that carries it. The checkpoint `07de93a` and the package identity are unaffected.

@@ -1,6 +1,6 @@
 # RSTACK SDLC — S6 owner script (live VS Code Copilot run)
 
-**Status: S6 STARTED — LIVE HOST EXECUTION PENDING ACCESS.** `COPILOT_VALIDATED`: NO. Nothing in this file has been observed on a host. Prepared by BUILD-03 from the committed sources at `07de93a49b4ec62ada46f0a55d2430ac208a4b53`; shared records are kept by BUILD-02 in [s6-host-validation.md](s6-host-validation.md).
+**Status: S6 STARTED — LIVE HOST EXECUTION PENDING ACCESS.** `COPILOT_VALIDATED`: NO. Nothing in this file has been observed on a host. Prepared by BUILD-03 from the committed sources at `07de93a49b4ec62ada46f0a55d2430ac208a4b53`; shared records are kept by BUILD-02 in [s6-host-validation.md](s6-host-validation.md). Wording corrected by BUILD-02 on 2026-10-04, on the owner's authorization, to match two owner decisions: the baseline model rule (stages 3 and 4) and what is actually known about reproducibility (stages 0 and 2). No existing command, path, or expected engine reply changed.
 
 You run this script yourself in VS Code. You do not need any other document while you work.
 
@@ -59,7 +59,7 @@ Each time you save one, add a line to `notes.md`: how long it took and whether i
 
 ## Stage 0 — Rebuild the disposable folder (only if `C:\rstack-sdlc-smoke\` does not exist on this machine)
 
-Skip this stage when the folder exists. Which machine and which checkout to use is your decision; this stage only makes the result identical to the prepared one.
+Skip this stage when the folder exists. Which machine and which checkout to use is your decision. This stage rebuilds the folder and recomputes the source and package identities on the machine you use. The run proceeds only if they match the expected READY_FOR_S6 identities given in the steps below. A mismatch stops the run and is kept as portability evidence. That a rebuild gives the same bytes on a second machine or a second checkout has not been demonstrated yet; this stage is where it is tested. (Where the prepared folder already exists, its identity is checked in stage 1, step 7 and stage 2, step 1.)
 
 **Changes files:** yes: creates `C:\rstack-sdlc-smoke\` and, if you clone, a repository checkout. Nothing else.
 
@@ -81,13 +81,17 @@ Skip this stage when the folder exists. Which machine and which checkout to use 
 6. `(Get-FileHash -Algorithm SHA256 "C:\rstack-sdlc-smoke\requests\REQ-001.md").Hash.ToLower()` → `e33cd9b9f7b3670b37a0e6d2373a6640c4c9ffd0c58dda0d97ac3c72ed4f36c3`; the same for `C:\rstack-sdlc-smoke\app\rstack.app.json` → `fe210841a1dc9abe9b5069b60ad3a76da67448e79ae40c8e9e60ecf88923a89e`.
 7. Install: run the `plan`, `install ... --apply` and `verify` commands of stage 2, step 2.
 
-**Expect** (OFFLINE): generation prints `"ok": true`; `plan` prints `PLAN_READY` with eight `CREATE`; `install` prints `INSTALLED`; `verify` prints `CLEAN`. Because the paths are the same, the installed files have the hashes listed in stage 2.
+**Expect** (OFFLINE): generation prints `"ok": true`; `plan` prints `PLAN_READY` with eight `CREATE`; `install` prints `INSTALLED`; `verify` prints `CLEAN`. The installed files are expected to have the hashes listed in stage 2, because the paths are the same. That is an expectation: it has not been shown on a second machine.
 
 **Save:** the three JSON replies as `C:\rstack-sdlc-smoke\evidence\rebuild-plan.json`, `rebuild-install.json`, `rebuild-verify.json`; a note of the checkout path and its `git rev-parse HEAD`.
 
-**PASS:** every hash equal and `verify` is `CLEAN`.
+**PASS:** steps 2 and 3 print `0`, every hash in steps 4 and 6 equals the expected READY_FOR_S6 value given there, and `verify` is `CLEAN`. Only then go on to stage 1.
 
-**BLOCKED:** any hash differs. The usual cause is a checkout made with line-ending conversion on (`core.autocrlf=true`), which changes the profile and fixture bytes and therefore the package identity. Do not continue with a different identity: delete `C:\rstack-sdlc-smoke\`, clone again exactly as in step 1, and repeat. If it still differs, stop and tell BUILD-02.
+**BLOCKED:** step 2 or 3 does not print `0`, or any hash differs → stop. Do not go on to stage 1 and do not open the folder in VS Code. A mismatch is portability evidence: write down which value differed, what was printed, the checkout path, its `git rev-parse HEAD`, and the output of `git -C <checkout> config --get core.autocrlf`, and keep that note. Do not edit, convert, or regenerate anything to make a value match, and do not continue with a different identity.
+
+- One cause is known (OFFLINE, finding S6-P1, classified by the owner as FUTURE_HARDENING / PORTABILITY and not repaired before the baseline run): in a checkout made with line-ending conversion on (`core.autocrlf=true`) the profile file has different bytes, and the package identity changes with it. The fixture files are expected to change the same way; that was not probed.
+- If the checkout you used was not a new clone made exactly as in step 1, you may repeat this stage once with such a clone, after removing a partly built `C:\rstack-sdlc-smoke\`. Keep the note of the first mismatch.
+- If a clone made exactly as in step 1 still gives a different value, this machine cannot reproduce the approved identity: stop before any host step and report the note to BUILD-02.
 
 ---
 
@@ -141,7 +145,7 @@ Skip this stage when the folder exists. Which machine and which checkout to use 
 **Expect**
 
 - Step 1 (after install): `"ok": true, "code": "CLEAN"`, `"package": "PRESENT"`, eight files each `"status": "OK"` (OFFLINE). Plan prints `PLAN_READY` with eight `CREATE` actions; install prints `INSTALLED` (OFFLINE).
-- The eight installed files and the install record have these SHA-256 values (OFFLINE, installed by BUILD-03 on 2026-10-04; identical on any machine that uses the same paths). You only need them if `verify` is not `CLEAN`:
+- The eight installed files and the install record have these SHA-256 values (OFFLINE, installed by BUILD-03 on 2026-10-04 on the build machine; after a stage 0 rebuild they are expected to be the same because the paths are the same, which has not been shown on a second machine). You only need them if `verify` is not `CLEAN`:
 
   | File under `workspace\.github\` | SHA-256 |
   |---|---|
@@ -169,27 +173,30 @@ Skip this stage when the folder exists. Which machine and which checkout to use 
 
 ## Stage 3 — Model and profile observation
 
-**Changes files:** no. **Do not** edit any agent file or the profile.
+**Changes files:** no. **Do not** edit any agent file or the profile, and do not add a model selector or a fallback selector anywhere.
 
 Background you need (OFFLINE): the installed agent files carry no `model:` line, because no host selector has been observed. Each role file only states the intended model in a note. Intended: Coordinator Sonnet 5; planner Opus 5.5; plan-auditor Sol 6.1; tester Sonnet 5; developer Sonnet 5; reviewer Opus 5.5.
+
+Baseline rule (owner decision, 2026-10-04): this first run uses whatever model the Coordinator chat actually has selected. You observe and record; you do not steer. The intended models above are for comparison only. An intended Opus, Sol or Sonnet model that is missing from the picker is an observation, not a blocker. Only a real refusal by the host blocks a path. The same rule holds for every Coordinator chat in this script, including the new chats in stages 4, 5.2 and 7: do not pick a model; note the exact label the chat shows. Routing roles to specific models is a separate experiment after a successful baseline run.
 
 **Do**
 
 1. With `rstack-sdlc-coordinator` selected, open the model picker. Note every model listed, the exact label of each, any cost multiplier or tier mark, and any model shown as unavailable.
-2. Note which model is currently selected, and any effort / reasoning / thinking control shown and its value.
-3. For the first run choose the model closest to the Coordinator's intended one (Sonnet 5) if it is listed. Note the exact label chosen. If it is not listed, stop this stage and decide later; do not substitute silently.
-4. Leave the role agents alone: they cannot be selected (stage 2), so their model can only be observed during dispatch in stage 4.
+2. Note which model is currently selected: its exact label as the host shows it. Note any effort / reasoning / thinking control shown and its value.
+3. Keep that model. Do not choose another one to come closer to an intended model. For each intended model (Sonnet 5, Opus 5.5, Sol 6.1) note whether it is listed, missing, or shown as unavailable.
+4. Leave the role agents alone: they cannot be selected (stage 2), so their model can only be observed during dispatch in stage 4. There, record the effective model of each role's subagent wherever the host shows it.
 
 **Expect**
 
 - A subagent without a `model:` line runs on the model of the chat that invoked it (DOC-EXPECTED). If so, every role will run on the Coordinator's model, not on its intended one. That is an observation to record, not something to correct today.
+- The picker may not list one or more of the intended models, and the selected model may be none of them. Either is recorded, and the run continues on the selected model.
 - Whether the host shows the effective model, effort level, or tier for a subagent is unknown (UNVERIFIED until you see it).
 
-**Save:** `C:\rstack-sdlc-smoke\evidence\m1-model-picker.png`, notes: one line per role with *selectable model / effective model if shown / effort if shown / tier restriction / dispatchable by the Coordinator (filled in stage 4) / explicit setting ignored, rejected or applied (write "none set")*.
+**Save:** `C:\rstack-sdlc-smoke\evidence\m1-model-picker.png`; notes: the exact label of the model selected in the Coordinator chat, then one line per role with *selectable model / effective model if shown (filled in stage 4) / effort if shown / tier restriction / dispatchable by the Coordinator (filled in stage 4) / explicit setting ignored, rejected or applied (write "none set")*.
 
-**PASS:** the table is filled with what was seen, and UNVERIFIED where nothing was shown.
+**PASS:** the selected model was kept and its exact label recorded; the table is filled with what was seen, and UNVERIFIED where nothing was shown. A missing intended model does not prevent PASS.
 
-**BLOCKED:** the Coordinator's intended model is absent, or the host refuses the Coordinator on the chosen model for tier or policy reasons → stop that path. No fallback is chosen in this session.
+**BLOCKED:** only a real refusal by the host: it will not run the Coordinator chat on the selected model for a tier, policy or entitlement reason (for example, the selected model is shown as unavailable to this account) → save the exact message or mark, and stop that path. A refusal to dispatch a role appears in stage 4 and blocks there. No fallback is chosen, no selector is added, and the profile is not changed in this session; what to do next is your decision, outside the run.
 
 ---
 
@@ -199,7 +206,7 @@ Background you need (OFFLINE): the installed agent files carry no `model:` line,
 
 **Do**
 
-1. Start a **new chat**. Select `rstack-sdlc-coordinator` and the model from stage 3.
+1. Start a **new chat**. Select `rstack-sdlc-coordinator`. Do not pick a model: note the exact label the new chat shows. It is expected to be the one recorded in stage 3; if it is another, that is an observation, and the run uses what the chat shows.
 2. Send exactly:
    `Start a run. Application directory: C:/rstack-sdlc-smoke/app  Request file: C:/rstack-sdlc-smoke/requests/REQ-001.md`
 3. When the host asks to allow a terminal command, read the command, then allow it. Allow one command at a time; do not choose "always allow".
@@ -224,7 +231,7 @@ Background you need (OFFLINE): the installed agent files carry no `model:` line,
 | Envelope passed unchanged, nothing added? | expand the subagent block; compare its prompt with the `directive.pending` JSON printed just above |
 | Fresh context? Earlier conversation visible to the role? | subagent block; if not shown, UNVERIFIED |
 | Skill discovered and read? | subagent block shows a read of `rstack-sdlc-...-records` SKILL.md; if not shown, UNVERIFIED |
-| Model / effort actually used? | subagent block or diagnostics; if not shown, UNVERIFIED |
+| Effective model and effort of this role's subagent (exact label)? Same as the Coordinator chat's model? | subagent block or diagnostics; if not shown, UNVERIFIED |
 | `result.json` submitted as written? | the `submit` command names the file inside `work\<attempt-id>\`; no edit or rewrite step appears between the role's return and `submit` |
 | Engine accepted or refused? | the `submit` reply: `"ok": true, "code": "ACCEPTED"` or the refusal code |
 
@@ -234,9 +241,9 @@ Background you need (OFFLINE): the installed agent files carry no `model:` line,
 
 **FAIL / BLOCKED**
 
-- The Coordinator cannot invoke a subagent, invokes a different agent, or does the role's work itself → FAIL; export the chat and stop.
+- The Coordinator invokes a different agent, does the role's work itself, or does not invoke a subagent although the host refused nothing → FAIL; export the chat and stop.
 - A `submit` replies `"ok": false` (for example `CONTRACT_VIOLATION`, `MALFORMED_RESULT`) → this is the engine working. The Coordinator should run `status` once, tell you the code and the attempt id, offer "abandon attempt <id> and retry", and stop. Record it. You may then save `C:\rstack-sdlc-smoke\human\reason-1.txt` and reply `Abandon attempt <id> and retry. Reason file: C:\rstack-sdlc-smoke\human\reason-1.txt` **once** per stage. A second refusal at the same stage ends the run (`ATTEMPTS_EXHAUSTED`): record it as the result for run W and go to stage 7.
-- The host refuses a role's model or tier → BLOCKED for that role; stop, no fallback.
+- The host itself refuses the dispatch, for a tier, policy or entitlement reason or because it does not support that dispatch → BLOCKED for that path; save the exact message and stop. No fallback, no selector, no profile change. A role that runs on a model other than its intended one is not a refusal: record the model and continue.
 - The Coordinator rewrites a result, retries on its own, or abandons without your words → FAIL; export the chat.
 
 ---
@@ -371,3 +378,4 @@ This run never gets past its first stage. The profile allows the planner two att
 - A completed script gives OWNER-OBSERVED evidence for one host version, one account, one model selection. It does not by itself make the package `COPILOT_VALIDATED`; that word is used only after an independent acceptance of the evidence.
 - Stays UNVERIFIED unless the host shows it: the effective model and effort of a subagent, whether a subagent's context is really fresh, and whether a role's tools are confined to its attempt directory (OFFLINE: they are not known to be).
 - Not exercised by this script: `amend`, `reject`, a product question unless the run raises one, Jira, Bitbucket, publication.
+- Not established before this run: that the package and the folder rebuild to the same bytes on another machine or checkout. A stage 0 that passes on a second machine shows it for that machine and checkout only. The known line-ending cause (finding S6-P1) is classified FUTURE_HARDENING / PORTABILITY and is not repaired before the baseline run.
