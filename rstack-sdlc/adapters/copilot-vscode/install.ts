@@ -156,6 +156,16 @@ function checkWorkspace(workspaceArg: string, packageDir: string | null): string
   return workspace;
 }
 
+// A path the package manifest may name: inside the package, with no step out of it.
+const unsafePackagePath = (path: unknown): boolean => typeof path !== 'string' || !PACKAGE_PATH.test(path) || path.split('/').some((s) => s === '..' || s === '.');
+
+// One file the package manifest lists, as it is in the package directory now.
+function packageFileStatus(packageDir: string, file: { path: string; sha256: string }): 'OK' | 'MODIFIED' | 'MISSING' {
+  const full = join(packageDir, ...file.path.split('/'));
+  if (!existsSync(full)) return 'MISSING';
+  return sha256Hex(readFileSync(full)) === file.sha256 ? 'OK' : 'MODIFIED';
+}
+
 export function loadPackage(packageArg: string): { packageDir: string; manifest: InstallablePackage; manifestSha: string } {
   const packageDir = resolve(packageArg);
   const manifestPath = join(packageDir, PACKAGE_MANIFEST);
@@ -180,14 +190,13 @@ export function loadPackage(packageArg: string): { packageDir: string; manifest:
     throw new PackageError('UNSUPPORTED_PACKAGE_VERSION', `package manifest version ${String(manifest.schema_version)} is not supported (supported: ${PACKAGE_MANIFEST_VERSION})`);
   }
   for (const file of manifest.files) {
-    if (typeof file.path !== 'string' || !PACKAGE_PATH.test(file.path) || file.path.split('/').some((s) => s === '..' || s === '.')) {
+    if (unsafePackagePath(file.path)) {
       throw new PackageError('UNSAFE_PACKAGE_PATH', 'the package manifest names a path outside the package', { path: file.path });
     }
     if (file.path.startsWith('.github/') && !OWNED_FILE.test(file.path)) {
       throw new PackageError('UNOWNED_PACKAGE_PATH', 'the package would install a path this installer does not own', { path: file.path });
     }
-    const full = join(packageDir, ...file.path.split('/'));
-    if (!existsSync(full) || sha256Hex(readFileSync(full)) !== file.sha256) {
+    if (packageFileStatus(packageDir, file) !== 'OK') {
       throw new PackageError('PACKAGE_MODIFIED', 'a package file is missing or differs from its manifest', { path: file.path });
     }
   }
@@ -480,23 +489,54 @@ export interface VerifyReport {
   code: 'CLEAN' | 'DRIFT' | 'NOT_INSTALLED';
   workspace: string;
   files: { path: string; status: 'OK' | 'MODIFIED' | 'MISSING' }[];
-  // Whether the package the installed commands point to is still there and unchanged.
-  package: 'PRESENT' | 'MISSING' | 'CHANGED' | null;
+  // The package the installed commands point to and run.
+  //   PRESENT        its manifest is the installed one, and every file the manifest lists matches it
+  //   MISSING        no manifest is where the package was
+  //   CHANGED        another manifest is there; its files are not judged against the installed identity
+  //   FILES_CHANGED  the installed manifest is there, but a file it lists is missing or differs
+  package: 'PRESENT' | 'MISSING' | 'CHANGED' | 'FILES_CHANGED' | null;
+  // The listed package files that are missing or differ. Empty unless `package` is FILES_CHANGED.
+  package_files: { path: string; status: 'MODIFIED' | 'MISSING' }[];
   host_validation: 'NOT_OBSERVED';
+}
+
+// The package behind an installation, as it is now. The manifest whose hash
+// was recorded at installation is the one that was validated then; each file
+// it lists (runtime, profile, and templates) is compared with it again here,
+// because the installed commands execute those files.
+function packageState(installed: InstallManifest['package']): Pick<VerifyReport, 'package' | 'package_files'> {
+  const manifestPath = join(installed.root, PACKAGE_MANIFEST);
+  if (!existsSync(manifestPath)) return { package: 'MISSING', package_files: [] };
+  const bytes = readFileSync(manifestPath);
+  if (sha256Hex(bytes) !== installed.manifest_sha256) return { package: 'CHANGED', package_files: [] };
+  let listed: GeneratedFile[];
+  try {
+    listed = (JSON.parse(bytes.toString('utf8')) as InstallablePackage).files;
+  } catch {
+    return { package: 'CHANGED', package_files: [] };
+  }
+  // Only reachable with a forged installation record: nothing outside the package is read.
+  if (!Array.isArray(listed) || listed.some((f) => !isRecord(f) || unsafePackagePath(f.path) || typeof f.sha256 !== 'string')) {
+    return { package: 'CHANGED', package_files: [] };
+  }
+  const drifted = listed.flatMap((file) => {
+    const status = packageFileStatus(installed.root, file);
+    return status === 'OK' ? [] : [{ path: file.path, status }];
+  });
+  return { package: drifted.length === 0 ? 'PRESENT' : 'FILES_CHANGED', package_files: drifted };
 }
 
 // Drift detection. It reads; it never repairs.
 export function verify(workspaceArg: string): VerifyReport {
   const workspace = checkWorkspace(workspaceArg, null);
   const previous = readInstallManifest(workspace);
-  if (!previous) return { ok: true, code: 'NOT_INSTALLED', workspace, files: [], package: null, host_validation: 'NOT_OBSERVED' };
+  if (!previous) return { ok: true, code: 'NOT_INSTALLED', workspace, files: [], package: null, package_files: [], host_validation: 'NOT_OBSERVED' };
   const files = previous.files.map((file) => {
     const full = assertContained(workspace, file.path);
     const status = !existsSync(full) ? ('MISSING' as const) : hashOf(full) === file.sha256 ? ('OK' as const) : ('MODIFIED' as const);
     return { path: file.path, status };
   });
-  const packageManifest = join(previous.package.root, PACKAGE_MANIFEST);
-  const pkg = !existsSync(packageManifest) ? 'MISSING' : hashOf(packageManifest) === previous.package.manifest_sha256 ? 'PRESENT' : 'CHANGED';
-  const clean = pkg === 'PRESENT' && files.every((f) => f.status === 'OK');
-  return { ok: clean, code: clean ? 'CLEAN' : 'DRIFT', workspace, files, package: pkg, host_validation: 'NOT_OBSERVED' };
+  const pkg = packageState(previous.package);
+  const clean = pkg.package === 'PRESENT' && files.every((f) => f.status === 'OK');
+  return { ok: clean, code: clean ? 'CLEAN' : 'DRIFT', workspace, files, ...pkg, host_validation: 'NOT_OBSERVED' };
 }

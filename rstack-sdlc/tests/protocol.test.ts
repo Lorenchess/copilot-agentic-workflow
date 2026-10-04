@@ -195,6 +195,13 @@ function coordinator(run: TestRun, name: string, values: Record<string, string> 
   return cli(coordinatorCommand(name, { workspace: run.workspace, 'run-id': run.runId, ...values })).reply;
 }
 
+// The abandon reason travels in a file the human saved; the command carries its path.
+function reasonFile(run: TestRun, text: string): string {
+  const path = join(run.workspace, 'abandon-reason.txt');
+  writeFileSync(path, text);
+  return path;
+}
+
 const blocker = (r: Reply): string | null => (r.directive?.kind === 'BLOCKED' ? r.directive.blocker : null);
 const dispatched = (run: TestRun): number => eventTypes(run).filter((t) => t === 'task_dispatched').length;
 
@@ -248,12 +255,12 @@ test('D4: refused result, documented abandon, replacement, bounded exhaustion, a
   assert.equal(dispatched(run), 1);
 
   // Abandon names one attempt. Any other id settles nothing.
-  const wrong = coordinator(run, 'abandon', { 'attempt-id': 'not-the-attempt', why: 'wrong id' });
+  const wrong = coordinator(run, 'abandon', { 'attempt-id': 'not-the-attempt', why: reasonFile(run, 'wrong id') });
   assert.equal(wrong.code, 'NOT_PENDING');
   assert.equal(pendingOf(coordinator(run, 'status')).attempt_id, first.attempt_id);
 
   // A bare abandon settles the attempt and starts nothing.
-  const abandoned = coordinator(run, 'abandon', { 'attempt-id': first.attempt_id, why: 'the engine refused its result; the human said to abandon it' });
+  const abandoned = coordinator(run, 'abandon', { 'attempt-id': first.attempt_id, why: reasonFile(run, 'the engine refused its result; the human said to abandon it') });
   assert.equal(abandoned.code, 'FAILURE_RECORDED');
   assert.equal(abandoned.directive?.kind, 'CONTINUE');
   assert.equal(abandoned.directive?.kind === 'CONTINUE' ? abandoned.directive.pending : 'x', null, 'no attempt is pending after a bare abandon');
@@ -276,17 +283,17 @@ test('D4: refused result, documented abandon, replacement, bounded exhaustion, a
   assert.equal(late.ok, false);
   assert.equal(late.code, 'STALE_ATTEMPT');
   assert.equal(pendingOf(coordinator(run, 'status')).attempt_id, second.attempt_id);
-  assert.equal(coordinator(run, 'abandon', { 'attempt-id': first.attempt_id, why: 'stale' }).code, 'NOT_PENDING');
+  assert.equal(coordinator(run, 'abandon', { 'attempt-id': first.attempt_id, why: reasonFile(run, 'stale') }).code, 'NOT_PENDING');
   assert.equal(pendingOf(coordinator(run, 'status')).attempt_id, second.attempt_id, 'the newer attempt is still pending');
 
   // Attempt 2 is refused and abandoned as well: the profile's bound holds.
   assert.equal(coordinator(run, 'submit', { 'result.json': refusedResultFile(run, second) }).code, 'MALFORMED_RESULT');
-  const exhausted = coordinator(run, 'abandon', { 'attempt-id': second.attempt_id, why: 'refused again' });
+  const exhausted = coordinator(run, 'abandon', { 'attempt-id': second.attempt_id, why: reasonFile(run, 'refused again') });
   assert.equal(exhausted.code, 'FAILURE_RECORDED');
   assert.equal(blocker(exhausted), 'ATTEMPTS_EXHAUSTED');
   const after = coordinator(run, 'next');
   assert.notEqual(after.dispatch, 'GRANTED');
   assert.equal(blocker(after), 'ATTEMPTS_EXHAUSTED');
   assert.equal(dispatched(run), limit, 'no attempt beyond the profile');
-  assert.equal(coordinator(run, 'abandon', { 'attempt-id': second.attempt_id, why: 'again' }).code, 'NOT_PENDING', 'abandoning again clears nothing');
+  assert.equal(coordinator(run, 'abandon', { 'attempt-id': second.attempt_id, why: reasonFile(run, 'again') }).code, 'NOT_PENDING', 'abandoning again clears nothing');
 });

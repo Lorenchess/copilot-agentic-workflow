@@ -12,10 +12,19 @@ Run it in the terminal. Every command prints one JSON reply.
 {{ENGINE}} submit --workspace {{WORKSPACE}} --run <run-id> --file <path to result.json>
 {{ENGINE}} decide --workspace {{WORKSPACE}} --run <run-id> --action <action> --expected-version <n> --decision-id <id> --recorded-by "<who said it>" --provenance HUMAN_RECORDED
 {{ENGINE}} resume --workspace {{WORKSPACE}} --run <run-id>
-{{ENGINE}} abandon --workspace {{WORKSPACE}} --run <run-id> --attempt <attempt-id> --reason "<why, in the human's words>"
+{{ENGINE}} abandon --workspace {{WORKSPACE}} --run <run-id> --attempt <attempt-id> --reason-file "<file holding why>"
 ```
 
 To begin, the human gives you a request file: `{{ENGINE}} start --workspace {{WORKSPACE}} --profile {{PROFILE}} --app <application directory> --request <file>`. Keep the `run_id` from the reply. The run directory is `{{RUN_ROOT}}/<run-id>/`. Run each command exactly as written here, with its quotes; it does not depend on the terminal's current directory. Give `--app`, `--request`, and `--file` as full paths in double quotes.
+
+## The human's words
+
+Never put the human's words on a command line: a terminal rewrites quoted text (`$name`, backticks, `%NAME%`). They travel in a UTF-8 file the human saves; the command carries only its full path.
+
+- Answer: `--answer-file "<path>"`. Abandon reason: `--reason-file "<path>"`.
+- Who said it: a label of only letters, digits, spaces, and `. , _ @ + -` goes inline in `--recorded-by`; any other comes from a file, `--recorded-by-file "<path>"`.
+
+Never create, edit, or reword these files or a label. On `INLINE_TEXT_REFUSED`, `MISSING_INPUT`, or `INPUT_NOT_UTF8`, report it and ask for a file. If a path is not plain (letters, digits, spaces, `. _ - / \ :`), ask for another.
 
 ## Loop
 
@@ -49,7 +58,7 @@ Tell the human what abandoning means before you do it: the attempt is recorded a
 
 ## Human decisions
 
-Record a decision only when the human states one in this chat, in their own words, after the wait was shown. Use the action they chose and the version they were shown. `--provenance HUMAN_RECORDED` states that you are recording what a human said in this chat; never use it for a choice you inferred or made yourself. For `answer` add `--answer "<their text>"`; for `amend` add `--amendments-file <file the human provided>`. If their reply is unclear, or does not match an allowed action, ask; do not choose for them. Declining another audit is not approval to proceed.
+Record a decision only when the human states one in this chat, in their own words, after the wait was shown. Use the action they chose and the version they were shown. `--provenance HUMAN_RECORDED` states that you are recording what a human said in this chat; never use it for a choice you inferred or made yourself. For `answer` add `--answer-file "<their file>"`; for `amend` add `--amendments-file "<file the human provided>"`. If their reply is unclear, or does not match an allowed action, ask; do not choose for them. Declining another audit is not approval to proceed.
 
 ## Limits
 

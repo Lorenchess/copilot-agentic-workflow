@@ -69,12 +69,20 @@ export interface RoleTransport {
 
 // ---------------------------------------------------------------- test execution
 
-// One test as the runner reported it. ASSERTION: the test ran and an
-// assertion in it failed. ERROR: the test ran and threw something else.
-// LOAD: a test file could not be loaded or crashed, so its tests never ran.
+// One top-level entry of the runner's report.
+// kind: TEST is a single test with nothing nested in it. CONTAINER is a suite
+// or a test holding other tests; its status says nothing about which
+// assertions ran, and what is nested in it is not reported.
+// status: SKIP means the runner did not execute it. TODO means it is marked
+// as not expected to hold yet, so its result does not count. Neither is a
+// passing executed test, whatever the report line says.
+// failure_kind, for FAIL only. ASSERTION: the test ran and an assertion in it
+// failed. ERROR: the test ran and threw something else. LOAD: a test file
+// could not be loaded or crashed, so its tests never ran.
 export interface TestOutcome {
   name: string;
-  status: 'PASS' | 'FAIL';
+  kind: 'TEST' | 'CONTAINER';
+  status: 'PASS' | 'FAIL' | 'SKIP' | 'TODO';
   failure_kind: 'ASSERTION' | 'ERROR' | 'LOAD' | null;
 }
 
@@ -82,6 +90,9 @@ export interface ExecutionRequest {
   cwd: string;
   patterns: string[];
   timeoutMs: number;
+  // Names of the variables the application declares its tests need. The child
+  // gets these and the executor's own runtime set, and no other variable.
+  env?: string[];
 }
 
 export interface ExecutionOutcome {
@@ -91,13 +102,17 @@ export interface ExecutionOutcome {
   duration_ms: number;
   output: string;
   tests: TestOutcome[];
+  // Identity of the environment the child was actually given.
+  environment: Record<string, string>;
 }
 
 // Runs an application's tests for real and reports what happened. The
 // executor reports; it does not decide whether the result is acceptable.
 export interface TestExecutor {
   readonly id: string;
-  // What the result depends on besides the files: runtime, version, platform.
-  environment(): Record<string, string>;
+  // What a result depends on besides the files: runtime, version, platform,
+  // and the variables a child would be given now for these declared names.
+  // It identifies the values without containing them.
+  environment(declared?: readonly string[]): Record<string, string>;
   run(request: ExecutionRequest): ExecutionOutcome;
 }

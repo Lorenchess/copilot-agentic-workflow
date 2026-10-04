@@ -495,7 +495,8 @@ export interface StoredEvaluation {
   accepted_sha256: string | null;
   // Entries made on the accepted content. Others are left out and named in `issues`.
   adjudications: Adjudication[];
-  // What no longer agrees with the control record. An evaluation with any issue is listed, never aggregated.
+  // What no longer agrees with the control record, including a run whose evidence is no longer the evidence the
+  // evaluation judged. An evaluation with any issue is listed, never aggregated.
   issues: string[];
 }
 
@@ -531,6 +532,9 @@ export function listEvaluations(runDir: string): StoredEvaluation[] {
     return null;
   };
   const hashOf = (file: string): string | null => (existsSync(file) ? sha256Hex(readFileSync(file)) : null);
+  // The run's evidence as it is now: taken once, and only when an accepted evaluation is compared with it.
+  let evidenceNow: string | null = null;
+  const currentEvidence = (): string => (evidenceNow ??= evidenceDigest(runDir).digest);
   // Judge-area listings recorded by the separated requests of this run.
   const before: string[][] = [];
   const stored = ids.map((id): StoredEvaluation => {
@@ -561,6 +565,11 @@ export function listEvaluations(runDir: string): StoredEvaluation[] {
     if (layout === 'SEPARATE') for (const name of namesIn(dir)) if (name !== JUDGE_FILE) issues.push(`unexpected file in the evaluation area: ${name}`);
     const unchanged = status !== 'ACCEPTED' || (currentHash !== null && currentHash === acceptedHash);
     if (!unchanged) issues.push('evaluation.json is not the content that was accepted');
+    // A judgment is about the evidence it was given. Once the run has moved on, or its files have changed, the
+    // judgment stays on file, readable, as a judgment of that earlier evidence; it is not one of the run as it is now.
+    if (status === 'ACCEPTED' && request && request.evidence.digest !== currentEvidence()) {
+      issues.push(`the run evidence is no longer what this evaluation judged (judged ${request.evidence.digest}, now ${currentEvidence()})`);
+    }
 
     const adjudications: Adjudication[] = [];
     const adjudicationFile = join(control, 'adjudication.jsonl');

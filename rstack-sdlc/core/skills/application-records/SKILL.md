@@ -6,6 +6,8 @@ Exact formats for the records a role delivers when working on the application. T
 
 In the application copy. It names the test runner and patterns, the controlled-tests directory, and protected files. No role may change it.
 
+The engine runs the tests with only the variables the runner itself needs and the names listed in `test.env`, if any. No other environment variable reaches a test. A test that needs one that is not listed cannot be made to pass by setting it; say so in your reply instead.
+
 ## proof.json — tester
 
 ```json
@@ -33,10 +35,12 @@ Rules the engine applies:
 
 - Every acceptance criterion of the specification appears exactly once; no other id appears.
 - Each test name is unique and is reported by the test run exactly as written.
+- Each named test is a top-level `test('<name>', ...)` in a test file: not inside `describe` or another suite, not a subtest of another test, and with no subtests of its own. The engine sees top-level results only. It refuses a proof that names a suite, a nested test, or a test holding other tests.
+- Each named test actually runs: not skipped (`skip`, `it.skip`, `t.skip()`) and not marked TODO. A skipped or TODO test proves nothing and is refused, on either route.
 - `RED_GREEN`: against the unchanged application at least one named test fails by a failed assertion. A test that throws another error, or a file that cannot be loaded, is refused.
 - `ALREADY_SATISFIED`: against the unchanged application every named test passes.
 - Tests outside the proof must pass against the unchanged application.
-- Against the candidate, every test must pass.
+- Against the candidate, no test may fail, and every named test must run and pass.
 
 ## review.json — reviewer
 

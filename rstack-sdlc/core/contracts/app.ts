@@ -21,13 +21,30 @@ const MAX_TEXT = 4000;
 // A relative path of plain segments: no "..", no leading dot, no backslash, no drive.
 const SAFE_PATH = /^[A-Za-z0-9_][A-Za-z0-9._-]*(\/[A-Za-z0-9_][A-Za-z0-9._-]*)*$/;
 const AC_ID = /^AC-[0-9]{1,3}$/;
+const TEST_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9._*/-]{0,200}$/;
+const TEST_PATTERN_SEGMENT = /^[A-Za-z0-9_*][A-Za-z0-9._*-]*$/;
+const ENV_NAME = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/;
+
+// A test pattern is handed to the runner as an argument and expanded under
+// the measured application copy. It must not look like an option, and no
+// part of it may name anything outside that tree: a relative glob of plain
+// segments, with no "..", ".", empty or dot-leading segment, no backslash,
+// no drive, no absolute form. It is refused, never rewritten. Returns what
+// is wrong with the pattern, or null.
+export function testPatternProblem(pattern: string): string | null {
+  if (!TEST_PATTERN.test(pattern)) return 'has an invalid format';
+  const bad = pattern.split('/').find((segment) => !TEST_PATTERN_SEGMENT.test(segment));
+  return bad === undefined ? null : `segment "${bad}" could leave the application tree`;
+}
 
 // ---------------------------------------------------------------- application configuration
 
 export interface AppConfig {
   schema_version: 1;
   record_type: 'app-config';
-  test: { runner: string; patterns: string[]; timeout_seconds: number };
+  // `env` names the variables the tests need from the caller's environment.
+  // Only those, and the executor's own runtime set, reach the test process.
+  test: { runner: string; patterns: string[]; timeout_seconds: number; env?: string[] };
   // Where controlled tests live. Only the proof stage may write there.
   controlled_tests_dir: string;
   // Files no role may change: they define how the proof is run.
@@ -42,14 +59,26 @@ export function parseAppConfig(text: string): Parsed<AppConfig> {
   if (!o) return finish(issues, () => raw as never);
   checkVersion(o.schema_version, 'app.schema_version', issues);
   if (o.record_type !== 'app-config') issues.list.push('app.record_type: expected "app-config"');
-  const t = asObject(o.test, 'app.test', ['runner', 'patterns', 'timeout_seconds'], [], issues);
+  const t = asObject(o.test, 'app.test', ['runner', 'patterns', 'timeout_seconds'], ['env'], issues);
   if (t) {
     asString(t.runner, 'app.test.runner', issues, { pattern: /^[a-z][a-z0-9-]{0,40}$/ });
     const patterns = asArray(t.patterns, 'app.test.patterns', issues, 10);
     if (patterns.length === 0) issues.list.push('app.test.patterns: at least one pattern is required');
-    // Patterns are passed to the runner as arguments; they must not look like options or leave the tree.
-    patterns.forEach((p, i) => asString(p, `app.test.patterns[${i}]`, issues, { pattern: /^[A-Za-z0-9_][A-Za-z0-9._*/-]{0,200}$/ }));
+    patterns.forEach((p, i) => {
+      const problem = testPatternProblem(asString(p, `app.test.patterns[${i}]`, issues, { allowEmpty: true }));
+      if (typeof p === 'string' && problem) issues.list.push(`app.test.patterns[${i}]: ${problem}`);
+    });
     asInt(t.timeout_seconds, 'app.test.timeout_seconds', 1, 300, issues);
+    if (t.env !== undefined) {
+      // Names only; a value is never part of the configuration. Variable names are
+      // not case-sensitive on every platform, so two spellings of one name are refused.
+      const seen: string[] = [];
+      asArray(t.env, 'app.test.env', issues, 20).forEach((n, i) => {
+        const name = asString(n, `app.test.env[${i}]`, issues, { pattern: ENV_NAME }).toUpperCase();
+        if (seen.includes(name)) issues.list.push(`app.test.env[${i}]: "${name}" is declared twice`);
+        seen.push(name);
+      });
+    }
   }
   asString(o.controlled_tests_dir, 'app.controlled_tests_dir', issues, { pattern: SAFE_PATH });
   asArray(o.protected, 'app.protected', issues, 50).forEach((p, i) => asString(p, `app.protected[${i}]`, issues, { pattern: SAFE_PATH }));

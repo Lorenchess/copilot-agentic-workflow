@@ -30,12 +30,20 @@ function setupProblems(outcome: ExecutionOutcome): string[] {
   return issues;
 }
 
+// Every test a proof names must be one executed top-level test. A suite, a
+// test holding other tests, and a skipped or TODO test all have a passing
+// line in the report without showing that the named assertions ran.
 function resolve(proof: Proof, tests: Map<string, TestOutcome[]>, issues: string[]): void {
   for (const c of proof.criteria) {
     for (const name of c.tests) {
       const found = tests.get(name) ?? [];
-      if (found.length === 0) issues.push(`${c.criterion}: test "${name}" was not reported by the run`);
+      if (found.length === 0) issues.push(`${c.criterion}: test "${name}" was not reported by the run (a test nested in a suite or in another test is not reported)`);
       if (found.length > 1) issues.push(`${c.criterion}: test name "${name}" is reported more than once`);
+      const t = found.length === 1 ? found[0] : undefined;
+      if (!t) continue;
+      if (t.kind !== 'TEST') issues.push(`${c.criterion}: "${name}" is a suite or holds nested tests; only a top-level test with nothing nested in it can prove a criterion`);
+      else if (t.status === 'SKIP') issues.push(`${c.criterion}: test "${name}" was skipped; it did not run`);
+      else if (t.status === 'TODO') issues.push(`${c.criterion}: test "${name}" is marked TODO; its result does not count`);
     }
   }
 }
@@ -76,7 +84,7 @@ export function classifyBaseline(proof: Proof, outcome: ExecutionOutcome): Class
 }
 
 // The candidate run with the controlled proof.
-//   PASS   exit 0, every reported test passes, every proof test was reported
+//   PASS   exit 0, no reported test fails, every proof test ran and passed
 //   FAIL   anything else, with the reasons
 export function classifyVerification(proof: Proof, outcome: ExecutionOutcome): Classification {
   const issues = setupProblems(outcome);

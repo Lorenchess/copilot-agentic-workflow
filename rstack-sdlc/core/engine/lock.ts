@@ -153,10 +153,13 @@ export function acquireLock(runDir: string, timeoutMs: number, now: () => Date):
     }
 
     const holder = readHolder(runDir);
-    if (typeof holder !== 'string' && holderLiveness(holder) === 'DEAD') {
-      if (reclaim(runDir, holder)) reclaimed = holder;
+    const dead = typeof holder !== 'string' && holderLiveness(holder) === 'DEAD';
+    if (dead && reclaim(runDir, holder)) {
+      reclaimed = holder;
       continue;
     }
+    // A takeover that did not succeed (another reclaimer's guard is in the way,
+    // or the lock could not be moved) waits and is bounded like any other wait.
 
     if (Date.now() >= deadline) {
       if (existsSync(join(runDir, RECLAIM_FILE))) {
@@ -171,6 +174,9 @@ export function acquireLock(runDir: string, timeoutMs: number, now: () => Date):
       }
       if (holder === 'UNREADABLE') {
         throw new EngineBlock('LOCK_UNCERTAIN', 'the run lock cannot be read; its holder is unknown', {});
+      }
+      if (dead) {
+        throw new EngineBlock('LOCK_UNCERTAIN', 'the run lock belongs to a process that is gone and could not be taken over', { holder });
       }
       if (holderLiveness(holder) === 'UNKNOWN') {
         throw new EngineBlock('LOCK_UNCERTAIN', 'the run lock is held from another host; its holder cannot be checked', {

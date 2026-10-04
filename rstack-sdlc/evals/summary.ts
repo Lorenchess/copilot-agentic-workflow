@@ -11,7 +11,10 @@
 // with its number read as a number. An accepted evaluation that no longer
 // agrees with its control record is listed and not aggregated, and no earlier
 // evaluation is used in its place; the same holds when the latest evaluation's
-// request or verdict is not a valid record. A run reached through several directories
+// request or verdict is not a valid record, and when the run's evidence is no
+// longer the evidence that evaluation judged (the run went on, or its files
+// changed): a judgment of an earlier state is never shown as a judgment of
+// the run as it is now. A run reached through several directories
 // is one run: the copy whose evaluation records contain those of every other
 // copy is read, whatever order the directories were given in, and copies
 // that disagree are shown and their evaluations are not aggregated. Runs are
@@ -457,7 +460,7 @@ export function summarize(runDirs: string[], rubricId: string, expectations: Rec
     schema_version: 3,
     record_type: 'cross-run-summary',
     rubric: rubricId,
-    selection: `per run, the latest evaluation ACCEPTED under ${rubricId}, by preparation time and then by id; evaluations under other rubrics, rejected, or unchecked are listed per run and not aggregated; an accepted evaluation that no longer agrees with its control record, an evaluation whose control records are not valid when it is the latest candidate, and the evaluations of a run whose copies disagree, are listed and not aggregated`,
+    selection: `per run, the latest evaluation ACCEPTED under ${rubricId}, by preparation time and then by id; evaluations under other rubrics, rejected, or unchecked are listed per run and not aggregated; an accepted evaluation that no longer agrees with its control record, one that judged evidence the run no longer has, an evaluation whose control records are not valid when it is the latest candidate, and the evaluations of a run whose copies disagree, are listed and not aggregated`,
     runs: rows.map((r) => r.row),
     duplicates_ignored: duplicates,
     duplicate_runs: duplicateRuns,

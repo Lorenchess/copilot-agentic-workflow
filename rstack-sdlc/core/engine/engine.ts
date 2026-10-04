@@ -282,6 +282,16 @@ export function createEngine(options: EngineOptions): Engine {
     return subjects;
   }
 
+  // The file a wait tells the human to read, relative to the run directory,
+  // and the subject whose identity a decision at that wait binds. A product
+  // question is read from the retained record itself; a plan decision is read
+  // from a copy of the brief that a browser can open.
+  function displayedAt(state: RunState, wait: StageDef['wait']): { read: string; subject: string } {
+    return wait === 'PRODUCT_QUESTION'
+      ? { read: `artifacts/${(state.subjects.intent ?? '').slice(7)}`, subject: 'intent' }
+      : { read: `brief/round-${state.round}.html`, subject: 'brief' };
+  }
+
   function directiveOf(state: RunState): Directive {
     const stage = currentStage(state, workflow);
     switch (state.phase) {
@@ -307,7 +317,7 @@ export function createEngine(options: EngineOptions): Engine {
           subjects: stage ? subjectsOf(state, stage) : {},
           allowed_actions: allowedActions(workflow, wait, state.round, state.audit_budget.used),
           expected_version: state.version,
-          read: wait === 'PLAN_DECISION' ? `brief/round-${state.round}.html` : `artifacts/${(state.subjects.intent ?? '').slice(7)}`,
+          read: displayedAt(state, wait).read,
         };
       }
       case 'ACTIVE':
@@ -558,16 +568,61 @@ export function createEngine(options: EngineOptions): Engine {
     return JSON.parse(readArtifact(runDir, name, ref)) as TreeManifest;
   }
 
+  // Retained bytes of one file of a tree, by identity. Bytes that are missing or
+  // no longer match it are refused.
+  function readTreeFile(runDir: string, name: string, sha256: string, path: string): Buffer {
+    const file = join(runDir, 'artifacts', sha256);
+    if (!existsSync(file)) throw new EngineBlock('MISSING_INPUT', `retained file "${path}" of ${name} is missing`, { input: name });
+    const bytes = readFileSync(file);
+    if (sha256Hex(bytes) !== sha256) throw new EngineBlock('MISSING_INPUT', `retained file "${path}" of ${name} does not match its identity`, { input: name });
+    return bytes;
+  }
+
   // Re-creates a retained tree in a fresh directory, from retained bytes only.
   function materializeTree(runDir: string, name: string, ref: string | undefined, dest: string): void {
     rmSync(dest, { recursive: true, force: true });
-    materialize(readTree(runDir, name, ref), dest, (sha256, path) => {
-      const file = join(runDir, 'artifacts', sha256);
-      if (!existsSync(file)) throw new EngineBlock('MISSING_INPUT', `retained file "${path}" of ${name} is missing`, { input: name });
-      const bytes = readFileSync(file);
-      if (sha256Hex(bytes) !== sha256) throw new EngineBlock('MISSING_INPUT', `retained file "${path}" of ${name} does not match its identity`, { input: name });
-      return bytes;
-    });
+    materialize(readTree(runDir, name, ref), dest, (sha256, path) => readTreeFile(runDir, name, sha256, path));
+  }
+
+  // Re-establishes a retained tree without writing it anywhere: its record and
+  // every file the record names.
+  function verifyTree(runDir: string, name: string, ref: string | undefined): void {
+    for (const file of readTree(runDir, name, ref).files) readTreeFile(runDir, name, file.sha256, file.path);
+  }
+
+  // A proposal is assembled only from evidence that is still what was retained.
+  // Everything the proposal names, and everything those records name in turn,
+  // is read again by identity first: the frozen source, configuration, profile,
+  // and workflow; every current subject; every accepted result and recorded
+  // decision; the base, proof, and candidate trees down to each file; and what
+  // both real runs printed. Bytes that are missing or no longer match stop the
+  // proposal before anything is written. Work and execution directories, and
+  // records of superseded attempts, are not what the proposal relies on and are
+  // not read here; the packet verifier reports on the whole packet.
+  function assertProposalEvidence(runDir: string, state: RunState, proposal: PrProposal): void {
+    const records: [string, string | undefined][] = [
+      ['source', state.source_ref],
+      ['app_config', state.app_config_ref],
+      ['profile', state.profile_ref],
+      ['workflow', state.workflow_ref],
+      ...Object.entries(state.subjects),
+      ...Object.entries(proposal.planning_basis),
+      ...Object.entries(proposal.evidence).map(([stageId, ref]): [string, string] => [`result of ${stageId}`, ref]),
+      ...Object.entries(state.decisions).map(([id, d]): [string, string] => [`decision ${id}`, d.decision_ref]),
+    ];
+    const read = new Set<string>();
+    for (const [name, ref] of records) {
+      if (ref !== undefined && read.has(ref)) continue;
+      readArtifact(runDir, name, ref);
+      read.add(ref as string);
+    }
+    for (const [name, ref] of [['base', proposal.base_ref], ['proof_tree', proposal.proof_tree], ['candidate', proposal.candidate_ref]] as const) {
+      verifyTree(runDir, name, ref);
+    }
+    for (const [name, ref] of [['proof_baseline', proposal.proof_baseline], ['verification', proposal.verification]] as const) {
+      const record = JSON.parse(readArtifact(runDir, name, ref)) as ExecutionRecord;
+      readArtifact(runDir, `${name} output`, record.output);
+    }
   }
 
   function appConfigOf(runDir: string, state: RunState): AppConfig {
@@ -591,7 +646,7 @@ export function createEngine(options: EngineOptions): Engine {
     const workingDirectory = `exec/${label}`;
     const dir = join(runDir, 'exec', label);
     materializeTree(runDir, treeName, treeRef, dir);
-    const outcome = executor.run({ cwd: dir, patterns: config.test.patterns, timeoutMs: config.test.timeout_seconds * 1000 });
+    const outcome = executor.run({ cwd: dir, patterns: config.test.patterns, timeoutMs: config.test.timeout_seconds * 1000, env: config.test.env ?? [] });
     const real = realpathSync(dir);
     let output = outcome.output;
     for (const form of new Set([real, real.replaceAll('\\', '\\\\'), real.replaceAll('\\', '/'), encodeURI(real.replaceAll('\\', '/'))])) {
@@ -610,7 +665,8 @@ export function createEngine(options: EngineOptions): Engine {
       proof: proofRef,
       specification: state.subjects.spec ?? '',
       final_plan: state.subjects.final_plan ?? '',
-      environment: executor.environment(),
+      // The identity of the environment the tests were actually given.
+      environment: outcome.environment,
       exit_code: outcome.exit_code,
       timed_out: outcome.timed_out,
       duration_ms: outcome.duration_ms,
@@ -778,6 +834,14 @@ export function createEngine(options: EngineOptions): Engine {
       if (stage.id === 'verify') {
         // The candidate is run from its retained bytes, never from a directory a role can still write to.
         const candidate = state.subjects.candidate as string;
+        // The proof was established in one environment. A candidate is not verified
+        // in another: the run is refused, unchanged, until the environment is that one again.
+        const appConfig = appConfigOf(ctx.runDir, state);
+        const environment = executorFor(appConfig).environment(appConfig.test.env ?? []);
+        const baseline = JSON.parse(readArtifact(ctx.runDir, 'proof_baseline', state.subjects.proof_baseline)) as ExecutionRecord;
+        if (canonicalJson(environment) !== canonicalJson(baseline.environment)) {
+          return reply(ctx, false, 'PROOF_ENVIRONMENT_CHANGED', { proof_baseline: state.subjects.proof_baseline, was: baseline.environment, now: environment });
+        }
         const run = runExecution(ctx, 'CANDIDATE_VERIFICATION', 'candidate', candidate, state.subjects.proof as string, `verify-${state.version}`);
         const outcome = run.record.classification.outcome;
         commit(ctx, 'verification_recorded', { verification_ref: run.ref, outcome, candidate });
@@ -787,14 +851,16 @@ export function createEngine(options: EngineOptions): Engine {
         // A verification stands only for the conditions it ran under. If they have
         // changed, it and the review that relied on it are established again.
         const verification = JSON.parse(readArtifact(ctx.runDir, 'verification', state.subjects.verification)) as ExecutionRecord;
-        const environment = executorFor(appConfigOf(ctx.runDir, state)).environment();
+        const appConfig = appConfigOf(ctx.runDir, state);
+        const environment = executorFor(appConfig).environment(appConfig.test.env ?? []);
         if (canonicalJson(environment) !== canonicalJson(verification.environment) || verification.tree !== state.subjects.candidate) {
           commit(ctx, 'verification_invalidated', { reason: 'EXECUTION_ENVIRONMENT_CHANGED', was: verification.environment, now: environment });
           return reply(ctx, true, 'EVIDENCE_STALE', { reason: 'EXECUTION_ENVIRONMENT_CHANGED' });
         }
-        for (const key of ['candidate', 'review', 'proof', 'proof_baseline', 'final_plan']) readArtifact(ctx.runDir, key, state.subjects[key]);
+        const proposal = buildProposal(state);
+        assertProposalEvidence(ctx.runDir, state, proposal);
         if (!options.resolveSink) throw new EngineBlock('SINK_UNAVAILABLE', 'no proposal sink was wired', {});
-        const result: ReturnType<ProposalSink['prepare']> = options.resolveSink(state.sink).prepare(buildProposal(state), ctx.runDir);
+        const result: ReturnType<ProposalSink['prepare']> = options.resolveSink(state.sink).prepare(proposal, ctx.runDir);
         if (result.status === 'INTEGRATION_NOT_CONFIGURED') {
           const nc: NotConfigured = result;
           return reply(ctx, false, nc.status, { integration: nc.integration, reason: nc.reason });
@@ -948,6 +1014,20 @@ export function createEngine(options: EngineOptions): Engine {
       if (canonicalJson(decision.subjects) !== canonicalJson(shown)) return reject('STALE_DECISION_SUBJECT');
       // What was shown must still be what is retained.
       for (const [key, ref] of Object.entries(shown)) readArtifact(ctx.runDir, key, ref);
+      // The human read a file, not an identity. A decision counts only while that
+      // file holds the bytes the decision names. One that was changed or removed
+      // is left as found: the engine neither decides on it nor puts the retained
+      // bytes back unasked, because what the human saw is then not known.
+      const displayed = displayedAt(state, stage.wait);
+      let found: string | null = null;
+      try {
+        found = refOf(readFileSync(join(ctx.runDir, ...displayed.read.split('/'))));
+      } catch {
+        found = null;
+      }
+      if (found !== shown[displayed.subject]) {
+        return reject('DISPLAYED_SUBJECT_CHANGED', { read: displayed.read, subject: displayed.subject, expected: shown[displayed.subject] ?? null, found });
+      }
       // A decision that does not say how it was recorded is UNKNOWN, never assumed
       // human. Outside a simulated run only HUMAN_RECORDED is accepted, and even
       // that is the recorder's claim, not authentication.

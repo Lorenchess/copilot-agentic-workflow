@@ -79,19 +79,23 @@ test('the test runner report is normalized: assertion failure, other error, and 
     'ok 1 - a',
     '  ---',
     '  duration_ms: 1',
+    "  type: 'test'",
     '  ...',
     'not ok 2 - b',
     '  ---',
+    "  type: 'test'",
     "  failureType: 'testCodeFailure'",
     "  code: 'ERR_ASSERTION'",
     '  ...',
     'not ok 3 - c',
     '  ---',
+    "  type: 'test'",
     "  error: 'boom'",
     "  code: 'ERR_TEST_FAILURE'",
     '  ...',
     'not ok 4 - tests\\\\controlled\\\\x.test.js',
     '  ---',
+    "  type: 'test'",
     '  exitCode: 1',
     "  code: 'ERR_TEST_FAILURE'",
     '  ...',
@@ -99,10 +103,10 @@ test('the test runner report is normalized: assertion failure, other error, and 
     '1..4',
   ].join('\n');
   assert.deepEqual(parseTap(tap), [
-    { name: 'a', status: 'PASS', failure_kind: null },
-    { name: 'b', status: 'FAIL', failure_kind: 'ASSERTION' },
-    { name: 'c', status: 'FAIL', failure_kind: 'ERROR' },
-    { name: 'tests\\\\controlled\\\\x.test.js', status: 'FAIL', failure_kind: 'LOAD' },
+    { name: 'a', kind: 'TEST', status: 'PASS', failure_kind: null },
+    { name: 'b', kind: 'TEST', status: 'FAIL', failure_kind: 'ASSERTION' },
+    { name: 'c', kind: 'TEST', status: 'FAIL', failure_kind: 'ERROR' },
+    { name: 'tests\\\\controlled\\\\x.test.js', kind: 'TEST', status: 'FAIL', failure_kind: 'LOAD' },
   ]);
   assert.deepEqual(parseTap(''), []);
 });
@@ -425,8 +429,13 @@ test('a review counts only for the exact candidate and verification it names, an
 
 test('REVIEW-1: when what the verification relied on changes, the verification and the review are established again', async () => {
   const real = createNodeTestExecutor();
-  let version = real.environment().version as string;
-  const executor: TestExecutor = { id: real.id, run: (r) => real.run(r), environment: () => ({ ...real.environment(), version }) };
+  const original = real.environment().version as string;
+  let version = original;
+  const executor: TestExecutor = {
+    id: real.id,
+    run: (r) => ({ ...real.run(r), environment: { ...real.environment(r.env), version } }),
+    environment: (declared) => ({ ...real.environment(declared), version }),
+  };
   const run = await atReview('invalidate', { resolveExecutor: () => executor });
   const { engine } = run.assembly;
   completeStep(run);
@@ -443,10 +452,22 @@ test('REVIEW-1: when what the verification relied on changes, the verification a
   assert.equal(subjects(run).review, undefined);
   assert.equal(subjects(run).candidate, before.candidate, 'the candidate itself is unchanged');
 
+  // The proof was established in the original environment. The candidate is
+  // not verified in another one: refused, with nothing recorded.
+  const events = eventTypes(run).length;
+  const refused = engine.next(run.runId);
+  assert.equal(refused.ok, false);
+  assert.equal(refused.code, 'PROOF_ENVIRONMENT_CHANGED');
+  assert.equal(engine.status(run.runId).stage, 'verify');
+  assert.equal(subjects(run).verification, undefined);
+  assert.equal(eventTypes(run).length, events);
+
+  // With the proof's environment back, verification and review are established again.
+  version = original;
   assert.equal(engine.next(run.runId).code, 'VERIFICATION_PASSED');
   const again = subjects(run);
   assert.notEqual(again.verification, before.verification);
-  assert.equal(execution(run, again.verification!).environment.version, 'v99.0.0-test');
+  assert.equal(execution(run, again.verification!).environment.version, original);
   const review = pendingOf(engine.next(run.runId));
   assert.equal(review.attempt_id, 'review-2');
   assert.equal(review.inputs.verification, again.verification, 'the new review is of the new verification');
