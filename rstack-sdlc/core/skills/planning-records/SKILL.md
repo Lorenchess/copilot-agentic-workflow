@@ -25,7 +25,9 @@ AC-2: <...>
 Exclusion: <what is deliberately not required>
 ```
 
-At least one `AC-n:` line; ids are unique. Include failure cases and interfaces as criteria. No implementation steps.
+At least one `AC-n:` line; ids are unique. Exactly one `Intent:` line. `Exclusion:` lines are optional. Include failure cases and interfaces as criteria. No implementation steps.
+
+Nothing else is accepted. Each label starts its line. An item may continue on the lines directly after it, as plain sentences; a blank line ends it. The engine refuses any other label (`Note:`, `Assumption:`), a heading, a list marker (`- AC-2:`), a table, a code fence, and text that follows no item. The human is shown every accepted line, so put everything the specification means into these items.
 
 ## plan.json — how
 
@@ -91,6 +93,32 @@ Every criterion of the specification must be carried by at least one unit, and n
 ```
 
 Exactly one entry per finding of that audit. `disposition` is `ACCEPTED`, `PARTIALLY_ACCEPTED`, or `REJECTED`.
+
+## result.json — every role
+
+Write it last, directly in `work_dir`. Copy each `<envelope.…>` value exactly from your task envelope.
+
+```json
+{
+  "schema_version": 1,
+  "record_type": "role-result",
+  "run_id": "<envelope.run_id>",
+  "attempt_id": "<envelope.attempt_id>",
+  "role": "<envelope.role>",
+  "expected_version": <envelope.state_version>,
+  "input_digest": "<envelope.input_digest>",
+  "outcome": "COMPLETED",
+  "summary": "<one or two factual sentences>",
+  "outputs": {},
+  "files": <envelope.produces>
+}
+```
+
+- All eleven fields are required, and no others. `schema_version` is the number `1`; `record_type` is exactly `"role-result"`.
+- `expected_version` is the envelope's `state_version`, as a number and not as text.
+- `files` is the envelope's `produces` object: each record key with the name of the file you wrote in `work_dir`. It is `{}` when `produces` is empty.
+- `outputs` is `{}`. `summary` is plain text and not empty.
+- `outcome` is always `COMPLETED`. These roles do not use `NEGATIVE`. If you cannot produce a valid result, stop and say why in your reply; do not write a `result.json` that claims otherwise, and do not fill a record with guesses.
 
 ## Rules for all records
 

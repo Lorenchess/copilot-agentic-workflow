@@ -71,6 +71,32 @@ Rules the engine applies:
 
 `verdict` is `ACCEPT`, `REJECT`, or `INCONCLUSIVE`. `ACCEPT` needs at least one `CHECKED` item; `REJECT` needs at least one finding; `INCONCLUSIVE` needs at least one limitation. A `CHECKED` item must have `evidence`; a `NOT_CHECKED` item must have empty `evidence` and a `note`. `classification` is `BLOCKING`, `MAJOR`, or `MINOR`. `findings` may be `[]`.
 
+## result.json — every role
+
+Write it last, directly in `work_dir`. Copy each `<envelope.…>` value exactly from your task envelope.
+
+```json
+{
+  "schema_version": 1,
+  "record_type": "role-result",
+  "run_id": "<envelope.run_id>",
+  "attempt_id": "<envelope.attempt_id>",
+  "role": "<envelope.role>",
+  "expected_version": <envelope.state_version>,
+  "input_digest": "<envelope.input_digest>",
+  "outcome": "COMPLETED",
+  "summary": "<one or two factual sentences>",
+  "outputs": {},
+  "files": <envelope.produces>
+}
+```
+
+- All eleven fields are required, and no others. `schema_version` is the number `1`; `record_type` is exactly `"role-result"`.
+- `expected_version` is the envelope's `state_version`, as a number and not as text.
+- `files` is the envelope's `produces` object: each record key with the name of the file you wrote in `work_dir`. It is `{}` when `produces` is empty.
+- `outputs` is `{}`. `summary` is plain text and not empty.
+- `outcome` is always `COMPLETED`. These roles do not use `NEGATIVE`. If you cannot produce a valid result, stop and say why in your reply; do not write a `result.json` that claims otherwise, and do not fill a record with guesses.
+
 ## Identities you will see
 
 - A tree identity (`base`, `proof_tree`, `candidate`) names a record listing every file with its hash. It identifies exact content, including uncommitted changes. It is not a commit id.

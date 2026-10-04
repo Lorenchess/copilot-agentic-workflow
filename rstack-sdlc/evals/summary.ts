@@ -7,6 +7,16 @@
 // under it are aggregated. The latest accepted evaluation per run is used,
 // and that choice is stated in the output.
 //
+// Selection is deterministic. "Latest" is by preparation time, then by id
+// with its number read as a number. An accepted evaluation that no longer
+// agrees with its control record is listed and not aggregated, and no earlier
+// evaluation is used in its place; the same holds when the latest evaluation's
+// request or verdict is not a valid record. A run reached through several directories
+// is one run: the copy whose evaluation records contain those of every other
+// copy is read, whatever order the directories were given in, and copies
+// that disagree are shown and their evaluations are not aggregated. Runs are
+// listed by run id.
+//
 // Judge answers: only YES and NO are applicable answers and form the
 // denominator. NOT_APPLICABLE and unavailable answers (UNKNOWN, or no answer)
 // are shown separately and outside it, and no rate is computed anywhere. A
@@ -55,17 +65,38 @@ export interface RunRow {
   host_validation: string;
   workflow_version: number | null;
   evaluation: { id: string; status: string } | null;
-  other_evaluations: { id: string; rubric: string | null; status: string }[];
+  // `issues` is present only when the evaluation disagrees with its control record.
+  other_evaluations: { id: string; rubric: string | null; status: string; issues?: string[] }[];
+  // Why this run has evaluations on file and none aggregated; null otherwise.
+  not_aggregated: string | null;
   packet_bytes: number;
 }
 
+// One run that was reached through more than one directory.
+export interface DuplicateRun {
+  run_id: string;
+  copies: number;
+  // IDENTICAL: every copy holds the same records. MOST_COMPLETE_COPY: one copy holds everything the others
+  // hold, and more; it is the one read. EVALUATIONS_DIFFER and RUN_RECORDS_DIFFER: the copies disagree; the run
+  // is counted once and its evaluations are not aggregated.
+  resolution: 'IDENTICAL' | 'MOST_COMPLETE_COPY' | 'EVALUATIONS_DIFFER' | 'RUN_RECORDS_DIFFER';
+  // Each distinct content among the copies, without its location.
+  variants: {
+    copies: number;
+    journal_events: number;
+    outcome: string;
+    evaluations: { id: string; rubric: string | null; status: string; evaluation_sha256: string | null; request_sha256: string | null; acceptance_sha256: string | null; adjudications: number; issues: string[] }[];
+  }[];
+}
+
 export interface Summary {
-  schema_version: 2;
+  schema_version: 3;
   record_type: 'cross-run-summary';
   rubric: string;
   selection: string;
   runs: RunRow[];
   duplicates_ignored: number;
+  duplicate_runs: DuplicateRun[];
   not_interpreted: { run_id: string; reason: string }[];
   metrics: Record<string, Metric>;
   judge_answers: Record<string, JudgeAnswers>;
@@ -140,25 +171,95 @@ function tally(values: string[]): Record<string, number> {
   return out;
 }
 
+interface Copy {
+  report: DeterministicReport;
+  evaluations: StoredEvaluation[];
+}
+
+const order = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
+// True when `a` holds everything `b` holds: each evaluation of `b` as it is in
+// `b`, its request and verdict files byte for byte (`control_sha256`), and
+// each adjudication file of `b` as the beginning of the one in `a`.
+function holdsAll(a: StoredEvaluation[], b: StoredEvaluation[]): boolean {
+  const core = (e: StoredEvaluation): string => JSON.stringify({ ...e, adjudications: [] });
+  return b.every((eb) => {
+    const ea = a.find((e) => e.evaluation_id === eb.evaluation_id);
+    return ea !== undefined && core(ea) === core(eb) && eb.adjudications.every((x, i) => JSON.stringify(x) === JSON.stringify(ea.adjudications[i]));
+  });
+}
+
+// Reads the copies of one run as one run. Nothing here depends on the order
+// of the copies. `evaluations` is null when the copies disagree.
+function resolveCopies(copies: Copy[]): { report: DeterministicReport; evaluations: StoredEvaluation[] | null; resolution: DuplicateRun['resolution']; variants: DuplicateRun['variants'] } {
+  const content = (c: Copy): string => JSON.stringify([c.report, c.evaluations]);
+  const distinct = [...new Set(copies.map(content))].sort();
+  const variants = distinct.map((text) => {
+    const c = copies.find((x) => content(x) === text) as Copy;
+    return {
+      copies: copies.filter((x) => content(x) === text).length,
+      journal_events: c.report.packet.events,
+      outcome: c.report.outcome.status,
+      evaluations: c.evaluations.map((e) => ({
+        id: e.evaluation_id,
+        rubric: e.rubric,
+        status: e.status,
+        evaluation_sha256: e.evaluation_sha256,
+        request_sha256: e.control_sha256.request,
+        acceptance_sha256: e.control_sha256.acceptance,
+        adjudications: e.adjudications.length,
+        issues: e.issues,
+      })),
+    };
+  });
+  // The run's own records first. If they differ, the copy with the longest journal is counted, once.
+  const byRecords = [...copies].sort((a, b) => b.report.packet.events - a.report.packet.events || order(content(a), content(b)));
+  const first = byRecords[0] as Copy;
+  if (copies.some((c) => JSON.stringify(c.report) !== JSON.stringify(first.report))) {
+    return { report: first.report, evaluations: null, resolution: 'RUN_RECORDS_DIFFER', variants };
+  }
+  if (distinct.length === 1) return { report: first.report, evaluations: first.evaluations, resolution: 'IDENTICAL', variants };
+  const complete = copies.find((c) => copies.every((o) => holdsAll(c.evaluations, o.evaluations)));
+  if (!complete) return { report: first.report, evaluations: null, resolution: 'EVALUATIONS_DIFFER', variants };
+  return { report: first.report, evaluations: complete.evaluations, resolution: 'MOST_COMPLETE_COPY', variants };
+}
+
 export function summarize(runDirs: string[], rubricId: string, expectations: Record<string, CaseExpectation> = {}): Summary {
   const rubric = RUBRICS[rubricId];
   if (!rubric) throw new Error(`unsupported rubric "${rubricId}"`);
 
   // The same run reached through two paths (a copy, a repeated import) is one run.
-  const seen = new Set<string>();
-  let duplicates = 0;
-  const rows: { row: RunRow; report: DeterministicReport; selected: StoredEvaluation | null }[] = [];
-  for (const dir of runDirs) {
+  const groups = new Map<string, Copy[]>();
+  runDirs.forEach((dir, index) => {
     const report = evaluateDeterministic(dir);
-    const key = `${report.run_id}:${report.run_fingerprint}`;
-    if (report.run_id && seen.has(key)) {
-      duplicates += 1;
-      continue;
+    const key = report.run_id ? `${report.run_id}:${report.run_fingerprint}` : `unreadable:${index}`;
+    groups.set(key, [...(groups.get(key) ?? []), { report, evaluations: listEvaluations(dir) }]);
+  });
+  let duplicates = 0;
+  const duplicateRuns: DuplicateRun[] = [];
+  const rows: { row: RunRow; report: DeterministicReport; selected: StoredEvaluation | null }[] = [];
+  for (const copies of groups.values()) {
+    const resolved = resolveCopies(copies);
+    const { report } = resolved;
+    if (copies.length > 1) {
+      duplicates += copies.length - 1;
+      duplicateRuns.push({ run_id: report.run_id ?? '(unreadable)', copies: copies.length, resolution: resolved.resolution, variants: resolved.variants });
     }
-    seen.add(key);
-    const evaluations = listEvaluations(dir);
+    const evaluations = resolved.evaluations ?? [];
     const accepted = evaluations.filter((e) => e.status === 'ACCEPTED' && e.rubric === rubricId);
-    const selected = accepted.at(-1) ?? null;
+    // An evaluation whose control records are not valid may be the newest one accepted under this rubric, so it
+    // stands in the same line; one without a valid request has no preparation time and stands last.
+    const candidates = evaluations.filter((e) => accepted.includes(e) || (e.status === 'INVALID' && (e.rubric === null || e.rubric === rubricId)));
+    // The latest of these is the only candidate. If it has an issue it is shown with it, and no earlier
+    // evaluation is aggregated in its place.
+    const latest = candidates.at(-1) ?? null;
+    const selected = latest && latest.issues.length === 0 ? latest : null;
+    const notAggregated =
+      resolved.evaluations === null
+        ? `copies of this run disagree (${resolved.resolution}); see duplicate_runs`
+        : latest && !selected
+          ? `${latest.evaluation_id}: ${latest.issues.join('; ')}`
+          : null;
     const authorization = report.evidence.authorization;
     rows.push({
       report,
@@ -176,11 +277,17 @@ export function summarize(runDirs: string[], rubricId: string, expectations: Rec
         host_validation: report.evidence.host_validation,
         workflow_version: report.identities.workflow_version,
         evaluation: selected ? { id: selected.evaluation_id, status: selected.status } : null,
-        other_evaluations: evaluations.filter((e) => e !== selected).map((e) => ({ id: e.evaluation_id, rubric: e.rubric, status: e.status })),
+        other_evaluations: evaluations
+          .filter((e) => e !== selected)
+          .map((e) => ({ id: e.evaluation_id, rubric: e.rubric, status: e.status, ...(e.issues.length > 0 ? { issues: e.issues } : {}) })),
+        not_aggregated: notAggregated,
         packet_bytes: report.storage.packet_bytes,
       },
     });
   }
+  // Listed by run id, so the summary is the same whatever order the directories were given in.
+  rows.sort((a, b) => order(a.row.run_id, b.row.run_id) || order(JSON.stringify(a.row), JSON.stringify(b.row)));
+  duplicateRuns.sort((a, b) => order(a.run_id, b.run_id) || order(JSON.stringify(a), JSON.stringify(b)));
 
   // Runs recorded in a format this evaluator does not interpret are listed, and
   // kept out of every metric: they are neither passes nor failures.
@@ -347,12 +454,13 @@ export function summarize(runDirs: string[], rubricId: string, expectations: Rec
   }
 
   return {
-    schema_version: 2,
+    schema_version: 3,
     record_type: 'cross-run-summary',
     rubric: rubricId,
-    selection: `per run, the latest evaluation ACCEPTED under ${rubricId}; evaluations under other rubrics, rejected, or unchecked are listed per run and not aggregated`,
+    selection: `per run, the latest evaluation ACCEPTED under ${rubricId}, by preparation time and then by id; evaluations under other rubrics, rejected, or unchecked are listed per run and not aggregated; an accepted evaluation that no longer agrees with its control record, an evaluation whose control records are not valid when it is the latest candidate, and the evaluations of a run whose copies disagree, are listed and not aggregated`,
     runs: rows.map((r) => r.row),
     duplicates_ignored: duplicates,
+    duplicate_runs: duplicateRuns,
     not_interpreted: rows.filter((r) => !r.report.interpreted).map((r) => ({ run_id: r.row.run_id, reason: r.report.not_interpreted_reason ?? '' })),
     metrics,
     judge_answers: judgeAnswers,

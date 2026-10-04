@@ -69,36 +69,70 @@ export interface Spec {
   title: string;
   intent: string;
   criteria: { id: string; text: string }[];
+  // What the specification deliberately does not require, in document order.
+  exclusions: string[];
 }
 
-// "# Specification: <title>", an "Intent:" line, and criteria "AC-n: text".
+// A line that reads as a label ("Note:", an indented "AC-2:") or as Markdown
+// structure (list marker, heading, quote, table, code fence). Neither can be
+// a continuation: its meaning would be ambiguous.
+const SPEC_LABEL = /^\s*[A-Z][A-Za-z0-9 _-]{0,30}:/;
+const SPEC_MARKUP = /^\s*([-*+#>|`~]|[0-9]+[.)])/;
+
+// "# Specification: <title>", then a closed set of items: exactly one
+// "Intent:", criteria "AC-n: text", and "Exclusion: text". An item may
+// continue on the lines directly after it; a blank line ends it. Every other
+// non-empty line is refused, never dropped: the decision approves the whole
+// file by hash, so the brief must be able to show all of it from this parse.
 export function parseSpec(text: string): Parsed<Spec> {
   const issues = newIssues();
   const lines = text.replaceAll('\r\n', '\n').split('\n');
   const title = /^# Specification: (.+)$/.exec(lines[0] ?? '')?.[1]?.trim() ?? '';
   if (!title) issues.list.push('spec: first line must be "# Specification: <title>"');
-  let intent = '';
+  const intents: { text: string }[] = [];
   const criteria: Spec['criteria'] = [];
-  let last: { id: string; text: string } | null = null;
-  for (const line of lines.slice(1)) {
-    const ac = /^(AC-[0-9]{1,3}): (.+)$/.exec(line);
-    if (ac) {
-      last = { id: ac[1] as string, text: (ac[2] as string).trim() };
-      if (criteria.some((c) => c.id === last?.id)) issues.list.push(`spec: ${last.id} appears twice`);
-      criteria.push(last);
-    } else if (line.startsWith('Intent:')) {
-      intent = line.slice('Intent:'.length).trim();
+  const exclusions: { text: string }[] = [];
+  // The item a following line would continue; none after a blank or refused line.
+  let last: { text: string } | null = null;
+  lines.slice(1).forEach((line, i) => {
+    const where = `spec: line ${i + 2}`;
+    if (!line.trim()) {
       last = null;
-    } else if (/^[A-Z][A-Za-z ]{0,30}:/.test(line) || !line.trim()) {
+      return;
+    }
+    const ac = /^(AC-[0-9]{1,3}): (.+)$/.exec(line);
+    const labelled = (label: string): string | null => (line.startsWith(label) ? line.slice(label.length).trim() : null);
+    const intent = labelled('Intent:');
+    const exclusion = labelled('Exclusion:');
+    if (ac && (ac[2] as string).trim()) {
+      const criterion = { id: ac[1] as string, text: (ac[2] as string).trim() };
+      if (criteria.some((c) => c.id === criterion.id)) issues.list.push(`spec: ${criterion.id} appears twice`);
+      criteria.push(criterion);
+      last = criterion;
+    } else if (intent !== null) {
+      if (intents.length > 0) issues.list.push(`${where}: "Intent:" appears twice`);
+      if (!intent) issues.list.push(`${where}: "Intent:" is empty`);
+      last = { text: intent };
+      intents.push(last);
+    } else if (exclusion !== null) {
+      if (!exclusion) issues.list.push(`${where}: "Exclusion:" is empty`);
+      last = { text: exclusion };
+      exclusions.push(last);
+    } else if (SPEC_LABEL.test(line) || SPEC_MARKUP.test(line)) {
+      issues.list.push(`${where}: not an accepted item; only "Intent:", "AC-n: <text>", and "Exclusion:" may start a line`);
       last = null;
     } else if (last) {
       last.text = `${last.text} ${line.trim()}`;
+    } else {
+      issues.list.push(`${where}: text that belongs to no item`);
     }
-  }
-  if (!intent) issues.list.push('spec: an "Intent:" line is required');
+  });
+  if (intents.length === 0) issues.list.push('spec: an "Intent:" line is required');
+  else if ((intents[0] as { text: string }).text.length > MAX_TEXT) issues.list.push('spec: the intent is too long');
   if (criteria.length === 0) issues.list.push('spec: at least one acceptance criterion "AC-n: ..." is required');
   for (const c of criteria) if (c.text.length > MAX_TEXT) issues.list.push(`spec: ${c.id} is too long`);
-  return finish(issues, () => ({ title, intent, criteria }));
+  if (exclusions.some((e) => e.text.length > MAX_TEXT)) issues.list.push('spec: an exclusion is too long');
+  return finish(issues, () => ({ title, intent: intents[0]?.text ?? '', criteria, exclusions: exclusions.map((e) => e.text) }));
 }
 
 // ---------------------------------------------------------------- plan

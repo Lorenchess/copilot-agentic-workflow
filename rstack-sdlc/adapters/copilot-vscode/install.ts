@@ -88,7 +88,6 @@ export type ActionKind =
   | 'CREATE'
   | 'UPDATE'
   | 'UNCHANGED'
-  | 'ADOPT_IDENTICAL'
   | 'REMOVE'
   | 'ALREADY_ABSENT'
   | 'COLLISION'
@@ -117,6 +116,8 @@ export interface OperationReport {
 }
 
 const forward = (path: string): string => path.replaceAll('\\', '/');
+
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 function under(root: string, path: string): boolean {
   return path === root || path.startsWith(root + sep);
@@ -206,17 +207,33 @@ export function readInstallManifest(workspace: string): InstallManifest | null {
   } catch {
     throw new PackageError('INSTALL_MANIFEST_MALFORMED', 'the install manifest is not valid JSON; nothing was changed');
   }
-  if (manifest?.record_type !== 'install-manifest' || !Array.isArray(manifest.files) || !Array.isArray(manifest.created_dirs)) {
+  const malformed = (what: string): PackageError =>
+    new PackageError('INSTALL_MANIFEST_MALFORMED', `the install manifest has an unexpected shape (${what}); nothing was changed`, { field: what });
+  if (!isRecord(manifest) || manifest.record_type !== 'install-manifest' || !Array.isArray(manifest.files) || !Array.isArray(manifest.created_dirs)) {
     throw new PackageError('INSTALL_MANIFEST_MALFORMED', 'the install manifest has an unexpected shape; nothing was changed');
   }
   if (manifest.schema_version !== INSTALL_MANIFEST_VERSION) {
     throw new PackageError('UNSUPPORTED_INSTALL_MANIFEST_VERSION', `install manifest version ${String(manifest.schema_version)} is not supported (supported: ${INSTALL_MANIFEST_VERSION}); nothing was changed`);
   }
+  // The whole shape is checked here, once, so that no caller dereferences a
+  // field that is missing or of the wrong type.
+  const pkg: unknown = manifest.package;
+  if (!isRecord(pkg)) throw malformed('package');
+  if (typeof pkg.root !== 'string') throw malformed('package.root');
+  if (typeof pkg.manifest_sha256 !== 'string') throw malformed('package.manifest_sha256');
+  if (typeof pkg.generator_version !== 'number') throw malformed('package.generator_version');
+  if (typeof pkg.profile_id !== 'string') throw malformed('package.profile_id');
+  if (typeof pkg.profile_version !== 'number') throw malformed('package.profile_version');
+  for (const field of ['prefix', 'workspace', 'engine_command'] as const) {
+    if (typeof manifest[field] !== 'string') throw malformed(field);
+  }
   // A manifest is data found in the workspace. It can name only owned paths.
   for (const file of manifest.files) {
+    if (!isRecord(file)) throw malformed('files');
     if (typeof file.path !== 'string' || !OWNED_FILE.test(file.path) || typeof file.sha256 !== 'string') {
       throw new PackageError('UNSAFE_MANIFEST_PATH', 'the install manifest names a path this installer does not own; nothing was changed', { path: file.path });
     }
+    if (typeof file.package_sha256 !== 'string') throw malformed('files.package_sha256');
   }
   for (const dir of manifest.created_dirs) {
     if (typeof dir !== 'string' || !OWNED_DIR.test(dir)) {
@@ -244,7 +261,16 @@ export interface InstallOptions {
   beforeChange?: (path: string) => void;
 }
 
-function report(base: Omit<OperationReport, 'ok' | 'code' | 'blocked_by' | 'applied' | 'host_validation'>, code: string, applied: string[]): OperationReport {
+// One reversal of one change made while applying. `path` and `recovery` are
+// what is reported if the reversal itself fails.
+interface UndoStep {
+  path: string;
+  step: 'RESTORE_FILE' | 'REMOVE_FILE' | 'REMOVE_DIRECTORY' | 'RESTORE_DIRECTORY';
+  recovery: string;
+  run: () => void;
+}
+
+function report(base:Omit<OperationReport, 'ok' | 'code' | 'blocked_by' | 'applied' | 'host_validation'>, code: string, applied: string[]): OperationReport {
   const blocked = base.actions.filter((a) => a.action === 'COLLISION' || a.action === 'USER_MODIFIED');
   return { ok: blocked.length === 0, code, ...base, blocked_by: blocked, applied, host_validation: 'NOT_OBSERVED' };
 }
@@ -278,9 +304,11 @@ export function install(options: InstallOptions): OperationReport {
       actions.push({ path: file.path, action: 'CREATE', detail: prior ? 'owned by the earlier installation and missing' : 'new file' });
       writes.push({ path: file.path, full, content });
     } else if (!prior) {
-      // Not installed by us. Identical bytes need no write; anything else is the user's file.
-      if (hashOf(full) === next) actions.push({ path: file.path, action: 'ADOPT_IDENTICAL', detail: 'an identical file exists; it is not rewritten' });
-      else actions.push({ path: file.path, action: 'COLLISION', detail: 'a file this installer did not install exists at an owned path' });
+      // No install manifest lists it, so it is not ours, whatever its bytes.
+      // An identical file is not adopted: owning it would let a later removal
+      // delete a file this installer never created.
+      const identical = hashOf(full) === next;
+      actions.push({ path: file.path, action: 'COLLISION', detail: identical ? 'an identical file this installer did not install exists at an owned path; it is not adopted' : 'a file this installer did not install exists at an owned path' });
     } else if (hashOf(full) !== prior.sha256) {
       actions.push({ path: file.path, action: 'USER_MODIFIED', detail: 'the installed file was changed after installation' });
     } else if (prior.sha256 === next) {
@@ -303,15 +331,29 @@ export function install(options: InstallOptions): OperationReport {
     }
   }
 
+  // The manifest is written through a temporary file beside it. One that is
+  // already there was not created by this operation, so it is not overwritten
+  // or removed: it stops the plan like any other file at an owned path.
+  const manifestTmp = `${INSTALL_MANIFEST}.tmp`;
+  if (existsSync(assertContained(workspace, manifestTmp))) {
+    actions.push({ path: manifestTmp, action: 'COLLISION', detail: 'a file this installer did not create exists where the install manifest is written; move or remove it, then install again' });
+  }
+
   const base = { operation: 'install' as const, dry_run: dryRun, workspace, package_root: packageDir, engine_command: tokens.ENGINE as string, actions };
   if (actions.some((a) => a.action === 'COLLISION' || a.action === 'USER_MODIFIED')) return report(base, 'BLOCKED', []);
   if (dryRun) return report(base, 'PLAN_READY', []);
 
   // Apply. Every change is undone if any step fails, so a failed installation
-  // leaves the workspace as it was.
-  const undo: (() => void)[] = [];
+  // leaves the workspace as it was. Undo steps run newest first. The undo of a
+  // file change is registered before the change, so a write that fails
+  // part-way is reversed too; it is harmless when the change never happened.
+  const undo: UndoStep[] = [];
   const createdDirs: string[] = [];
   const applied: string[] = [];
+  const fileUndo = (rel: string, full: string, before: Buffer | null, restoreNote: string): UndoStep =>
+    before === null
+      ? { path: rel, step: 'REMOVE_FILE', recovery: 'created by the failed installation and not removed; delete it', run: () => rmSync(full, { force: true }) }
+      : { path: rel, step: 'RESTORE_FILE', recovery: restoreNote, run: () => writeFileSync(full, before) };
   const ensureDir = (rel: string): void => {
     const full = join(workspace, ...rel.split('/'));
     if (existsSync(full)) return;
@@ -319,24 +361,27 @@ export function install(options: InstallOptions): OperationReport {
     if (parent) ensureDir(parent);
     mkdirSync(full);
     createdDirs.push(rel);
-    undo.push(() => rmdirSync(full));
+    undo.push({ path: rel, step: 'REMOVE_DIRECTORY', recovery: 'created by the failed installation and not removed; remove it if it is empty', run: () => rmdirSync(full) });
   };
   const put = (rel: string, full: string, content: string | null): void => {
     options.beforeChange?.(rel);
     const before = existsSync(full) ? readFileSync(full) : null;
+    const relDir = rel.slice(0, rel.lastIndexOf('/'));
+    if (content !== null) ensureDir(relDir);
+    undo.push(fileUndo(rel, full, before, 'its earlier content was not written back; delete this file if it exists, then install again from the previously installed package'));
     if (content === null) {
       rmSync(full);
-      // An owned Skill directory left empty by the removal goes with it.
+      // An owned Skill directory left empty by the removal goes with it. Its
+      // undo is registered after the file's, so it runs first and the
+      // directory exists again when the file is restored.
       const dir = dirname(full);
-      if (/^\.github\/skills\/rstack-sdlc-[a-z0-9-]+$/.test(rel.slice(0, rel.lastIndexOf('/'))) && readdirSync(dir).length === 0) {
+      if (/^\.github\/skills\/rstack-sdlc-[a-z0-9-]+$/.test(relDir) && readdirSync(dir).length === 0) {
         rmdirSync(dir);
-        undo.push(() => mkdirSync(dir));
+        undo.push({ path: relDir, step: 'RESTORE_DIRECTORY', recovery: 'removed by the failed installation and not recreated; install again from the previously installed package', run: () => mkdirSync(dir) });
       }
     } else {
-      ensureDir(rel.slice(0, rel.lastIndexOf('/')));
       writeFileSync(full, content);
     }
-    undo.push(() => (before === null ? rmSync(full, { force: true }) : writeFileSync(full, before)));
     applied.push(rel);
   };
   try {
@@ -361,20 +406,31 @@ export function install(options: InstallOptions): OperationReport {
     const manifestFull = join(workspace, ...INSTALL_MANIFEST.split('/'));
     options.beforeChange?.(INSTALL_MANIFEST);
     const before = existsSync(manifestFull) ? readFileSync(manifestFull) : null;
+    undo.push(fileUndo(`${INSTALL_MANIFEST}.tmp`, `${manifestFull}.tmp`, null, ''));
     writeFileSync(`${manifestFull}.tmp`, `${JSON.stringify(record, null, 2)}\n`);
-    undo.push(() => rmSync(`${manifestFull}.tmp`, { force: true }));
+    undo.push(fileUndo(INSTALL_MANIFEST, manifestFull, before, 'the earlier install manifest was not written back; run verify to see which owned files no longer match it'));
     renameSync(`${manifestFull}.tmp`, manifestFull);
-    undo.push(() => (before === null ? rmSync(manifestFull, { force: true }) : writeFileSync(manifestFull, before)));
     applied.push(INSTALL_MANIFEST);
   } catch (e) {
+    const cause = e instanceof Error ? e.message : String(e);
+    // An undo step that fails is recorded, never swallowed: a complete
+    // rollback is claimed only when every step ran.
+    const notUndone: { path: string; step: UndoStep['step']; error: string; recovery: string }[] = [];
     for (const step of undo.reverse()) {
       try {
-        step();
-      } catch {
-        // A directory that is no longer empty stays.
+        step.run();
+      } catch (undoError) {
+        notUndone.push({ path: step.path, step: step.step, error: undoError instanceof Error ? undoError.message : String(undoError), recovery: step.recovery });
       }
     }
-    throw new PackageError('INSTALL_FAILED_ROLLED_BACK', `the installation failed and its changes were undone: ${e instanceof Error ? e.message : String(e)}`);
+    if (notUndone.length > 0) {
+      throw new PackageError(
+        'INSTALL_FAILED_ROLLBACK_INCOMPLETE',
+        `the installation failed (${cause}) and ${notUndone.length} undo step(s) failed as well; the workspace is not as it was. Not undone: ${notUndone.map((u) => `${u.path} (${u.step})`).join(', ')}. Run verify and see the recovery note for each path`,
+        { cause, not_undone: notUndone },
+      );
+    }
+    throw new PackageError('INSTALL_FAILED_ROLLED_BACK', `the installation failed and its changes were undone: ${cause}`, { cause });
   }
   return report(base, 'INSTALLED', applied);
 }

@@ -67,7 +67,7 @@ export interface DeterministicReport {
   usage: 'UNAVAILABLE';
 }
 
-const PACKET_EXCLUDED = ['work', 'exec', 'evaluation'];
+const PACKET_EXCLUDED = ['work', 'exec', 'evaluation', 'evaluation-control'];
 
 function packetStorage(packetDir: string): { packet_files: number; packet_bytes: number } {
   let files = 0;

@@ -20,24 +20,7 @@ Formats are in the planning-records Skill. Follow them exactly; the engine check
 ## Delivering
 
 1. Write only the files named in `produces`, only inside `work_dir`.
-2. Write `result.json` in `work_dir`:
-
-```json
-{
-  "schema_version": 1,
-  "record_type": "role-result",
-  "run_id": "<envelope.run_id>",
-  "attempt_id": "<envelope.attempt_id>",
-  "role": "<envelope.role>",
-  "expected_version": "<envelope.state_version, as a number>",
-  "input_digest": "<envelope.input_digest>",
-  "outcome": "COMPLETED",
-  "summary": "<one or two sentences>",
-  "outputs": {},
-  "files": { "<key from produces>": "<file name>" }
-}
-```
-
+2. Write `result.json` in `work_dir`, exactly as the `result.json` section of the planning-records Skill shows: every field of that template, with `files` naming each file in `produces`.
 3. Reply with the path of `result.json` and nothing that needs interpreting.
 
 ## Stop rules

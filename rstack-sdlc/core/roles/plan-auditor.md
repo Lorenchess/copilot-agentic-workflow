@@ -23,7 +23,7 @@ The format is in the planning-records Skill. `subject.plan` and `subject.spec` m
 ## Delivering
 
 1. Write `audit.json` inside `work_dir`, and nothing else outside it.
-2. Write `result.json` in `work_dir` with the envelope's `run_id`, `attempt_id`, `role`, `state_version` (as `expected_version`), and `input_digest`; `outcome` `COMPLETED`; a short `summary`; `outputs` `{}`; and `files` `{ "audit": "audit.json" }`. The planner contract shows the full shape.
+2. Write `result.json` in `work_dir`, exactly as the `result.json` section of the planning-records Skill shows: every field of that template, with `files` `{ "audit": "audit.json" }`.
 3. Reply with the path of `result.json`.
 
 ## Stop rules

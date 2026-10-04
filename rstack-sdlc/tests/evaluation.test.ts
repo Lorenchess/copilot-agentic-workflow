@@ -6,7 +6,7 @@
 // marked HUMAN_RECORDED here are fixture claims, not human review.
 
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { createFakeTransport, type FakeScript } from '../adapters/fake-transport/index.ts';
@@ -59,6 +59,25 @@ function judgeOutput(run: TestRun, id: string, overrides: Partial<Evaluation> = 
 
 function writeJudge(run: TestRun, id: string, text: string): void {
   writeFileSync(join(run.runDir, 'evaluation', id, 'evaluation.json'), text);
+}
+
+// The evaluator's own area for one evaluation, apart from the judge's.
+const controlDir = (run: TestRun, id: string): string => join(run.runDir, 'evaluation-control', id);
+const judgeDir = (run: TestRun, id: string): string => join(run.runDir, 'evaluation', id);
+
+// Prepares, writes a scripted judge output, and checks it.
+function evaluated(run: TestRun, answers: Record<string, string> = {}, now?: () => Date): string {
+  const id = prepareEvaluation(PACKAGE_ROOT, run.runDir, 'run-v3', { now }).evaluation_id;
+  writeJudge(run, id, judgeOutput(run, id, {}, answers));
+  assert.equal(acceptEvaluation(run.runDir, id).status, 'ACCEPTED');
+  return id;
+}
+
+// Puts a separated evaluation into the layout used before the areas were
+// separated: every file in the judge's directory, no control directory.
+function toColocated(run: TestRun, id: string): void {
+  for (const name of readdirSync(controlDir(run, id))) renameSync(join(controlDir(run, id), name), join(judgeDir(run, id), name));
+  rmSync(controlDir(run, id), { recursive: true });
 }
 
 function candidateSource(run: TestRun): string {
@@ -206,7 +225,8 @@ test('an evaluation writes only in its own area and leaves the evidence unchange
   assert.deepEqual(request.evidence, before);
   assert.match(request.rubric.sha256, /^[0-9a-f]{64}$/);
   assert.equal(request.identities.workflow_version, 5);
-  assert.deepEqual(readdirSync(join(run.runDir, 'evaluation', 'EVAL-1')).sort(), ['deterministic.json', 'request.json']);
+  assert.deepEqual(readdirSync(judgeDir(run, 'EVAL-1')), [], 'the judge area starts empty');
+  assert.deepEqual(readdirSync(controlDir(run, 'EVAL-1')).sort(), ['deterministic.json', 'request.json']);
 
   writeJudge(run, 'EVAL-1', judgeOutput(run, 'EVAL-1'));
   const accepted = acceptEvaluation(run.runDir, 'EVAL-1');
@@ -240,7 +260,9 @@ test('re-evaluation gets a new identity and leaves earlier evaluations byte-iden
   prepareEvaluation(PACKAGE_ROOT, run.runDir, 'run-v3');
   writeJudge(run, 'EVAL-1', judgeOutput(run, 'EVAL-1', {}, { 'spec-fidelity': 'YES' }));
   acceptEvaluation(run.runDir, 'EVAL-1');
-  const snapshot = (): string => readdirSync(join(run.runDir, 'evaluation', 'EVAL-1')).sort().map((f) => `${f}:${readFileSync(join(run.runDir, 'evaluation', 'EVAL-1', f), 'utf8')}`).join('\n');
+  const snapshot = (): string =>
+    [judgeDir(run, 'EVAL-1'), controlDir(run, 'EVAL-1')].flatMap((dir) => readdirSync(dir).sort().map((f) => `${f}:${readFileSync(join(dir, f), 'utf8')}`)).join('\n');
+  assert.deepEqual(readdirSync(controlDir(run, 'EVAL-1')).sort(), ['acceptance.json', 'deterministic.json', 'request.json']);
   const first = snapshot();
 
   assert.throws(() => prepareEvaluation(PACKAGE_ROOT, run.runDir, 'run-v3', { evaluationId: 'EVAL-1' }), /already exists/);
@@ -454,4 +476,594 @@ test('evaluating a run executes nothing and changes none of its evidence', async
   assert.deepEqual(evidenceDigest(run.runDir), before);
   assert.deepEqual(readdirSync(join(run.runDir, 'exec')).sort(), execBefore, 'no test command was run again');
   assert.equal(run.assembly.engine.status(run.runId).state_version, evaluateDeterministic(run.runDir).packet.events, 'the journal has no new record');
+});
+
+test('D6: control information is read from the evaluator\'s area only, and accepted content that changed is not aggregated', async () => {
+  const run = await finishedRun('eval-control');
+  const first = evaluated(run, { 'spec-fidelity': 'YES' });
+  assert.deepEqual(readdirSync(judgeDir(run, first)), ['evaluation.json'], 'the verdict is not written into the judge area');
+  const rejectedFor = (id: string, why: RegExp): void => {
+    const acceptance = acceptEvaluation(run.runDir, id);
+    assert.equal(acceptance.status, 'REJECTED', String(why));
+    assert.match(acceptance.issues.join('\n'), why);
+    assert.equal(listEvaluations(run.runDir).find((e) => e.evaluation_id === id)!.status, 'REJECTED');
+  };
+  const prepared = (): string => {
+    const id = prepareEvaluation(PACKAGE_ROOT, run.runDir, 'run-v3').evaluation_id;
+    writeJudge(run, id, judgeOutput(run, id, {}, { 'spec-fidelity': 'NO' }));
+    return id;
+  };
+  // A complete, well-formed verdict, as a judge with file access could write one.
+  const verdict = (id: string, text: string, evidence = '0'.repeat(64)): string =>
+    JSON.stringify({ schema_version: 1, record_type: 'evaluation-acceptance', evaluation_id: id, status: 'ACCEPTED', issues: [], evaluation_sha256: text, evidence_before: evidence, evidence_after: evidence, evidence_unchanged: true, judge: { self_reported: null, effective_model: 'UNAVAILABLE' }, checked_at: '2999-01-01T00:00:00.000Z' });
+  const humanLine = (id: string, sha: string): string =>
+    `${JSON.stringify({ schema_version: 1, record_type: 'adjudication', seq: 1, evaluation_id: id, evaluation_sha256: sha, question: 'spec-fidelity', label: 'CONFIRM', answer: null, note: 'written by the judge', recorded_by: 'judge', provenance: 'HUMAN_RECORDED', at: '2026-01-01T00:00:00.000Z' })}\n`;
+
+  // 1. A judge that writes its own verdict, or its own request, is rejected; its files are never read as control.
+  const own = prepared();
+  writeFileSync(join(judgeDir(run, own), 'acceptance.json'), verdict(own, 'x'));
+  writeFileSync(join(judgeDir(run, own), 'request.json'), readFileSync(join(controlDir(run, own), 'request.json')));
+  rejectedFor(own, /unexpected file in the evaluation area: acceptance\.json/);
+  assert.match(acceptEvaluation(run.runDir, own).issues.join('\n'), /unexpected file in the evaluation area: request\.json/);
+
+  // 2. A judge that writes an adjudication, in its own area or in the control area before the verdict, is rejected,
+  //    and the entry never counts as human calibration.
+  const inArea = prepared();
+  writeFileSync(join(judgeDir(run, inArea), 'adjudication.jsonl'), humanLine(inArea, 'x'));
+  rejectedFor(inArea, /unexpected file in the evaluation area: adjudication\.jsonl/);
+  const inControl = prepared();
+  writeFileSync(join(controlDir(run, inControl), 'adjudication.jsonl'), humanLine(inControl, 'x'));
+  rejectedFor(inControl, /unexpected file in the control area before acceptance: adjudication\.jsonl/);
+  assert.match(listEvaluations(run.runDir).find((e) => e.evaluation_id === inControl)!.issues.join('\n'), /on an evaluation that was not accepted/);
+
+  // 3. A judge that alters retained evidence and rewrites the stored baseline to match is rejected by the
+  //    packet check, which is recomputed from the run and does not read the request.
+  const source = candidateSource(run);
+  const original = readFileSync(source);
+  const forged = prepared();
+  writeFileSync(source, 'altered by the judge');
+  const requestFile = join(controlDir(run, forged), 'request.json');
+  writeFileSync(requestFile, JSON.stringify({ ...(JSON.parse(readFileSync(requestFile, 'utf8')) as object), evidence: evidenceDigest(run.runDir) }));
+  rejectedFor(forged, /the packet does not resolve at acceptance/);
+  assert.doesNotMatch(acceptEvaluation(run.runDir, forged).issues.join('\n'), /run evidence changed/, 'the forged baseline alone would have passed');
+  writeFileSync(source, original);
+
+  // 4. A judge that creates another evaluation in the earlier layout, verdict and human entry included.
+  const maker = prepared();
+  const fake = judgeDir(run, 'EVAL-90');
+  mkdirSync(fake);
+  const fakeText = judgeOutput(run, 'EVAL-90', {}, { 'spec-fidelity': 'NO' });
+  writeFileSync(join(fake, 'evaluation.json'), fakeText);
+  writeFileSync(join(fake, 'request.json'), JSON.stringify({ ...(JSON.parse(readFileSync(join(controlDir(run, maker), 'request.json'), 'utf8')) as object), evaluation_id: 'EVAL-90', prepared_at: '2999-01-01T00:00:00.000Z' }));
+  rejectedFor(maker, /the judge area gained "EVAL-90" during this evaluation/);
+  // Give the planted evaluation a verdict that matches its content, as a judge could.
+  const planted = (): ReturnType<typeof listEvaluations>[number] => listEvaluations(run.runDir).find((e) => e.evaluation_id === 'EVAL-90')!;
+  writeFileSync(join(fake, 'acceptance.json'), verdict('EVAL-90', planted().evaluation_sha256!, (JSON.parse(readFileSync(join(fake, 'request.json'), 'utf8')) as { evidence: { digest: string } }).evidence.digest));
+  writeFileSync(join(fake, 'adjudication.jsonl'), humanLine('EVAL-90', planted().evaluation_sha256!));
+  assert.deepEqual([planted().status, planted().layout], ['ACCEPTED', 'COLOCATED']);
+  assert.match(planted().issues.join('\n'), /appeared after this run's control area was separated/);
+  const withPlanted = summarize([run.runDir], 'run-v3');
+  assert.equal(withPlanted.runs[0]!.evaluation, null, 'the planted evaluation is not aggregated, and nothing is silently used in its place');
+  assert.match(withPlanted.runs[0]!.not_aggregated!, /^EVAL-90: /);
+  assert.equal(withPlanted.human_calibration.human_recorded_entries, 0);
+  assert.equal(withPlanted.judge_answers['spec-fidelity']!.evaluated_runs, 0);
+  rmSync(fake, { recursive: true });
+
+  // With the planted directory gone, the one accepted evaluation is aggregated; the rejected ones never are.
+  const clean = summarize([run.runDir], 'run-v3');
+  assert.deepEqual(clean.runs[0]!.evaluation, { id: first, status: 'ACCEPTED' });
+  assert.equal(clean.runs[0]!.not_aggregated, null);
+  assert.deepEqual(clean.judge_answers['spec-fidelity']!.counts, { YES: 1 });
+  assert.deepEqual(clean.runs[0]!.other_evaluations.map((e) => e.status), ['REJECTED', 'REJECTED', 'REJECTED', 'REJECTED', 'REJECTED']);
+
+  // 5. An accepted output edited afterwards is listed with the issue and not aggregated. The earlier accepted
+  //    evaluation is not used in its place. The original bytes, once back, are aggregated again.
+  const later = evaluated(run, { 'spec-fidelity': 'NO' });
+  adjudicate(run.runDir, later, { question: 'spec-fidelity', label: 'CONFIRM', note: 'fixture', recorded_by: 'test fixture', provenance: 'HUMAN_RECORDED' });
+  const file = join(judgeDir(run, later), 'evaluation.json');
+  const accepted = readFileSync(file, 'utf8');
+  const intact = summarize([run.runDir], 'run-v3');
+  assert.deepEqual([intact.runs[0]!.evaluation, intact.human_calibration.human_recorded_entries], [{ id: later, status: 'ACCEPTED' }, 1]);
+  assert.deepEqual(intact.judge_answers['spec-fidelity']!.counts, { NO: 1 });
+
+  writeFileSync(file, accepted.replace('"NO"', '"YES"'));
+  const edited = listEvaluations(run.runDir).find((e) => e.evaluation_id === later)!;
+  assert.deepEqual([edited.status, edited.evaluation, edited.issues], ['ACCEPTED', null, ['evaluation.json is not the content that was accepted']]);
+  const changed = summarize([run.runDir], 'run-v3');
+  assert.equal(changed.runs[0]!.evaluation, null);
+  assert.match(changed.runs[0]!.not_aggregated!, new RegExp(`^${later}: evaluation\\.json is not the content that was accepted`));
+  assert.deepEqual(changed.runs[0]!.other_evaluations.find((e) => e.id === later)!.issues, ['evaluation.json is not the content that was accepted']);
+  assert.deepEqual([changed.judge_answers['spec-fidelity']!.evaluated_runs, changed.human_calibration.human_recorded_entries], [0, 0]);
+  rmSync(file);
+  assert.equal(summarize([run.runDir], 'run-v3').runs[0]!.evaluation, null, 'a removed output is not the accepted content either');
+  writeFileSync(file, accepted);
+  assert.deepEqual(summarize([run.runDir], 'run-v3').runs[0]!.evaluation, { id: later, status: 'ACCEPTED' });
+
+  // 6. After the verdict: a control file dropped into the judge area is reported and never read, and an
+  //    adjudication line that does not name the accepted content is left out and reported.
+  writeFileSync(join(judgeDir(run, later), 'adjudication.jsonl'), humanLine(later, edited.accepted_sha256!));
+  const dropped = summarize([run.runDir], 'run-v3');
+  assert.equal(dropped.runs[0]!.evaluation, null);
+  assert.match(dropped.runs[0]!.not_aggregated!, /unexpected file in the evaluation area: adjudication\.jsonl/);
+  assert.equal(readAdjudications(run.runDir, later).length, 1, 'only the control area is read');
+  rmSync(join(judgeDir(run, later), 'adjudication.jsonl'));
+  const controlAdjudications = join(controlDir(run, later), 'adjudication.jsonl');
+  const kept = readFileSync(controlAdjudications);
+  appendFileSync(controlAdjudications, humanLine(later, 'another-content'));
+  const stray = listEvaluations(run.runDir).find((e) => e.evaluation_id === later)!;
+  assert.deepEqual([stray.adjudications.length, stray.issues], [1, ['adjudication entry 2 does not name the accepted content of this evaluation']]);
+  assert.equal(summarize([run.runDir], 'run-v3').human_calibration.human_recorded_entries, 0);
+  writeFileSync(controlAdjudications, kept);
+  assert.equal(summarize([run.runDir], 'run-v3').human_calibration.human_recorded_entries, 1);
+});
+
+test('evaluations in the earlier colocated layout are read as recorded and never rewritten; an unchecked one cannot be accepted', async () => {
+  const run = await finishedRun('eval-colocated');
+  const id = evaluated(run, { 'spec-fidelity': 'YES' });
+  adjudicate(run.runDir, id, { question: 'spec-fidelity', label: 'MODIFY', answer: 'NO', note: 'fixture', recorded_by: 'test fixture', provenance: 'HUMAN_RECORDED' });
+  toColocated(run, id);
+  assert.equal(existsSync(join(run.runDir, 'evaluation-control')), true);
+  rmSync(join(run.runDir, 'evaluation-control'), { recursive: true });
+  const bytes = (): string => readdirSync(judgeDir(run, id)).sort().map((f) => `${f}:${readFileSync(join(judgeDir(run, id), f), 'utf8')}`).join('\n');
+  const recorded = bytes();
+  assert.deepEqual(readdirSync(judgeDir(run, id)).sort(), ['acceptance.json', 'adjudication.jsonl', 'deterministic.json', 'evaluation.json', 'request.json']);
+
+  const [stored] = listEvaluations(run.runDir);
+  assert.deepEqual([stored!.layout, stored!.status, stored!.issues, stored!.adjudications.length], ['COLOCATED', 'ACCEPTED', [], 1]);
+  const s = summarize([run.runDir], 'run-v3');
+  assert.deepEqual(s.runs[0]!.evaluation, { id, status: 'ACCEPTED' });
+  assert.deepEqual([s.human_calibration.human_recorded_entries, s.human_calibration.decisions[0]!.owner_answer], [1, 'NO']);
+  assert.equal(acceptEvaluation(run.runDir, id).status, 'ACCEPTED', 'the recorded verdict is returned');
+  assert.equal(bytes(), recorded, 'reading, summarizing, and re-checking rewrote nothing');
+
+  // A later adjudication is appended where the earlier ones are; nothing else changes and nothing is moved.
+  const lines = join(judgeDir(run, id), 'adjudication.jsonl');
+  const earlier = readFileSync(lines, 'utf8');
+  const others = (): string => bytes().replace(readFileSync(lines, 'utf8'), '');
+  const othersBefore = others();
+  adjudicate(run.runDir, id, { question: 'plan-serves-spec', label: 'CONFIRM', note: 'fixture', recorded_by: 'test fixture', provenance: 'HUMAN_RECORDED' });
+  assert.equal(readAdjudications(run.runDir, id).length, 2);
+  assert.ok(readFileSync(lines, 'utf8').startsWith(earlier), 'earlier lines are untouched');
+  assert.equal(others(), othersBefore);
+  assert.equal(existsSync(controlDir(run, id)), false);
+
+  // The accepted-content check covers this layout too.
+  const file = join(judgeDir(run, id), 'evaluation.json');
+  const accepted = readFileSync(file, 'utf8');
+  writeFileSync(file, accepted.replace('"YES"', '"NO"'));
+  assert.equal(summarize([run.runDir], 'run-v3').runs[0]!.evaluation, null);
+  writeFileSync(file, accepted);
+
+  // Prepared in the earlier layout and never checked: a verdict cannot be given now.
+  const unchecked = prepareEvaluation(PACKAGE_ROOT, run.runDir, 'run-v3').evaluation_id;
+  writeJudge(run, unchecked, judgeOutput(run, unchecked));
+  toColocated(run, unchecked);
+  assert.throws(() => acceptEvaluation(run.runDir, unchecked), /prepared in the earlier layout/);
+  assert.equal(existsSync(join(judgeDir(run, unchecked), 'acceptance.json')), false);
+  assert.deepEqual(listEvaluations(run.runDir).map((e) => [e.evaluation_id, e.status, e.layout]), [[id, 'ACCEPTED', 'COLOCATED'], [unchecked, 'PREPARED', 'COLOCATED']]);
+
+  // A new evaluation of the same run uses the separate areas and leaves the earlier ones as they are.
+  const next = evaluated(run, { 'spec-fidelity': 'NO' });
+  assert.deepEqual([next, listEvaluations(run.runDir).at(-1)!.layout], ['EVAL-3', 'SEPARATE']);
+  assert.deepEqual(listEvaluations(run.runDir).map((e) => e.issues), [[], [], []]);
+  assert.deepEqual(summarize([run.runDir], 'run-v3').runs[0]!.evaluation, { id: next, status: 'ACCEPTED' });
+});
+
+test('D7: the latest evaluation is chosen by preparation time and numbered id, never by how names sort as text', async () => {
+  const run = await finishedRun('eval-eleven');
+  // Eleven evaluations prepared at one instant: only the id can order them.
+  const instant = (): Date => new Date('2026-10-03T12:00:00.000Z');
+  for (let n = 1; n <= 11; n++) evaluated(run, { 'spec-fidelity': n === 11 ? 'NO' : 'YES' }, instant);
+  assert.deepEqual(listEvaluations(run.runDir).map((e) => e.evaluation_id), ['EVAL-1', 'EVAL-2', 'EVAL-3', 'EVAL-4', 'EVAL-5', 'EVAL-6', 'EVAL-7', 'EVAL-8', 'EVAL-9', 'EVAL-10', 'EVAL-11']);
+  adjudicate(run.runDir, 'EVAL-11', { question: 'spec-fidelity', label: 'CONFIRM', note: 'fixture', recorded_by: 'test fixture', provenance: 'HUMAN_RECORDED' });
+  const s = summarize([run.runDir], 'run-v3');
+  assert.deepEqual(s.runs[0]!.evaluation, { id: 'EVAL-11', status: 'ACCEPTED' });
+  assert.deepEqual(s.judge_answers['spec-fidelity']!.counts, { NO: 1 });
+  assert.equal(s.human_calibration.human_recorded_entries, 1, 'the adjudication on the selected evaluation is not dropped');
+  assert.equal(s.runs[0]!.other_evaluations.length, 10);
+
+  // Preparation time comes before the id: the later one is selected although its name sorts first.
+  const other = await finishedRun('eval-timed');
+  const at = (iso: string) => (): Date => new Date(iso);
+  for (const [id, time, answer] of [['Z-1', '2026-10-03T10:00:00.000Z', 'YES'], ['A-1', '2026-10-03T11:00:00.000Z', 'NO']] as const) {
+    prepareEvaluation(PACKAGE_ROOT, other.runDir, 'run-v3', { evaluationId: id, now: at(time) });
+    writeJudge(other, id, judgeOutput(other, id, {}, { 'spec-fidelity': answer }));
+    assert.equal(acceptEvaluation(other.runDir, id).status, 'ACCEPTED');
+  }
+  assert.deepEqual(listEvaluations(other.runDir).map((e) => e.evaluation_id), ['Z-1', 'A-1']);
+  assert.deepEqual(summarize([other.runDir], 'run-v3').runs[0]!.evaluation, { id: 'A-1', status: 'ACCEPTED' });
+});
+
+test('D7: copies of one run give the same summary in either order, and copies that disagree are shown, not chosen between', async () => {
+  const run = await finishedRun('copies-main');
+  const second = await finishedRun('copies-second');
+  evaluated(second, { 'spec-fidelity': 'YES' });
+  const copyOf = (label: string): string => {
+    const dir = join(tmpDir(label), run.runId);
+    cpSync(run.runDir, dir, { recursive: true });
+    return dir;
+  };
+  const bare = copyOf('copies-bare');
+  const id = evaluated(run, { 'spec-fidelity': 'NO' });
+  const stale = copyOf('copies-stale');
+  adjudicate(run.runDir, id, { question: 'spec-fidelity', label: 'CONFIRM', note: 'fixture', recorded_by: 'test fixture', provenance: 'HUMAN_RECORDED' });
+  const same = copyOf('copies-same');
+  const both = (dirs: string[]): ReturnType<typeof summarize> => {
+    const forward = summarize(dirs, 'run-v3');
+    assert.deepEqual(summarize([...dirs].reverse(), 'run-v3'), forward, 'the order of the directories changes nothing');
+    return forward;
+  };
+  const rowOf = (s: ReturnType<typeof summarize>): ReturnType<typeof summarize>['runs'][number] => s.runs.find((r) => r.run_id === run.runId)!;
+
+  // A copy without evaluations, listed first or last: the copy that has them is read, and that is reported.
+  const withBare = both([bare, run.runDir, second.runDir]);
+  assert.deepEqual(rowOf(withBare).evaluation, { id, status: 'ACCEPTED' });
+  assert.deepEqual([withBare.duplicates_ignored, withBare.runs.length, withBare.human_calibration.human_recorded_entries], [1, 2, 1]);
+  assert.deepEqual(withBare.duplicate_runs.map((d) => [d.run_id, d.copies, d.resolution, d.variants.length]), [[run.runId, 2, 'MOST_COMPLETE_COPY', 2]]);
+  assert.deepEqual(withBare.runs.map((r) => r.run_id), [run.runId, second.runId].sort(), 'runs are listed by id');
+
+  // An identical copy, and a copy taken before the adjudication was added.
+  assert.deepEqual(both([same, run.runDir]).duplicate_runs.map((d) => [d.resolution, d.variants.length]), [['IDENTICAL', 1]]);
+  const withStale = both([stale, bare, run.runDir, same]);
+  assert.deepEqual([withStale.duplicates_ignored, withStale.duplicate_runs[0]!.resolution, withStale.human_calibration.human_recorded_entries], [3, 'MOST_COMPLETE_COPY', 1]);
+  assert.deepEqual(withStale.duplicate_runs[0]!.variants.map((v) => v.copies).sort(), [1, 1, 2]);
+  assert.equal(JSON.stringify(withStale).includes('copies-'), false, 'no copy location is written into the summary');
+
+  // Two copies evaluated separately hold different records under one id: neither is chosen.
+  const diverged = copyOf('copies-diverged');
+  rmSync(join(diverged, 'evaluation'), { recursive: true });
+  rmSync(join(diverged, 'evaluation-control'), { recursive: true });
+  const divergedRun = { ...run, runDir: diverged };
+  assert.equal(evaluated(divergedRun, { 'spec-fidelity': 'YES' }), id);
+  const conflict = both([run.runDir, diverged, second.runDir]);
+  assert.equal(rowOf(conflict).evaluation, null);
+  assert.deepEqual(rowOf(conflict).other_evaluations, []);
+  assert.match(rowOf(conflict).not_aggregated!, /copies of this run disagree \(EVALUATIONS_DIFFER\)/);
+  assert.deepEqual(conflict.duplicate_runs.map((d) => [d.resolution, d.variants.length, d.variants.map((v) => v.evaluations.map((e) => e.id))]), [['EVALUATIONS_DIFFER', 2, [[id], [id]]]]);
+  assert.equal(conflict.metrics.run_outcome!.denominator, 2, 'the run is still counted once');
+  assert.deepEqual([conflict.judge_answers['spec-fidelity']!.evaluated_runs, conflict.judge_answers['spec-fidelity']!.counts, conflict.human_calibration.human_recorded_entries], [1, { YES: 1 }, 0]);
+
+  // A copy taken while the run was waiting, beside the run as it ended: the run's own records differ.
+  const moving = await newRun('copies-moving');
+  const waiting = toHumanWait(moving);
+  const early = join(tmpDir('copies-early'), moving.runId);
+  cpSync(moving.runDir, early, { recursive: true });
+  moving.assembly.engine.decide(moving.runId, decision(waiting));
+  driveRun(moving.assembly.engine, createFakeTransport(moving.assembly.runsRoot, {}), moving.runId);
+  const differ = both([early, moving.runDir]);
+  assert.deepEqual([differ.runs.length, differ.duplicates_ignored, differ.runs[0]!.outcome], [1, 1, 'PROPOSAL_READY'], 'counted once, as the copy with the longer journal');
+  assert.deepEqual(differ.duplicate_runs.map((d) => [d.resolution, d.variants.map((v) => v.outcome).sort()]), [['RUN_RECORDS_DIFFER', ['PROPOSAL_READY', 'WAITING_HUMAN']]]);
+  assert.match(differ.runs[0]!.not_aggregated!, /RUN_RECORDS_DIFFER/);
+});
+
+test('D6: a stored control record or adjudication entry that is not a valid record is reported, never read, and nothing older is used in its place', async () => {
+  const run = await finishedRun('eval-malformed');
+  const instant = (): Date => new Date('2026-10-03T12:00:00.000Z');
+  const older = evaluated(run, { 'spec-fidelity': 'YES' }, instant);
+  const newer = evaluated(run, { 'spec-fidelity': 'NO' }, instant);
+  const stored = (id: string): ReturnType<typeof listEvaluations>[number] => listEvaluations(run.runDir).find((e) => e.evaluation_id === id)!;
+  const row = (): ReturnType<typeof summarize>['runs'][number] => summarize([run.runDir], 'run-v3').runs[0]!;
+  assert.deepEqual([older, row().evaluation], ['EVAL-1', { id: newer, status: 'ACCEPTED' }]);
+
+  // 1. The newest evaluation's verdict or request damaged in turn: the evaluation is INVALID with the reason, and
+  //    the older accepted answer is not aggregated instead.
+  const damaged = (name: string, text: string | null, why: RegExp): void => {
+    const file = join(controlDir(run, newer), name);
+    const kept = readFileSync(file);
+    if (text === null) rmSync(file);
+    else writeFileSync(file, text);
+    const e = stored(newer);
+    assert.deepEqual([e.status, e.evaluation, e.adjudications], ['INVALID', null, []], `${name}: ${text}`);
+    assert.match(e.issues.join('\n'), why, `${name}: ${text}`);
+    const r = row();
+    assert.equal(r.evaluation, null, `${name}: ${text}: the older answer is not used in its place`);
+    assert.match(r.not_aggregated!, new RegExp(`^${newer}: `));
+    assert.match(r.other_evaluations.find((o) => o.id === newer)!.issues!.join('\n'), why);
+    writeFileSync(file, kept);
+  };
+  const acceptance = JSON.parse(readFileSync(join(controlDir(run, newer), 'acceptance.json'), 'utf8')) as Record<string, unknown>;
+  const request = JSON.parse(readFileSync(join(controlDir(run, newer), 'request.json'), 'utf8')) as Record<string, unknown>;
+  damaged('acceptance.json', '{', /acceptance\.json is not readable/);
+  damaged('acceptance.json', 'null', /acceptance\.json is not a valid record: acceptance: expected an object/);
+  damaged('acceptance.json', '{}', /acceptance\.json is not a valid record: acceptance\.schema_version: missing/);
+  damaged('acceptance.json', JSON.stringify({ ...acceptance, status: 'MAYBE' }), /acceptance\.status: expected one of ACCEPTED, REJECTED/);
+  damaged('acceptance.json', JSON.stringify({ ...acceptance, evaluation_id: older }), /acceptance\.evaluation_id: is not the id of this evaluation/);
+  damaged('acceptance.json', JSON.stringify({ ...acceptance, issues: ['a recorded issue'] }), /acceptance\.issues: an accepted evaluation records no issue/);
+  damaged('acceptance.json', JSON.stringify({ ...acceptance, evidence_before: '0'.repeat(64), evidence_after: '0'.repeat(64) }), /acceptance\.json does not carry the evidence digest of request\.json/);
+  damaged('request.json', '{', /request\.json is not readable/);
+  damaged('request.json', 'null', /request\.json is not a valid record: request: expected an object/);
+  damaged('request.json', '{}', /request\.json is not a valid record: request\.schema_version: missing/);
+  damaged('request.json', JSON.stringify({ ...request, rubric: { id: 'no-such-rubric', sha256: 'x' } }), /request\.rubric\.id: is not a supported rubric/);
+  damaged('request.json', null, /acceptance\.json has no request\.json/);
+  assert.deepEqual([stored(newer).status, stored(newer).issues, row().evaluation], ['ACCEPTED', [], { id: newer, status: 'ACCEPTED' }], 'the records, once back, are read again');
+
+  // 2. An adjudication entry on the accepted content that is not what `adjudicate` writes is left out and reported.
+  adjudicate(run.runDir, newer, { question: 'spec-fidelity', label: 'CONFIRM', note: 'fixture', recorded_by: 'test fixture', provenance: 'HUMAN_RECORDED' });
+  const lines = join(controlDir(run, newer), 'adjudication.jsonl');
+  const keptLines = readFileSync(lines, 'utf8');
+  const good = JSON.parse(keptLines) as Record<string, unknown>;
+  const badEntry = (entry: Record<string, unknown>, why: RegExp): void => {
+    writeFileSync(lines, `${JSON.stringify(entry)}\n`);
+    const e = stored(newer);
+    assert.deepEqual([e.status, e.adjudications.length], ['ACCEPTED', 0], String(why));
+    assert.match(e.issues.join('\n'), /adjudication entry 1 is not a valid adjudication record: /);
+    assert.match(e.issues.join('\n'), why);
+    const s = summarize([run.runDir], 'run-v3');
+    assert.deepEqual([s.runs[0]!.evaluation, s.human_calibration.human_recorded_entries, s.human_calibration.by_label], [null, 0, {}], String(why));
+  };
+  badEntry(
+    { schema_version: 999, record_type: 'wrong-type', evaluation_id: newer, evaluation_sha256: good.evaluation_sha256, question: 'no-such-question', label: 'BANANA', provenance: 'HUMAN_RECORDED' },
+    /adjudication\.seq: missing/,
+  );
+  badEntry({ ...good, schema_version: 999 }, /schema version 999 is not supported/);
+  badEntry({ ...good, record_type: 'wrong-type' }, /adjudication\.record_type: expected "adjudication"/);
+  badEntry({ ...good, question: 'no-such-question' }, /adjudication\.question: "no-such-question" is not a question of run-v3/);
+  badEntry({ ...good, label: 'BANANA' }, /adjudication\.label: expected one of CONFIRM, REJECT, MODIFY, UNRESOLVED/);
+  badEntry({ ...good, label: 'MODIFY' }, /adjudication\.answer: MODIFY needs an answer of run-v3/);
+  badEntry({ ...good, answer: 'YES' }, /adjudication\.answer: CONFIRM takes no answer/);
+  badEntry({ ...good, seq: 7 }, /adjudication\.seq: expected 1/);
+  badEntry({ ...good, note: '' }, /adjudication\.note: must not be empty/);
+  badEntry({ ...good, provenance: 'A_HUMAN' }, /adjudication\.provenance: expected one of HUMAN_RECORDED, SCRIPTED/);
+  badEntry({ ...good, at: 'not-a-time' }, /adjudication\.at: expected a recorded time/);
+  writeFileSync(lines, keptLines);
+  assert.equal(summarize([run.runDir], 'run-v3').human_calibration.human_recorded_entries, 1);
+
+  // 3. The commands refuse a damaged record by name: no verdict and no adjudication is written on top of one.
+  const pending = prepareEvaluation(PACKAGE_ROOT, run.runDir, 'run-v3').evaluation_id;
+  writeJudge(run, pending, judgeOutput(run, pending));
+  const pendingRequest = join(controlDir(run, pending), 'request.json');
+  const keptRequest = readFileSync(pendingRequest);
+  for (const text of ['{', 'null', '{}']) {
+    writeFileSync(pendingRequest, text);
+    assert.throws(() => acceptEvaluation(run.runDir, pending), /evaluation "EVAL-3": request\.json is not (valid JSON|a valid record)/, text);
+    assert.equal(existsSync(join(controlDir(run, pending), 'acceptance.json')), false);
+  }
+  writeFileSync(pendingRequest, keptRequest);
+  assert.equal(acceptEvaluation(run.runDir, pending).status, 'ACCEPTED');
+  const pendingAcceptance = join(controlDir(run, pending), 'acceptance.json');
+  const keptAcceptance = readFileSync(pendingAcceptance);
+  const entry = { question: 'spec-fidelity', label: 'CONFIRM', note: 'fixture', recorded_by: 'test fixture', provenance: 'SCRIPTED' };
+  for (const text of ['{', 'null', '{}']) {
+    writeFileSync(pendingAcceptance, text);
+    assert.throws(() => acceptEvaluation(run.runDir, pending), /evaluation "EVAL-3": acceptance\.json is not (valid JSON|a valid record)/, text);
+    assert.throws(() => adjudicate(run.runDir, pending, entry), /evaluation "EVAL-3": acceptance\.json is not (valid JSON|a valid record)/, text);
+    assert.equal(readFileSync(pendingAcceptance, 'utf8'), text, 'the damaged record is left as found');
+  }
+  writeFileSync(pendingAcceptance, keptAcceptance);
+  writeFileSync(pendingRequest, '{}');
+  assert.throws(() => adjudicate(run.runDir, pending, entry), /evaluation "EVAL-3": request\.json is not a valid record/);
+  assert.equal(existsSync(join(controlDir(run, pending), 'adjudication.jsonl')), false);
+});
+
+test('D7: a preparation time that cannot be read is reported and orders nothing, and copies whose control records differ are shown, not merged', async () => {
+  const run = await finishedRun('eval-order');
+  const at = (iso: string) => (): Date => new Date(iso);
+  const early = evaluated(run, { 'spec-fidelity': 'YES' }, at('2026-10-03T11:00:00.000Z'));
+  const late = evaluated(run, { 'spec-fidelity': 'NO' }, at('2026-10-03T12:00:00.000Z'));
+  const selected = (): ReturnType<typeof summarize>['runs'][number] => summarize([run.runDir], 'run-v3').runs[0]!;
+  assert.deepEqual(selected().evaluation, { id: late, status: 'ACCEPTED' });
+
+  // The earlier evaluation loses its readable preparation time. It is not moved to the end and selected as the latest.
+  const requestFile = join(controlDir(run, early), 'request.json');
+  const kept = readFileSync(requestFile, 'utf8');
+  const request = JSON.parse(kept) as Record<string, unknown>;
+  const unreadable: [unknown, RegExp][] = [
+    ['not-a-time', /request\.prepared_at: expected a recorded time/],
+    [undefined, /request\.prepared_at: missing/],
+    ['2026-10-03T11:00:00Z', /request\.prepared_at: expected a recorded time/],
+    [1764759600000, /request\.prepared_at: expected a recorded time/],
+  ];
+  for (const [prepared_at, why] of unreadable) {
+    writeFileSync(requestFile, JSON.stringify({ ...request, prepared_at }));
+    const e = listEvaluations(run.runDir).find((x) => x.evaluation_id === early)!;
+    assert.deepEqual([e.status, e.prepared_at, e.evaluation], ['INVALID', null, null], String(prepared_at));
+    assert.match(e.issues.join('\n'), why);
+    const r = selected();
+    assert.equal(r.evaluation, null, `${String(prepared_at)}: no evaluation is selected while the order is unknown`);
+    assert.match(r.not_aggregated!, new RegExp(`^${early}: request\\.json is not a valid record`));
+  }
+  writeFileSync(requestFile, kept);
+  assert.deepEqual([selected().evaluation, selected().not_aggregated], [{ id: late, status: 'ACCEPTED' }, null]);
+
+  // Two copies of the run that differ only in a control record of one evaluation.
+  const twin = join(tmpDir('order-twin'), run.runId);
+  cpSync(run.runDir, twin, { recursive: true });
+  const both = (): ReturnType<typeof summarize> => {
+    const forward = summarize([run.runDir, twin], 'run-v3');
+    assert.deepEqual(summarize([twin, run.runDir], 'run-v3'), forward, 'the order of the directories changes nothing');
+    return forward;
+  };
+  assert.deepEqual(both().duplicate_runs.map((d) => [d.resolution, d.variants.length]), [['IDENTICAL', 1]]);
+  const differs = (name: string, change: Record<string, unknown>): void => {
+    const file = join(twin, 'evaluation-control', late, name);
+    const original = readFileSync(file, 'utf8');
+    writeFileSync(file, `${JSON.stringify({ ...(JSON.parse(original) as object), ...change }, null, 2)}\n`);
+    const s = both();
+    assert.deepEqual(s.duplicate_runs.map((d) => [d.resolution, d.variants.length]), [['EVALUATIONS_DIFFER', 2]], `${name}: ${JSON.stringify(change)}`);
+    assert.equal(s.runs[0]!.evaluation, null);
+    assert.match(s.runs[0]!.not_aggregated!, /copies of this run disagree \(EVALUATIONS_DIFFER\)/);
+    assert.equal(s.judge_answers['spec-fidelity']!.evaluated_runs, 0);
+    const shown = s.duplicate_runs[0]!.variants.map((v) => v.evaluations.find((e) => e.id === late)!);
+    assert.notDeepEqual(shown[0], shown[1], 'the difference is visible in the variants');
+    writeFileSync(file, original);
+  };
+  differs('request.json', { evidence: { files: (request.evidence as { files: number }).files, digest: '0'.repeat(64) } });
+  differs('acceptance.json', { evidence_unchanged: false, evidence_after: '1'.repeat(64), issues: ['conflicting acceptance record'] });
+  // Each record valid by itself, and still not the same record.
+  differs('acceptance.json', { checked_at: '2026-10-04T00:00:00.000Z' });
+  differs('request.json', { judge_writes: 'evaluation/elsewhere.json' });
+  assert.deepEqual(both().duplicate_runs.map((d) => [d.resolution, d.variants.length]), [['IDENTICAL', 1]]);
+});
+
+// R2 correction 2. Every file under the two evaluation areas of a run, as base64 bytes, with each directory marked.
+function areaBytes(run: TestRun): Record<string, string> {
+  const out: Record<string, string> = {};
+  const walk = (dir: string, rel: string): void => {
+    if (!existsSync(dir)) return;
+    out[`${rel}/`] = 'directory';
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) walk(join(dir, entry.name), `${rel}/${entry.name}`);
+      else out[`${rel}/${entry.name}`] = readFileSync(join(dir, entry.name)).toString('base64');
+    }
+  };
+  walk(join(run.runDir, 'evaluation'), 'evaluation');
+  walk(join(run.runDir, 'evaluation-control'), 'evaluation-control');
+  return out;
+}
+
+const R2_LAYOUTS = ['SEPARATE', 'COLOCATED'] as const;
+type R2Layout = (typeof R2_LAYOUTS)[number];
+
+// Where an evaluation's control files are: the evaluator's area, or the judge's in the earlier layout.
+const holderOf = (run: TestRun, id: string, layout: R2Layout): string => (layout === 'SEPARATE' ? controlDir(run, id) : judgeDir(run, id));
+
+// A fresh run with one accepted evaluation, in the given layout.
+async function acceptedIn(label: string, layout: R2Layout): Promise<{ run: TestRun; id: string }> {
+  const run = await finishedRun(label);
+  const id = evaluated(run, { 'spec-fidelity': 'YES' });
+  if (layout === 'COLOCATED') toColocated(run, id);
+  return { run, id };
+}
+
+test('D6-R2-A: an accepted evaluation whose request is damaged or contradicts its verdict is refused by accept and adjudicate and nothing is written; a valid one is still returned and appended to', async () => {
+  const entry = { question: 'spec-fidelity', label: 'CONFIRM', note: 'fixture', recorded_by: 'test fixture', provenance: 'HUMAN_RECORDED' };
+  for (const layout of R2_LAYOUTS) {
+    const name = layout.toLowerCase();
+    const stored = (run: TestRun, id: string): ReturnType<typeof listEvaluations>[number] => listEvaluations(run.runDir).find((e) => e.evaluation_id === id)!;
+
+    // a. A request that is no longer a valid record: the stored verdict is not returned on top of it.
+    {
+      const { run, id } = await acceptedIn(`r2c2-damaged-${name}`, layout);
+      const requestFile = join(holderOf(run, id, layout), 'request.json');
+      const original = readFileSync(requestFile);
+      const intact = areaBytes(run);
+      assert.equal(stored(run, id).status, 'ACCEPTED', layout);
+      for (const text of ['{', 'null', '{}']) {
+        writeFileSync(requestFile, text);
+        assert.equal(stored(run, id).status, 'INVALID', `${layout}: ${text}`);
+        const damaged = areaBytes(run);
+        assert.throws(() => acceptEvaluation(run.runDir, id), /request\.json/, `${layout}: ${text}`);
+        assert.deepEqual(areaBytes(run), damaged, `${layout}: ${text}: nothing was written`);
+        writeFileSync(requestFile, original);
+        assert.deepEqual(areaBytes(run), intact, `${layout}: ${text}: restored`);
+        assert.equal(stored(run, id).status, 'ACCEPTED', `${layout}: ${text}: the restored evaluation reads as accepted`);
+      }
+    }
+
+    // b. A request and a verdict that disagree on the evidence digest: the reader says INVALID, so neither command goes on.
+    {
+      const { run, id } = await acceptedIn(`r2c2-pair-${name}`, layout);
+      const hold = holderOf(run, id, layout);
+      const requestFile = join(hold, 'request.json');
+      const request = JSON.parse(readFileSync(requestFile, 'utf8')) as { evidence: { files: number; digest: string } };
+      request.evidence.digest = '0'.repeat(64);
+      writeFileSync(requestFile, `${JSON.stringify(request, null, 2)}\n`);
+      const e = stored(run, id);
+      assert.equal(e.status, 'INVALID', layout);
+      assert.match(e.issues.join('\n'), /acceptance\.json does not carry the evidence digest of request\.json/, layout);
+      const contradictory = areaBytes(run);
+      assert.throws(() => acceptEvaluation(run.runDir, id), /evidence digest/, `${layout}: accept`);
+      assert.deepEqual(areaBytes(run), contradictory, `${layout}: accept wrote nothing`);
+      assert.throws(() => adjudicate(run.runDir, id, entry), /evidence digest/, `${layout}: adjudicate`);
+      assert.deepEqual(areaBytes(run), contradictory, `${layout}: adjudicate wrote nothing`);
+      assert.equal(existsSync(join(hold, 'adjudication.jsonl')), false, `${layout}: no adjudication file was created`);
+    }
+
+    // c. Checking an accepted evaluation again returns the recorded verdict, not a new one.
+    // d. Adjudication on a valid accepted evaluation is still appended, in order, and changes no other record.
+    {
+      const { run, id } = await acceptedIn(`r2c2-valid-${name}`, layout);
+      const hold = holderOf(run, id, layout);
+      const recorded = JSON.parse(readFileSync(join(hold, 'acceptance.json'), 'utf8')) as { status: string; checked_at: string };
+      assert.equal(recorded.status, 'ACCEPTED', layout);
+      const before = areaBytes(run);
+      const later = '2030-01-01T00:00:00.000Z';
+      const again = acceptEvaluation(run.runDir, id, () => new Date(later));
+      assert.deepEqual([again.status, again.issues], ['ACCEPTED', []], layout);
+      assert.equal(again.checked_at, recorded.checked_at, `${layout}: the recorded verdict, not the later clock`);
+      assert.notEqual(again.checked_at, later, layout);
+      assert.deepEqual(areaBytes(run), before, `${layout}: nothing was rewritten or added`);
+
+      assert.equal(existsSync(join(hold, 'adjudication.jsonl')), false, layout);
+      assert.equal(adjudicate(run.runDir, id, entry).seq, 1, layout);
+      assert.equal(adjudicate(run.runDir, id, entry).seq, 2, layout);
+      const written = readFileSync(join(hold, 'adjudication.jsonl'), 'utf8').split('\n').filter(Boolean);
+      assert.equal(written.length, 2, `${layout}: exactly two lines`);
+      const after = areaBytes(run);
+      const added = `${layout === 'SEPARATE' ? 'evaluation-control' : 'evaluation'}/${id}/adjudication.jsonl`;
+      assert.ok(added in after, layout);
+      delete after[added];
+      assert.deepEqual(after, before, `${layout}: request, verdict, evaluation and the rest are byte-identical`);
+      const e = stored(run, id);
+      assert.deepEqual([e.status, e.issues, e.adjudications.map((a) => a.seq)], ['ACCEPTED', [], [1, 2]], layout);
+    }
+  }
+});
+
+// Prepares at an explicit id and time, writes a scripted judge output, and checks it.
+function evaluatedAs(run: TestRun, id: string, at: Date, answer: string): void {
+  prepareEvaluation(PACKAGE_ROOT, run.runDir, 'run-v3', { evaluationId: id, now: () => at });
+  writeJudge(run, id, judgeOutput(run, id, {}, { 'spec-fidelity': answer }));
+  assert.equal(acceptEvaluation(run.runDir, id).status, 'ACCEPTED');
+}
+
+test('D7-R2-A: evaluations are ordered by the instant they were prepared, including years outside 1000 to 9999, then by numbered id', async () => {
+  // Id, status, recorded time, and issues, in listed order.
+  const listed = (run: TestRun): unknown[][] => listEvaluations(run.runDir).map((e) => [e.evaluation_id, e.status, e.prepared_at, e.issues]);
+  const chosen = (run: TestRun): [unknown, unknown] => {
+    const s = summarize([run.runDir], 'run-v3');
+    return [s.runs[0]!.evaluation, s.judge_answers['spec-fidelity']!.counts];
+  };
+  const year9999 = new Date('9999-12-31T23:59:59.999Z');
+  const year10000 = new Date(Date.UTC(10000, 0, 1));
+  assert.equal(year10000.toISOString(), '+010000-01-01T00:00:00.000Z');
+
+  // 1. Across 9999 and an expanded year: as text, '+010000' sorts before '9999'.
+  const across = await finishedRun('r2c2-across');
+  evaluatedAs(across, 'EVAL-2', year9999, 'YES');
+  evaluatedAs(across, 'EVAL-11', year10000, 'NO');
+  assert.deepEqual(listed(across), [
+    ['EVAL-2', 'ACCEPTED', '9999-12-31T23:59:59.999Z', []],
+    ['EVAL-11', 'ACCEPTED', '+010000-01-01T00:00:00.000Z', []],
+  ]);
+  assert.deepEqual(chosen(across), [{ id: 'EVAL-11', status: 'ACCEPTED' }, { NO: 1 }]);
+  // The same instants with the ids the other way round, so that neither the text of the times nor the ids alone give the order.
+  const across2 = await finishedRun('r2c2-across-swapped');
+  evaluatedAs(across2, 'Z-1', year9999, 'YES');
+  evaluatedAs(across2, 'A-1', year10000, 'NO');
+  assert.deepEqual(listed(across2), [
+    ['Z-1', 'ACCEPTED', '9999-12-31T23:59:59.999Z', []],
+    ['A-1', 'ACCEPTED', '+010000-01-01T00:00:00.000Z', []],
+  ]);
+  assert.deepEqual(chosen(across2), [{ id: 'A-1', status: 'ACCEPTED' }, { NO: 1 }]);
+
+  // 2. Between negative years: as text, '-000001' sorts before '-000002'. The later one has the id that sorts first.
+  const negative = await finishedRun('r2c2-negative');
+  evaluatedAs(negative, 'Z-1', new Date(Date.UTC(-2, 0, 1)), 'YES');
+  evaluatedAs(negative, 'A-1', new Date(Date.UTC(-1, 0, 1)), 'NO');
+  assert.deepEqual(listed(negative), [
+    ['Z-1', 'ACCEPTED', '-000002-01-01T00:00:00.000Z', []],
+    ['A-1', 'ACCEPTED', '-000001-01-01T00:00:00.000Z', []],
+  ]);
+  assert.deepEqual(chosen(negative), [{ id: 'A-1', status: 'ACCEPTED' }, { NO: 1 }]);
+  // A negative year is before an ordinary one.
+  const beforeOrdinary = await finishedRun('r2c2-negative-ordinary');
+  evaluatedAs(beforeOrdinary, 'A-1', new Date('2026-10-03T10:00:00.000Z'), 'YES');
+  evaluatedAs(beforeOrdinary, 'Z-1', new Date(Date.UTC(-1, 0, 1)), 'NO');
+  assert.deepEqual(listed(beforeOrdinary).map((row) => row[0]), ['Z-1', 'A-1']);
+  assert.deepEqual(chosen(beforeOrdinary), [{ id: 'A-1', status: 'ACCEPTED' }, { YES: 1 }]);
+
+  // 3. Ordinary years: the later time wins over the numbered id.
+  const ordinary = await finishedRun('r2c2-ordinary');
+  evaluatedAs(ordinary, 'EVAL-11', new Date('2026-10-03T10:00:00.000Z'), 'YES');
+  evaluatedAs(ordinary, 'EVAL-2', new Date('2026-10-03T11:00:00.000Z'), 'NO');
+  assert.deepEqual(listed(ordinary).map((row) => row[0]), ['EVAL-11', 'EVAL-2']);
+  assert.deepEqual(chosen(ordinary), [{ id: 'EVAL-2', status: 'ACCEPTED' }, { NO: 1 }]);
+
+  // 4. One expanded-year instant for both: the numbered id orders them.
+  const equal = await finishedRun('r2c2-equal');
+  evaluatedAs(equal, 'EVAL-11', year10000, 'NO');
+  evaluatedAs(equal, 'EVAL-2', year10000, 'YES');
+  assert.deepEqual(listed(equal).map((row) => [row[0], row[2]]), [['EVAL-2', '+010000-01-01T00:00:00.000Z'], ['EVAL-11', '+010000-01-01T00:00:00.000Z']]);
+  assert.deepEqual(chosen(equal), [{ id: 'EVAL-11', status: 'ACCEPTED' }, { NO: 1 }]);
 });

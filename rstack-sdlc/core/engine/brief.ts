@@ -77,7 +77,10 @@ ${table(['Action', 'Meaning'], m.allowed_actions.map((a) => [a, ACTION_TEXT[a] ?
 ${table(['Field', 'Text'], Object.entries(m.intent.fields))}
 
 <h2>Specification: ${esc(m.spec.title)}</h2>
+<p>Intent: ${esc(m.spec.intent)}</p>
 ${table(['Criterion', 'Required behavior'], m.spec.criteria.map((c) => [c.id, c.text]))}
+<h3>Exclusions</h3>
+${m.spec.exclusions.length === 0 ? '<p>None stated.</p>' : `<ul>${m.spec.exclusions.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`}
 
 <h2>Plan: ${esc(m.plan.title)}</h2>
 <p>Source basis: ${esc(m.plan.source_basis)}</p>
