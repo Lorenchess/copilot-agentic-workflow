@@ -1550,3 +1550,14 @@ The `EPERM` in check 4 is the signature recorded three times before; it appeared
 **Next.** The outcome of sensitivity run (c), to be added to this record. Astra's re-check of findings 1 to 3 on the identity above. Two owner decisions stay open: whether the technical review's copy is measured the same way, and the PR reviewer's `edit` tool.
 
 **Rollback.** The 125-file state is recorded file by file in `.rstack/pr-reviewer-repair/0-source-identities-before.txt`. The repair changed four source files, two test files, and three records; reversing the three edit scripts' replacements and the one sentence in `core/roles/pr-reviewer.md` returns the source to `26d2c0b3…d737` (not run).
+
+### Addendum — outcome of sensitivity run (c), and the commit — 2026-10-05
+
+Added after commit `19f3f77`; the record above is left as it was written.
+
+- **Run (c) completed**, 11:17Z to 11:34Z, on the final source of the repair: exit 0; 2 controls pass; **24 of 24 selected cases `DETECTED`** (105, 107, 142 to 155, 157, 158, 172 to 177); live source digest equal before and after (`8e0deafc…ad53`); no copy left behind. Records: `.rstack/pr-reviewer-repair/sensitivity-2/`. It is a subset of 177 cases, not a full sensitivity run. The run recorded `git_head` `07ffeeb` because it started before the commit; the commit changed no file it reads.
+- Astra's observation about the earlier 54-case selection still stands: the 30 cases of that selection which this repair did not touch were not run again.
+- **Commit and push.** The owner ran both commands: commit `19f3f77` on `feat/rstack-sdlc-local-build`, pushed to `origin` (`07ffeeb..19f3f77`). BUILD-02 prepared the staging and the message; its own attempt to run them was refused by the session's permission system. No tag.
+- **Scratch space.** On the owner's "remove what could be removed", the contents of the 8,622 scratch directories of 2026-10-03 and 2026-10-04 under `tests/.tmp/` were deleted; about 3,080 remain as shells holding only copies of the fixture `package.json` that another process had open. Eight loose files in `tests/.tmp/` were kept. Drive C: then had about 1.8 GB free.
+
+Status unchanged: findings 1 to 3 `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`; not approved for S6; `COPILOT_VALIDATED`: NO. This addendum is uncommitted.
