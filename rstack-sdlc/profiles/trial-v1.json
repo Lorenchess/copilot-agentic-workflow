@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "record_type": "profile",
+  "profile_id": "trial",
+  "profile_version": 1,
+  "host": "copilot-vscode",
+  "roles": {
+    "coordinator": { "model_alias": "sonnet", "effort_policy": "host-default", "max_attempts": 1, "timeout_seconds": 1800 },
+    "planner": { "model_alias": "opus", "effort_policy": "host-default", "max_attempts": 2, "timeout_seconds": 1800 },
+    "plan-auditor": { "model_alias": "sol", "effort_policy": "host-default", "max_attempts": 2, "timeout_seconds": 1800 },
+    "tester": { "model_alias": "sonnet", "effort_policy": "host-default", "max_attempts": 2, "timeout_seconds": 1800 },
+    "developer": { "model_alias": "sonnet", "effort_policy": "host-default", "max_attempts": 2, "timeout_seconds": 1800 },
+    "reviewer": { "model_alias": "opus", "effort_policy": "host-default", "max_attempts": 2, "timeout_seconds": 1800 }
+  },
+  "catalog": {
+    "opus": { "owner_label": "Opus 5.5", "family": "Anthropic", "host_selector": null, "selector_status": "requires-host-observation" },
+    "sonnet": { "owner_label": "Sonnet 5", "family": "Anthropic", "host_selector": null, "selector_status": "requires-host-observation" },
+    "sol": { "owner_label": "Sol 6.1", "family": "OpenAI", "host_selector": null, "selector_status": "requires-host-observation" },
+    "luna": { "owner_label": "Luna", "family": "OpenAI", "host_selector": null, "selector_status": "requires-host-observation" },
+    "terra": { "owner_label": "Terra", "family": "OpenAI", "host_selector": null, "selector_status": "requires-host-observation" }
+  },
+  "fallbacks": []
+}

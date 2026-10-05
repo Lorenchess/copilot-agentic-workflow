@@ -1,0 +1,23 @@
+{
+  "name": "rstack-sdlc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone RSTACK SDLC factory: host-neutral engine and local adapters",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test \"tests/*.test.ts\"",
+    "test:sensitivity": "node tests/sensitivity.ts",
+    "check:scope": "node scripts/check-scope.ts",
+    "rstack": "node scripts/rstack.ts",
+    "demo:synthetic": "node scripts/synthetic-run.ts",
+    "generate:package": "node scripts/generate-package.ts"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "typescript": "7.0.2"
+  }
+}

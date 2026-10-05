@@ -1,0 +1,17 @@
+# Package-local ignores. The repository root already ignores node_modules/,
+# dist/, coverage/, .env and *.log; they are repeated so this package stays
+# correct if it is moved.
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+*.log
+*.tsbuildinfo
+
+# Runtime evidence and test fixtures created while running the engine locally
+.rstack/
+tests/.tmp/
+
+# Source baselines kept for review; not a test or runtime output, do not clean
+.baselines/
