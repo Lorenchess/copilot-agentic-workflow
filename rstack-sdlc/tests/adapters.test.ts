@@ -128,12 +128,12 @@ test('local proposal is a local record: exact references, NOT_ATTEMPTED, and no 
   assert.match(proposal.base_ref, /^sha256:[0-9a-f]{64}$/, 'the base is a measured tree identity');
   assert.match(proposal.candidate_ref, /^sha256:[0-9a-f]{64}$/, 'the candidate is a measured tree identity, not a commit id');
   assert.notEqual(proposal.base_ref, proposal.candidate_ref);
-  assert.deepEqual(Object.keys(proposal.evidence).sort(), ['implement', 'intent', 'plan', 'plan-audit', 'proof', 'review', 'spec']);
+  assert.deepEqual(Object.keys(proposal.evidence).sort(), ['implement', 'intent', 'plan', 'plan-audit', 'pr-review', 'proof', 'review', 'spec']);
   assert.deepEqual(Object.keys(proposal.planning_basis).sort(), ['audit', 'brief', 'decision', 'final_plan', 'intent', 'last_audited_plan', 'spec']);
   assert.equal(proposal.evidence_class, 'SIMULATED', 'the proposal says its role results were simulated');
   assert.equal(proposal.candidate_verification, 'PASSED_LOCAL_EXECUTION');
-  assert.deepEqual(proposal.evidence_classes, { role_results: 'SIMULATED', review: 'SIMULATED', test_execution: 'ACTUAL_LOCAL_EXECUTION' });
-  for (const ref of [proposal.source_ref, ...Object.values(proposal.evidence), ...Object.values(proposal.planning_basis), proposal.base_ref, proposal.candidate_ref, proposal.proof, proposal.proof_tree, proposal.proof_baseline, proposal.verification, proposal.review] as string[]) {
+  assert.deepEqual(proposal.evidence_classes, { role_results: 'SIMULATED', review: 'SIMULATED', pr_review: 'SIMULATED', test_execution: 'ACTUAL_LOCAL_EXECUTION' });
+  for (const ref of [proposal.source_ref, ...Object.values(proposal.evidence), ...Object.values(proposal.planning_basis), proposal.base_ref, proposal.candidate_ref, proposal.proof, proposal.proof_tree, proposal.proof_baseline, proposal.verification, proposal.review, proposal.pr_review_packet, proposal.pr_review] as string[]) {
     assert.ok(existsSync(join(run.runDir, 'artifacts', ref.slice(7))), 'every reference resolves to retained bytes');
   }
   assert.doesNotMatch(text, /https?:|pr_url|pull_request|PR_CREATED/i);
@@ -169,7 +169,7 @@ test('fake transport: success, negative, malformed, refusal, timeout, and repeat
   const proof = second.trace.filter((t) => t.attempt_id === 'proof-2' && t.action === 'submit:RESULT');
   assert.deepEqual(proof.map((t) => [t.code, t.duplicate]), [['ACCEPTED', false], ['ACCEPTED', true]], 'repeated delivery is deduplicated');
   assert.equal(second.last.directive?.kind, 'DONE');
-  assert.equal(eventTypes(run).filter((t) => t === 'result_accepted').length, 7);
+  assert.equal(eventTypes(run).filter((t) => t === 'result_accepted').length, 8);
   assert.equal(eventTypes(run).filter((t) => t === 'attempt_failed').length, 3);
   assert.deepEqual(engine.status(run.runId).audit_budget, { max: 2, used: 1 }, 'a failed audit invocation does not consume the audit budget');
 });

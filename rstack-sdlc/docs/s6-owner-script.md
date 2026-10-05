@@ -2,6 +2,12 @@
 
 **Status: S6 STARTED — LIVE HOST EXECUTION PENDING ACCESS.** `COPILOT_VALIDATED`: NO. Nothing in this file has been observed on a host. Prepared by BUILD-03 from the committed sources at `07de93a49b4ec62ada46f0a55d2430ac208a4b53`; shared records are kept by BUILD-02 in [s6-host-validation.md](s6-host-validation.md). Wording corrected by BUILD-02 on 2026-10-04, on the owner's authorization, to match two owner decisions: the baseline model rule (stages 3 and 4) and what is actually known about reproducibility (stages 0 and 2). No existing command, path, or expected engine reply changed.
 
+**Added 2026-10-04 by BUILD-03 (draft text, nothing run): S6 IN PROGRESS — NEW SINGLE-ENTRY CANDIDATE AWAITING OFFLINE VERIFICATION.** `COPILOT_VALIDATED`: NO. The owner decided that RSTACK has one human entry point in VS Code, the Coordinator, and BUILD-02 built a new package candidate for that. **The new package identity is PENDING INDEPENDENT VERIFICATION until Astra approves it.** Until then:
+
+- The `READY_FOR_S6` verdict covers checkpoint `07de93a` and manifest `1f5eaef8…08fa` only. Every expected identity in stages 0, 1 and 2 is still that one and has not been replaced.
+- `C:\rstack-sdlc-smoke\` still holds the old package and has not been rebuilt. It is rebuilt only from the approved package, after the approval.
+- Stage P and stage L below, and every paragraph headed "New candidate", describe the new candidate. They cannot be run before the approval and the rebuild. Do not run them against the package now in `C:\rstack-sdlc-smoke\`.
+
 You run this script yourself in VS Code. You do not need any other document while you work.
 
 ## How to use this script
@@ -162,6 +168,14 @@ Skip this stage when the folder exists. Which machine and which checkout to use 
 - Diagnostics lists six `rstack-sdlc-` agents and two Skills, `rstack-sdlc-planning-records` and `rstack-sdlc-application-records` (DOC-EXPECTED).
 - Coordinator tools: terminal/execute, read, and agent/subagent tools, and no file-editing tool (OFFLINE: the file declares `execute`, `read`, `agent`; whether the host enforces that list is DOC-EXPECTED).
 
+**New candidate (PENDING INDEPENDENT VERIFICATION; applies only after Astra's approval and the rebuild).** The values above stay as they are until then. What will have to change in this stage, read by BUILD-03 on 2026-10-04 from the candidate package on the build machine (OFFLINE; manifest SHA-256 `d5ce0c0cfd6fcffec8a2196ae53a7c5fccc4aac014be6fc39f6b7abffff814f9`, which BUILD-02 reports as 33 files, generator version 3):
+
+- The package manifest hash, the hashes of the six agent files and the two Skill files, and the install record hash will be different. The new values are not listed here: they are written in only from the approved package.
+- Coordinator frontmatter (OFFLINE): `target: vscode`; `tools: ['execute', 'read', 'agent']`; `agents:` exactly the five `rstack-sdlc-` role agents; `user-invocable: true`; `disable-model-invocation: true`; no `model:` line.
+- Each role agent's frontmatter (OFFLINE): `target: vscode`; its tools as before, without `agent`; `user-invocable: false`; `disable-model-invocation: true`; no `model:` line.
+- Both Skills' frontmatter (OFFLINE): `name`, `description`, `user-invocable: false`; no `disable-model-invocation` key.
+- Picker and `/` menu (DOC-EXPECTED): among `rstack-sdlc-` entries only the Coordinator is in the agent picker, and neither Skill is offered when you type `/`. Diagnostics should still list six agents and two Skills. These are checked in stage P, part A.
+
 **Save:** `C:\rstack-sdlc-smoke\evidence\i1-verify.txt` (paste the JSON of the last `verify`), `C:\rstack-sdlc-smoke\evidence\d1-picker.png`, `C:\rstack-sdlc-smoke\evidence\d1-diagnostics.png` (or the diagnostics text as `d1-diagnostics.txt`), `C:\rstack-sdlc-smoke\evidence\d1-coordinator-tools.png`.
 
 **PASS:** `CLEAN`; the Coordinator selectable; all five role agents and both Skills listed **in the live diagnostics view**. A file existing on disk is not discovery.
@@ -171,9 +185,249 @@ Skip this stage when the folder exists. Which machine and which checkout to use 
 
 ---
 
+## Stage P — Model and visibility probe (new candidate only)
+
+**This whole stage applies to a package identity that is PENDING INDEPENDENT VERIFICATION** (candidate manifest `d5ce0c0c…14f9`). It cannot be run before Astra approves the candidate and BUILD-03 rebuilds `C:\rstack-sdlc-smoke\` from the approved package. Once that is done, it is the first Copilot-specific experiment: after stage 1 and the stage 2 installation check, and before the full workflow (stages 3 to 8). Nothing in it has been observed on a host. **The stage ends at its gate ("Stage P gate" below): for the new candidate the script stops there in every outcome, and stage 4 is not started from here.**
+
+**Changes files:** yes, in two places only. A scratch folder you create, `C:\rstack-sdlc-smoke\probe\` (parts B to E). One run directory written by the engine under `C:\rstack-sdlc-smoke\workspace\.rstack\runs\` (part I, run P). No installed file, nothing under `C:\rstack-sdlc-smoke\package`, and no profile is created or edited. No model selector is written into an installed file or a profile, today or as a result of this stage.
+
+**Intended models (owner decision, unchanged):** Coordinator, tester, developer = Sonnet 5; planner, reviewer = Opus 5.5; plan-auditor = Sol 6.1. No fallback. The exact strings the host accepts for them are HOST_CONFIRMATION_REQUIRED; this stage is where you look them up. It activates nothing.
+
+**Rules for this stage**
+
+- The scratch agents are for parts B to E only. Never start an RSTACK run from them, and never copy an installed `rstack-sdlc-` file into the scratch folder.
+- Parts A and B send no chat message. Part I sends exactly one, in the workspace window, to the installed Coordinator. Parts C to E send exactly one, in the probe window, to the scratch lead.
+- Order: A, B, I, then C to E. The scratch pair (C to E) and the installed pair (I) answer different questions, and neither result stands in for the other.
+- If an unresolved worker model silently runs on the coordinator's model, that is a host limitation and is written down as one. It is never recorded as successful pinning.
+
+### Part A — What a developer sees of RSTACK
+
+**Do** (window open on `C:\rstack-sdlc-smoke\workspace`, session type Local)
+
+1. Open the agent picker. Note every entry whose name starts with `rstack-sdlc-`.
+2. Click in the chat input and type `/`. Note whether `rstack-sdlc-planning-records` or `rstack-sdlc-application-records` is offered. Delete the `/`; send nothing.
+3. Open the diagnostics view found in stage 2, step 5. Note the `rstack-sdlc-` agents and Skills it lists.
+
+**Expect**
+
+- Picker: `rstack-sdlc-coordinator` is the only `rstack-sdlc-` entry; the five role agents cannot be selected (DOC-EXPECTED; OFFLINE: the files declare `user-invocable: false`).
+- `/` menu: neither Skill is offered (DOC-EXPECTED; OFFLINE: both declare `user-invocable: false`).
+- Diagnostics: six `rstack-sdlc-` agents and two Skills are still listed as loaded (DOC-EXPECTED).
+- Built-in agents, your own agents, and organization agents are outside this check. List them if you wish; no expectation is stated about them.
+
+**Save:** `C:\rstack-sdlc-smoke\evidence\p1-picker.png`, `p1-slash-menu.png`, `p1-diagnostics.png` (or `.txt`).
+
+**PASS:** all three as expected. **FAIL:** a role agent is selectable, a Skill is offered under `/`, or one of the eight is missing from diagnostics → save the view, note it, and stop this stage here (gate, row 1). If no diagnostics view exists, mark that line UNVERIFIED and go on.
+
+### Part B — Which model strings the editor accepts (no chat message)
+
+**Do**
+
+1. Create `C:\rstack-sdlc-smoke\probe\.github\agents\`. Open `C:\rstack-sdlc-smoke\probe` in a **new VS Code window** (`File → New Window`, then `File → Open Folder...`). Leave the workspace window alone.
+2. Save three files there, each with this content and its own model line, typed exactly:
+
+   ```text
+   ---
+   name: probe-sonnet
+   description: 'Scratch probe. Not part of RSTACK.'
+   model: Claude Sonnet 5 (copilot)
+   ---
+   Scratch probe. Do nothing.
+   ```
+
+   | File | `name:` | `model:` value, exactly |
+   |---|---|---|
+   | `probe-sonnet.agent.md` | `probe-sonnet` | `Claude Sonnet 5 (copilot)` |
+   | `probe-opus.agent.md` | `probe-opus` | `Claude Opus 5.5 (copilot)` |
+   | `probe-sol.agent.md` | `probe-sol` | `GPT-6.1 Sol (copilot)` |
+
+3. For each file, open in the editor, record:
+   - whether a warning or hint is shown on the `model:` line, and its exact text (an "Unknown model" hint is the one looked for; its wording is UNVERIFIED);
+   - what hovering over the model value shows;
+   - the exact strings the editor's completion offers for the `model:` key (delete the value, press `Ctrl+Space`, write down or screenshot the list, then restore the value);
+   - the exact label of that model in the chat model picker, and any availability, policy, tier or multiplier mark next to it.
+
+**Expect:** nothing is stated in advance about which of the three strings resolve. The form `Model Name (copilot)` is DOC-EXPECTED; the names themselves come from the Copilot service and are UNVERIFIED.
+
+**Save:** `p2-sonnet.png`, `p2-opus.png`, `p2-sol.png` (editor with the model line and any hint), `p2-completion.png`, `p2-model-picker.png`; in `notes.md` a table: *candidate string / hint text or "none" / hover / completion offers it (yes, no, or the nearest string offered) / picker label / marks*.
+
+**Result, per string:** CONFIRMED (no hint, and the completion list or the picker shows the same string), NOT RESOLVED (hint shown, or the string is not offered), or UNVERIFIED (the editor shows nothing either way). If the completion list offers a different string for the same model, write that string down exactly as the candidate for the owner to decide on; do not put it into any file other than a scratch probe file. Nothing here is PASS or FAIL: it is a lookup.
+
+### Part I — The installed Coordinator reaches the installed Planner (one chat message, one dispatch)
+
+This part uses the installed files only, as installed: no scratch agent, no model line, no profile change. The Planner is invoked only by the Coordinator, and only for an attempt the engine has granted. Never invoke `rstack-sdlc-planner` in any other way. The run started here is **run P**: it is kept as evidence and never continued. Run W (stage 4) is a different, fresh run, later.
+
+**Changes files:** yes, only one new run directory under `C:\rstack-sdlc-smoke\workspace\.rstack\runs\`. `C:\rstack-sdlc-smoke\app` is never written.
+
+**Do** (window open on `C:\rstack-sdlc-smoke\workspace`, session type Local)
+
+1. Start a **new chat**. Select `rstack-sdlc-coordinator`. Do not pick a model; note the exact agent name and model label the chat shows.
+2. Send exactly:
+   `Start a run. Application directory: C:/rstack-sdlc-smoke/app  Request file: C:/rstack-sdlc-smoke/requests/REQ-001.md`
+3. Read each terminal command before you allow it. Allow one command at a time; never choose "always allow". Allow only these, in this order: `start`; the **first** `next`; the `submit` of `work/intent-1/result.json`. A `status` command may be allowed at any point (it only reads).
+4. **Stopping point.** After the `submit` reply, the Coordinator will ask to run `next` a second time. **Do not allow it: press Stop** (cancel the turn). Send nothing more in this chat.
+5. In a second terminal run the engine `status` command from the Places section with the run id. Write the run id in `notes.md` as **run P**.
+
+**Expect** (OFFLINE: the engine replies were rehearsed by BUILD-02 on 2026-10-04 through the candidate package's command line, in a throwaway workspace, with the same request and application and a simulated role result. Everything about the host is DOC-EXPECTED or UNVERIFIED.)
+
+- `start` → `"code": "STARTED"`, a `run_id` starting `RUN-`.
+- First `next` → `"code": "DISPATCHED", "dispatch": "GRANTED"`, with `directive.pending.attempt_id` = `intent-1`, `role` = `planner`, `work_dir` = `work/intent-1`.
+- The Coordinator then invokes one subagent, named `rstack-sdlc-planner`, and gives it only the `directive.pending` JSON and the run directory path (DOC-EXPECTED that the host runs a hidden agent named in the Coordinator's `agents:` list).
+- `submit` → `"code": "ACCEPTED"`.
+- `status` in step 5 → stage `spec`, `attempts` = `{"intent":1}`, no pending attempt. Nothing moves until a further `next`, which is not given.
+- Two things may differ and are recorded as seen, not corrected. A real Planner may raise a product question, and the run then stands at a human wait instead of stage `spec`; leave it unanswered. If the host runs terminal commands without asking, a second dispatch (`spec-1`) may be granted before you can press Stop; press Stop as soon as you can and note how far it went.
+
+**Keep as evidence**
+
+| What | Where to look | Save as |
+|---|---|---|
+| Both installed agent names, exactly as the host shows them | the chat's agent selector for the Coordinator; the subagent block for the Planner | `p4-coordinator.png`, `p4-subagent-block.png` |
+| The engine-granted attempt | the first `next` reply in the chat or terminal | `p4-next-reply.txt` |
+| The envelope unchanged | expand the subagent block; compare its prompt with the `directive.pending` JSON printed just above; note "identical" or what differs | same screenshot, and a line in `notes.md` |
+| The invocation itself | the subagent block shows `rstack-sdlc-planner` ran and returned | same screenshot |
+| The effective model of the Planner, if shown | subagent block, pill, or hover; if not shown: UNVERIFIED | `p4-model.png` if shown |
+| The stop | the chat after you pressed Stop, with no second `next` | `p4-stop.png` |
+| The run's state | `status` from step 5 | `p4-status.txt` |
+| The whole chat | export | `p4-chat-export.json` |
+
+**Result of the installed-pair item** (write exactly one in `notes.md`)
+
+- **REACHED:** after a `GRANTED` attempt `intent-1`, the host shows that the agent named `rstack-sdlc-planner` was invoked by `rstack-sdlc-coordinator`. Note separately whether the envelope was unchanged and what `submit` replied. A `submit` that replies `"ok": false` is the engine working: record the code, do not abandon or retry, and stop as in step 4.
+- **NOT REACHED:** the engine granted the attempt but no subagent named `rstack-sdlc-planner` ran: the Coordinator invoked another agent, did the work itself, or invoked nothing.
+- **REFUSED:** the host refused the invocation. Save its exact message. For a model or cost-tier message the Coordinator is expected to report the block `RSTACK MODEL REQUIREMENT NOT AVAILABLE` (OFFLINE: its file says so; UNVERIFIED on the host).
+- **NOT EXERCISED:** the engine did not grant the attempt (`start` or `next` replied `"ok": false`). Save the reply.
+
+Only REACHED completes this item. A `PONG` from the scratch pair in parts C to E never completes it, and nothing else in this script does. With any other result, stop here: do not go on to parts C to E. The gate below says what follows.
+
+What you see here is OWNER-OBSERVED for this run. In the shared records the item stays HOST_CONFIRMATION_REQUIRED until the S6 evidence is independently accepted.
+
+### Parts C, D and E — One scratch dispatch (one chat message)
+
+Run this only if part I ended REACHED and part B gave a CONFIRMED string for both Sonnet 5 and Opus 5.5. If a string is missing, write "C–E not exercised: no confirmed string for <model>" and go to the gate below.
+
+**Do** (in the probe window)
+
+1. Save two more files in `C:\rstack-sdlc-smoke\probe\.github\agents\`, with the confirmed strings in place of the two model values:
+
+   `probe-lead.agent.md`
+   ```text
+   ---
+   name: probe-lead
+   description: 'Scratch probe lead. Not part of RSTACK.'
+   tools: ['agent']
+   agents: ['probe-worker']
+   model: <confirmed Sonnet 5 string>
+   ---
+   When asked to run the probe, invoke the agent probe-worker once with the prompt "Answer." Leave the subagent tool's model argument unset. Then repeat the worker's answer and stop. Do nothing else. If the host does not run probe-worker, report the host's message unchanged and stop: no retry, no other agent, no other model.
+   ```
+
+   `probe-worker.agent.md`
+   ```text
+   ---
+   name: probe-worker
+   description: 'Scratch probe worker. Not part of RSTACK.'
+   tools: []
+   user-invocable: false
+   disable-model-invocation: true
+   model: <confirmed Opus 5.5 string>
+   ---
+   Answer with the single word PONG. Use no tool. Change nothing.
+   ```
+
+2. Reload the window. Check the agent picker: `probe-lead` is listed, `probe-worker` is not. Select `probe-lead`. Do not pick a model; note the exact model label the chat shows.
+3. Send exactly: `Run the probe.`
+4. Expand the subagent block. Look for the model the worker ran on in each place the host may show it: the subagent block or its pill, the Agents window indicator, and the hover on the response.
+
+**Expect**
+
+- C, tier (DOC-EXPECTED): a worker whose model is above the coordinator's cost tier does not run. Whether Opus 5.5 is above Sonnet 5 on this account is UNVERIFIED, so either outcome may appear: the worker answers `PONG`, or the host refuses.
+- D, hidden worker (DOC-EXPECTED): a worker with `user-invocable: false` and `disable-model-invocation: true` is still reached because the lead names it in `agents:`. This shows the mechanism for the scratch pair only. Whether the installed Coordinator reaches the installed `rstack-sdlc-planner` is part I's question, and only part I answers it.
+- E, effective model: whether the host shows the model a subagent ran on is UNVERIFIED.
+
+**Record in `notes.md`**
+
+| Part | What to write |
+|---|---|
+| C | the exact result: the worker's answer, or the host's exact message |
+| D | worker hidden from the picker (yes/no); worker reached through `agents:` (yes/no) |
+| E | the exact model label shown for the worker and where it was shown; whether it equals the worker's declared model, the lead's model, or neither. If nowhere shown: UNVERIFIED |
+
+**Save:** `p3-chat-export.json`, `p3-picker.png`, `p3-subagent-block.png`, and a screenshot of each place that shows a model label.
+
+**What to write for the scratch dispatch** (one of these; what follows from it is in the gate below)
+
+- The worker answered and the host shows it ran on its declared Opus 5.5 model → "pin applied on this host, this account, this scratch pair". OWNER-OBSERVED for the scratch pair only.
+- The worker answered but the host shows the lead's model, or another model → "host limitation: worker model not applied", with the labels. Not a successful pin.
+- The worker answered and no model is shown → E is UNVERIFIED. The pin is neither confirmed nor refuted, and is not written down as confirmed anywhere.
+- The host refused because the worker's model is above the coordinator's tier, or for any model, tier or policy reason → save the exact message. No other model, no change to the role-to-model map, no second attempt.
+- The worker was not reached for another reason (for example the host says the agent is unknown or cannot be invoked) → save the exact message.
+
+When the parts are finished, close the probe window. Leave `C:\rstack-sdlc-smoke\probe\` in place as evidence; it is never opened together with the workspace.
+
+### Stage P gate — what happens next (new candidate)
+
+For the new candidate, **the script stops here in every outcome**. Stage 4 is not started from this stage: the unpinned full workflow is not run on the new candidate. This follows the owner's decision D-SE, which for the new candidate replaces the older order (routing by model only after a successful baseline run); that older order belongs to the old candidate.
+
+Find the **first** row that matches, from the top. It gives the one next action. No row authorizes a production pin: a pin is made only by a separate change that you authorize in your own words.
+
+| # | Outcome | The one next action |
+|---|---|---|
+| 1 | Part A failed (a role agent selectable, a Skill under `/`, or one of the eight missing from diagnostics) | STOP. Give the saved views to BUILD-03, who preserves them and hands them to BUILD-02. Nothing is edited or reinstalled. |
+| 2 | Part I did not end REACHED (NOT REACHED, REFUSED, or NOT EXERCISED) | STOP. Progression is blocked whatever the scratch pair did or would do. Give the part I evidence to BUILD-03, who preserves it and hands it to BUILD-02. No retry, no other way of invoking the Planner. |
+| 3 | Part B: any of the three strings is NOT RESOLVED or UNVERIFIED | STOP. Report the table from part B to yourself as the model decision to take, outside the run. No string, including a different one the editor offered, goes into a profile. |
+| 4 | Parts C to E: the host refused for a tier, model or policy reason | STOP. The model-routing decision returns to you, outside the run. The map is not changed, and no pin is made. |
+| 5 | Parts C to E: the scratch worker was not reached for another reason | STOP. Give the exact message to BUILD-03, who preserves it and hands it to BUILD-02. |
+| 6 | Parts C to E: the worker answered, but its effective model was not shown, or was not its declared model | STOP. Recorded as UNVERIFIED (not shown) or as a host limitation (another model); never as a confirmed pin. Whether to pin without that confirmation is your decision, outside the run. |
+| 7 | Success: A passed; I ended REACHED; all three strings CONFIRMED; the scratch worker answered; the host showed it ran on its declared Opus 5.5 model | STOP and hand the evidence back to BUILD-03 and BUILD-02. The steps after that are in the list below and are not part of this session. |
+
+After row 7, in this order, each step separate and none of them done by this script:
+
+1. You authorize the pinning change in your own words. Without that, nothing is pinned.
+2. BUILD-02 makes one bounded change: a production profile with the confirmed selectors, marked as observed. The package is regenerated.
+3. A focused independent verification of that package (the exact pins, visibility, determinism, no fallback).
+4. BUILD-03 rebuilds `C:\rstack-sdlc-smoke\` from the verified package and replaces the expected identities in stages 0, 1 and 2 of this script.
+5. Only then is the full workflow (stages 3 to 8) run, on that package.
+
+Limits of row 7, to be said in the handback: the scratch pair tests Sonnet 5 dispatching Opus 5.5 only. Sonnet 5 dispatching Sol 6.1 is not tested by this stage and stays UNVERIFIED. Row 7 shows a pin applied for one scratch pair on one host and account; it does not show it for the installed role agents.
+
+Stage L below is not part of the full workflow: it starts no run and sends no chat message. It may be done in the same session after this gate, in any outcome, and its notes go into the same handback. It does not lift the stop.
+
+---
+
+## Stage L — Enterprise layout visibility (new candidate only; observation, no redesign)
+
+**Applies to a package identity that is PENDING INDEPENDENT VERIFICATION**, under the same condition as stage P. It can be done at any point after stage P's parts, on either side of the stage P gate's stop, and is independent of stages 3 to 8. It is not the full workflow and does not lift that stop. No run is started and no chat message is sent. The installer commands below were rehearsed once by BUILD-02 on 2026-10-04 (OFFLINE, candidate package on the build machine, a throwaway git-initialized folder of the same shape, not this folder): `PLAN_READY` with eight `CREATE`, `INSTALLED`, `CLEAN`, nine files under the root `.github`, the three subfolders left empty.
+
+**Changes files:** yes, only in a second disposable folder, `C:\rstack-sdlc-smoke\layout\`, which you create. It gets its own local git repository with no remote; nothing is pushed anywhere.
+
+The layout stands for the intended enterprise repository: `.github\agents` and `.github\skills` at the repository root, with the subprojects `service-a`, `service-b` and `frontend` below it.
+
+**Do**
+
+1. `New-Item -ItemType Directory C:\rstack-sdlc-smoke\layout\service-a, C:\rstack-sdlc-smoke\layout\service-b, C:\rstack-sdlc-smoke\layout\frontend`, then `git -C C:\rstack-sdlc-smoke\layout init`.
+2. Install once, at the root: the `plan` and `install ... --apply` commands of stage 2, step 2, with `--workspace "C:/rstack-sdlc-smoke/layout"`, then `verify` with the same path.
+3. Open `C:\rstack-sdlc-smoke\layout` in a new window. Repeat stage P, part A (picker, `/`, diagnostics).
+4. Close it. Open `C:\rstack-sdlc-smoke\layout\service-a` alone in a new window. If VS Code asks whether you trust the parent folder, note the prompt and your answer. Look up the VS Code setting that makes chat customizations from a parent repository apply: `chat.useCustomizationsInParentRepositories` (DOC-EXPECTED id, read by BUILD-02 in the VS Code documentation; if Settings shows another id, note the real one). Note its current value and do not change it yet. Repeat part A.
+5. Optional: switch that setting on for this window's workspace only, reload, and repeat part A. Switch it back afterwards.
+
+**Expect**
+
+- Root opened: one visible RSTACK Coordinator, role agents hidden, Skills not under `/` (DOC-EXPECTED).
+- The same whichever subproject a run would name as `--app`: `--app` is an argument of the `start` command and no installed file depends on it (as reported by BUILD-02; not exercised here, since no run is started).
+- `service-a` opened alone: what appears follows the parent-repository setting, which is documented as off by default (DOC-EXPECTED). With it off, no RSTACK agent is expected in the picker. With it on, one Coordinator is expected, under the documented conditions: the opened folder has no `.git` folder of its own, a parent folder has one, and the parent repository folder is trusted (DOC-EXPECTED). The layout meets the first two; a declined trust prompt would also explain an empty picker.
+- A duplicate Coordinator is expected only where a second RSTACK installation is also visible to the same window (DOC-EXPECTED). This script does not create one.
+
+**Save:** `l1-root-picker.png`, `l1-sub-picker-setting-off.png`, `l1-sub-picker-setting-on.png` (if step 5 was done), `l1-verify.txt`; in `notes.md` the setting's exact id and default.
+
+**Result:** observation only. Write what was seen against each expectation. A difference is recorded and reported to BUILD-03; nothing is redesigned or reinstalled to change it.
+
+---
+
 ## Stage 3 — Model and profile observation
 
 **Changes files:** no. **Do not** edit any agent file or the profile, and do not add a model selector or a fallback selector anywhere.
+
+**New candidate (PENDING INDEPENDENT VERIFICATION).** The background below stays true for the candidate package: its agent files carry no `model:` line either (OFFLINE). For the new candidate, stages 3 to 8 do not follow stage P directly: the script stops at the stage P gate in every outcome, and the full workflow runs only on a package that was independently verified after that gate (owner decision D-SE). The baseline rule below, with its last sentence that routing by model follows a successful baseline run, was written for the old candidate (D-S6) and does not set the order for the new one. In no case do you pick a model by hand or add a selector during a run; pins come only from a separate change that the owner authorizes. This stage's wording for the pinned package is written when that package is verified. One addition in the candidate's Coordinator file (OFFLINE): a section "On this host" tells it never to choose, pass, substitute or override a role's model, and, if the host does not run the named role agent, not to retry, name another model or agent, omit the agent name, or do the work itself. For a model or cost-tier message it reports a fixed block, `RSTACK MODEL REQUIREMENT NOT AVAILABLE` / `Role: …` / `Required model: …` / `Host result: <the host's message, unchanged>`, says the attempt stays pending, gives the attempt id, and stops. Whether it does so on the host is UNVERIFIED and would first be seen in stage 4.
 
 Background you need (OFFLINE): the installed agent files carry no `model:` line, because no host selector has been observed. Each role file only states the intended model in a note. Intended: Coordinator Sonnet 5; planner Opus 5.5; plan-auditor Sol 6.1; tester Sonnet 5; developer Sonnet 5; reviewer Opus 5.5.
 
@@ -201,6 +455,8 @@ Baseline rule (owner decision, 2026-10-04): this first run uses whatever model t
 ---
 
 ## Stage 4 — Real role dispatch (run W, request to audit)
+
+**New candidate (PENDING INDEPENDENT VERIFICATION): gate.** Do not start this stage on the new candidate from stage P. It may be started only when all of these hold: stage P ended at row 7 of its gate; the owner authorized the pinning change; the regenerated package was independently verified; `C:\rstack-sdlc-smoke\` was rebuilt from it; and stages 0, 1 and 2 of this script carry that package's identities. If any of these is missing, stop. Run P from stage P, part I is never continued here: run W is a fresh run.
 
 **Changes files:** yes, only under `C:\rstack-sdlc-smoke\workspace\.rstack\runs\<run-id>\` (written by the engine and by role agents in `work\<attempt-id>\`). `C:\rstack-sdlc-smoke\app` is never written.
 
@@ -378,4 +634,5 @@ This run never gets past its first stage. The profile allows the planner two att
 - A completed script gives OWNER-OBSERVED evidence for one host version, one account, one model selection. It does not by itself make the package `COPILOT_VALIDATED`; that word is used only after an independent acceptance of the evidence.
 - Stays UNVERIFIED unless the host shows it: the effective model and effort of a subagent, whether a subagent's context is really fresh, and whether a role's tools are confined to its attempt directory (OFFLINE: they are not known to be).
 - Not exercised by this script: `amend`, `reject`, a product question unless the run raises one, Jira, Bitbucket, publication.
+- Stages P and L, when they can be run, give observations for one host version and one account. Only stage P, part I shows whether the installed Coordinator reaches the installed Planner, and it shows it for that one role and one dispatch; the other four role agents are first reached in the full workflow. A scratch pair that shows a pinned worker model does not show it for the installed role agents, which carry no `model:` line. A worker that silently runs on the coordinator's model is a host limitation, never a successful pin.
 - Not established before this run: that the package and the folder rebuild to the same bytes on another machine or checkout. A stage 0 that passes on a second machine shows it for that machine and checkout only. The known line-ending cause (finding S6-P1) is classified FUTURE_HARDENING / PORTABILITY and is not repaired before the baseline run.

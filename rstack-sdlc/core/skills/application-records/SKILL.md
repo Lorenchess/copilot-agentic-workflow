@@ -75,6 +75,45 @@ Rules the engine applies:
 
 `verdict` is `ACCEPT`, `REJECT`, or `INCONCLUSIVE`. `ACCEPT` needs at least one `CHECKED` item; `REJECT` needs at least one finding; `INCONCLUSIVE` needs at least one limitation. A `CHECKED` item must have `evidence`; a `NOT_CHECKED` item must have empty `evidence` and a `note`. `classification` is `BLOCKING`, `MAJOR`, or `MINOR`. `findings` may be `[]`.
 
+## pr-review.json — PR reviewer
+
+```json
+{
+  "schema_version": 1,
+  "record_type": "pr-review-result",
+  "subject": { "packet": "<inputs.pr_review_packet>", "candidate": "<inputs.candidate>" },
+  "verdict": "APPROVE",
+  "title": "<one line, at most 120 characters>",
+  "summary": "<what was asked for and what changed, at most 1200 characters>",
+  "change_analysis": [{ "text": "<what changed and why it matters>", "evidence": ["<identity you read>"] }],
+  "testing_analysis": [{ "text": "<what the retained runs establish and leave untested>", "evidence": ["<identity you read>"] }],
+  "risks": [{ "text": "<a risk a human reviewer needs to know>", "evidence": [] }],
+  "limitations": ["<what you could not examine>"],
+  "reviewer_notes": ["<where a human reviewer should look>"],
+  "findings": [],
+  "coverage": [
+    { "item": "intent-fidelity", "status": "CHECKED", "evidence": "<what you looked at>", "note": "" },
+    { "item": "measured-change-fidelity", "status": "CHECKED", "evidence": "<what you looked at>", "note": "" },
+    { "item": "verification-claims", "status": "CHECKED", "evidence": "<what you looked at>", "note": "" },
+    { "item": "technical-review-disclosure", "status": "CHECKED", "evidence": "<what you looked at>", "note": "" },
+    { "item": "material-risks", "status": "CHECKED", "evidence": "<what you looked at>", "note": "" },
+    { "item": "title-and-scope", "status": "CHECKED", "evidence": "<what you looked at>", "note": "" },
+    { "item": "submission-readiness", "status": "CHECKED", "evidence": "<what you looked at>", "note": "" }
+  ],
+  "evidence_references": ["<every identity you read>"]
+}
+```
+
+Rules the engine applies:
+
+- `verdict` is `APPROVE`, `REQUEST_CHANGES`, or `INCONCLUSIVE`.
+- `coverage` holds the seven items above by exactly these names, each once, plus any item the procedure adds. `APPROVE` needs all seven `CHECKED`.
+- `APPROVE` also needs at least one `change_analysis` entry, at least one `testing_analysis` entry, and no `BLOCKING` or `MAJOR` finding. `REQUEST_CHANGES` needs at least one finding, in the `findings` format of `review.json`. `INCONCLUSIVE` needs at least one limitation.
+- Every `change_analysis` and `testing_analysis` entry cites at least one identity. `risks` entries may cite none.
+- An identity may be cited only if the packet names it, it is the packet, or it is a file of the packet's three trees (`sha256:` followed by the file's hash). Anything else is refused.
+- Text fields are plain text with no control characters; `title` is one line. Lists are short: at most 12 `change_analysis` entries and 8 of each other kind, 600 characters each. The whole file is at most 64 KiB.
+- There is no field for a path, a count, a command, a test result, another review's verdict, or an authorization. The engine takes those from the retained records; writing them in your text does not change them.
+
 ## result.json — every role
 
 Write it last, directly in `work_dir`. Copy each `<envelope.…>` value exactly from your task envelope.

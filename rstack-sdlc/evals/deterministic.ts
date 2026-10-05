@@ -26,7 +26,15 @@ export type CheckResult = 'PASS' | 'FAIL' | 'NOT_APPLICABLE' | 'UNAVAILABLE';
 // Record formats this evaluator interprets. A run recorded under any other
 // workflow version is reported as not interpreted. It is not re-read under
 // today's rules, which would turn format differences into false failures.
-export const SUPPORTED_WORKFLOW_VERSIONS = [5];
+//
+// Version 5 has no PR review: its runs are read exactly as before, the PR
+// review checks report that the stage does not exist in that version, and
+// nothing here presents such a run as reviewed for submission. Version 6 adds
+// the PR review packet and the PR review before a proposal. Each run is
+// replayed with the definition it retained, never with today's.
+export const SUPPORTED_WORKFLOW_VERSIONS = [5, 6];
+// The first version whose proposals follow a PR review.
+const PR_REVIEW_SINCE = 6;
 
 export interface Check {
   id: string;
@@ -55,6 +63,9 @@ export interface DeterministicReport {
     role_results: string;
     test_execution: 'ACTUAL_LOCAL_EXECUTION' | 'NOT_APPLICABLE';
     review: string;
+    // The submission review. NOT_IN_THIS_WORKFLOW_VERSION: the run's workflow has
+    // no such stage, which is neither a pass nor a missing record.
+    pr_review: string;
     authorization: { decision_id: string; provenance: string; human_observed: 'NO' | 'UNVERIFIED_CLAIM' | 'UNKNOWN' } | 'NOT_APPLICABLE';
     host_validation: 'NOT_OBSERVED';
   };
@@ -150,7 +161,7 @@ export function evaluateDeterministic(packetDir: string): DeterministicReport {
     outcome: { status: 'UNREADABLE', stage: null, blocker: null },
     task_completed: false,
     control: [],
-    evidence: { role_results: packet.transport_class ?? 'UNKNOWN', test_execution: 'NOT_APPLICABLE', review: 'NOT_APPLICABLE', authorization: 'NOT_APPLICABLE', host_validation: 'NOT_OBSERVED' },
+    evidence: { role_results: packet.transport_class ?? 'UNKNOWN', test_execution: 'NOT_APPLICABLE', review: 'NOT_APPLICABLE', pr_review: 'NOT_APPLICABLE', authorization: 'NOT_APPLICABLE', host_validation: 'NOT_OBSERVED' },
     executions: [],
     proof: 'NOT_APPLICABLE',
     unsuccessful: { failed_attempts: {}, rejected_submissions: {}, failed_verifications: 0 },
@@ -230,7 +241,7 @@ export function evaluateDeterministic(packetDir: string): DeterministicReport {
   const authorizing = lastIndex((e) => e.type === 'decision_recorded' && (e.data.action === 'proceed' || e.data.action === 'amend'));
   const auditAccepted = lastIndex((e) => e.type === 'result_accepted' && stageOfResult(e) === 'plan-audit' && (authorizing < 0 || events.indexOf(e) < authorizing));
   const brief = lastIndex((e) => e.type === 'brief_rendered' && (authorizing < 0 || events.indexOf(e) < authorizing));
-  const laterWork = index((e) => e.type === 'task_dispatched' && ['proof', 'implement', 'review'].includes(String(e.data.step_id)));
+  const laterWork = index((e) => e.type === 'task_dispatched' && ['proof', 'implement', 'review', 'pr-review'].includes(String(e.data.step_id)));
 
   if (auditAccepted < 0) check('gate-ordering', 'NOT_APPLICABLE', 'no audit result was accepted');
   else if (laterWork >= 0 && (authorizing < 0 || authorizing > laterWork)) check('gate-ordering', 'FAIL', 'work after planning was dispatched without an earlier authorizing decision');
@@ -254,6 +265,37 @@ export function evaluateDeterministic(packetDir: string): DeterministicReport {
   else {
     const extra = auditDispatches.flatMap((e) => Object.keys(e.data.inputs as object).filter((k) => !['source', 'intent', 'spec', 'plan'].includes(k)));
     check('audit-inputs-limited', extra.length === 0 ? 'PASS' : 'FAIL', extra.length === 0 ? `${auditDispatches.length} audit dispatch(es), inputs limited to source, intent, spec, plan` : `extra inputs: ${extra.join(', ')}`);
+  }
+
+  // ---- the PR review gate, for the workflow versions that have one
+  const prReviewed = (format.version ?? 0) >= PR_REVIEW_SINCE;
+  if (!prReviewed) {
+    check('pr-review-gate', 'NOT_APPLICABLE', `workflow version ${format.version} has no PR review stage; the run is not read as if it had one`);
+    report.evidence.pr_review = 'NOT_IN_THIS_WORKFLOW_VERSION';
+  } else {
+    const proposed = lastIndex((e) => e.type === 'proposal_recorded');
+    if (proposed < 0) check('pr-review-gate', 'NOT_APPLICABLE', 'no proposal was recorded');
+    else {
+      // Read backwards from the proposal: the approving PR review, the packet it
+      // was given, and the code review before that, with nothing invalidated between.
+      const before = (pred: (e: JournalEvent) => boolean, limit: number): number => events.map((e, i) => i < limit && pred(e)).lastIndexOf(true);
+      const prAccepted = before((e) => e.type === 'result_accepted' && stageOfResult(e) === 'pr-review', proposed);
+      const packetAt = before((e) => e.type === 'pr_review_packet_recorded', prAccepted);
+      const reviewAccepted = before((e) => e.type === 'result_accepted' && stageOfResult(e) === 'review', packetAt);
+      const invalidated = events.some((e, i) => e.type === 'verification_invalidated' && i > reviewAccepted && i < proposed);
+      const accepted = prAccepted >= 0 ? (events[prAccepted] as JournalEvent) : null;
+      const given = accepted ? (dispatchOf.get(String(accepted.data.attempt_id))?.data.inputs as Record<string, string> | undefined) : undefined;
+      const packetRef = packetAt >= 0 ? (events[packetAt] as JournalEvent).data.packet_ref : null;
+      const problems: string[] = [];
+      if (reviewAccepted < 0 || packetAt < 0 || prAccepted < 0) problems.push('the proposal does not follow a code review, a PR review packet, and a PR review, in that order');
+      else {
+        if (invalidated) problems.push('the verification was invalidated between the code review and the proposal');
+        if (accepted?.data.pr_review_verdict !== 'APPROVE') problems.push(`the PR review before the proposal returned ${String(accepted?.data.pr_review_verdict)}`);
+        if (given?.pr_review_packet !== packetRef) problems.push('the PR review was given another packet than the one recorded before it');
+      }
+      check('pr-review-gate', problems.length === 0 ? 'PASS' : 'FAIL', problems.length === 0 ? `code review record ${reviewAccepted + 1}, packet ${packetAt + 1}, PR review ${prAccepted + 1}, proposal ${proposed + 1}` : problems.join('; '));
+    }
+    if (events.some((e) => e.type === 'result_accepted' && stageOfResult(e) === 'pr-review')) report.evidence.pr_review = report.evidence.role_results;
   }
 
   // ---- executions, proof, proposal
@@ -299,7 +341,22 @@ export function evaluateDeterministic(packetDir: string): DeterministicReport {
     if (review.subject?.candidate !== proposal.candidate_ref || review.subject?.verification !== proposal.verification) problems.push('the review names another candidate or verification');
     if (review.verdict !== 'ACCEPT') problems.push('the review named by the proposal is not an acceptance');
     if (finalPlan.decision !== basis.decision) problems.push('the final plan names another decision');
-    check('proposal-links', problems.length === 0 ? 'PASS' : 'FAIL', problems.length === 0 ? 'candidate, verification, review, and decision agree' : problems.join('; '));
+    if (prReviewed) {
+      // From this version on a proposal also names the packet and the PR review, and they must agree with it.
+      const packet = JSON.parse(text(proposal.pr_review_packet) ?? '{}') as { implementation?: Record<string, string>; execution?: Record<string, string>; technical_review?: Record<string, string> };
+      const prReview = JSON.parse(text(proposal.pr_review) ?? '{}') as { subject?: Record<string, string>; verdict?: string };
+      if (proposal.schema_version !== 2) problems.push('the proposal is not in the format that carries a PR review');
+      if (packet.implementation?.candidate !== proposal.candidate_ref || packet.execution?.verification !== proposal.verification || packet.technical_review?.review !== proposal.review) {
+        problems.push('the PR review packet names another candidate, verification, or code review');
+      }
+      if (prReview.subject?.packet !== proposal.pr_review_packet || prReview.subject?.candidate !== proposal.candidate_ref) problems.push('the PR review names another packet or candidate');
+      if (prReview.verdict !== 'APPROVE') problems.push('the PR review named by the proposal is not an approval');
+    }
+    check(
+      'proposal-links',
+      problems.length === 0 ? 'PASS' : 'FAIL',
+      problems.length === 0 ? `candidate, verification, review, ${prReviewed ? 'PR review packet, PR review, ' : ''}and decision agree` : problems.join('; '),
+    );
     check('publication-not-attempted', proposal.publication_status === 'NOT_ATTEMPTED' ? 'PASS' : 'FAIL', `publication_status ${String(proposal.publication_status)}`);
   }
 

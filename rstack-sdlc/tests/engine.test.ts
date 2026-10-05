@@ -54,6 +54,8 @@ test('synthetic sequence reaches PR_PROPOSAL_READY with publication NOT_ATTEMPTE
     'task_dispatched', 'result_accepted',
     'verification_recorded',
     'task_dispatched', 'result_accepted',
+    'pr_review_packet_recorded',
+    'task_dispatched', 'result_accepted',
     'proposal_recorded',
   ]);
   assert.equal(engine.next(run.runId).code, 'NO_WORK', 'a finished run hands out no work');

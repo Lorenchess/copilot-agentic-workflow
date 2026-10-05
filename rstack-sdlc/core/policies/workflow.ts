@@ -4,7 +4,7 @@
 
 import { canonicalJson, refOf } from '../contracts/records.ts';
 
-export type Contract = 'intent' | 'spec' | 'plan' | 'audit' | 'dispositions' | 'proof' | 'review';
+export type Contract = 'intent' | 'spec' | 'plan' | 'audit' | 'dispositions' | 'proof' | 'review' | 'pr-review';
 
 export interface Produced {
   key: string;
@@ -49,7 +49,7 @@ export interface WorkflowDef {
 
 export const WORKFLOW: WorkflowDef = {
   workflow_id: 'local-request-to-proposal',
-  workflow_version: 5,
+  workflow_version: 6,
   audit_budget_max: 2,
   max_question_rounds: 3,
   stages: [
@@ -146,6 +146,38 @@ export const WORKFLOW: WorkflowDef = {
       inputs: ['source', 'spec', 'final_plan', 'audit', 'proof', 'proof_tree', 'proof_baseline', 'base', 'candidate', 'verification'],
       app_copy: 'candidate',
       produces: [{ key: 'review', file: 'review.json', contract: 'review' }],
+      next: 'pr-review-packet',
+    },
+    // After technical acceptance the engine assembles one record of references
+    // and measured facts: what a submission review may rely on, and nothing else.
+    { id: 'pr-review-packet', kind: 'deterministic', next: 'pr-review' },
+    {
+      // A second, separate review: is this change ready to be submitted, and is
+      // what will be said about it supported by the retained evidence? The code
+      // review stays the technical gate; this one cannot override it. Only
+      // APPROVE lets the proposal be composed.
+      id: 'pr-review',
+      kind: 'role',
+      role: 'pr-reviewer',
+      mode: 'pr-review',
+      inputs: [
+        'pr_review_packet',
+        'pr_review_procedure',
+        'source',
+        'intent',
+        'spec',
+        'final_plan',
+        'audit',
+        'proof',
+        'proof_tree',
+        'proof_baseline',
+        'base',
+        'candidate',
+        'verification',
+        'review',
+      ],
+      app_copy: 'candidate',
+      produces: [{ key: 'pr_review', file: 'pr-review.json', contract: 'pr-review' }],
       next: 'proposal',
     },
     { id: 'proposal', kind: 'deterministic', next: null },

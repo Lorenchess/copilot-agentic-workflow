@@ -12,6 +12,10 @@ One short record per batch. Decisions live in [decisions.md](decisions.md).
 | S4 | 2026-10-03 | Retained by owner as the working development milestone; owner calibration C1–C6 complete; summary reading completed (see "S4 completion") | KEEP |
 | S5 | 2026-10-03 | Complete, awaiting owner review; CORE/PACKAGE TESTED, not COPILOT_VALIDATED | KEEP |
 | S6 | 2026-10-04 | **STARTED — LIVE HOST EXECUTION PENDING ACCESS** (owner decision, 2026-10-04). Offline implementation complete. Offline verdict `READY_FOR_S6` ([astra-rc7-followup-verification.md](astra-rc7-followup-verification.md)): D1–D8 VERIFIED_FIXED, RC1–RC9 VERIFIED_FIXED. Subject: checkpoint `07de93a` (record "READY_FOR_S6 checkpoint and S6 start" below). `COPILOT_VALIDATED`: NO. Live VS Code Copilot execution waits for the owner's access to the host; everything that needs no host is prepared meanwhile ([s6-host-validation.md](s6-host-validation.md)). Jira deferred. Bitbucket deferred. Neither is needed for the baseline S6 validation. History: S6 was first begun from checkpoint `6e9bd18` and stopped by the owner the same day, when the whole-pipeline audit ([audit](astra-release-candidate-audit.md)) returned `CHANGES_REQUESTED_BEFORE_S6` with RC1–RC9. The preliminary G0 host observations made before that stop are kept unchanged as history and are not a completed gate. The records "RC1–RC9 repair pass and integration" and "RC7 correction follow-up" below describe the repairs as they stood before their independent verification | — |
+| SE | 2026-10-04 | **Single-entry UX candidate: `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`.** Owner-authorized change after the S6 start. It is not the subject of the `READY_FOR_S6` verdict, which stays with checkpoint `07de93a`. **S6 IN PROGRESS — NEW SINGLE-ENTRY CANDIDATE AWAITING OFFLINE VERIFICATION**; `COPILOT_VALIDATED`: NO; live execution does not use the candidate before a focused independent verification passes (record "Single-entry UX candidate" below) | — |
+| SE review | 2026-10-04 | Independent verification of the single-entry candidate: **`CHANGES_REQUESTED_BEFORE_S6_HOST_CONFIRMATION`** ([astra-single-entry-verification.md](astra-single-entry-verification.md)). Source and package areas `VERIFIED_OFFLINE`; two owner-script findings, SE-S6-1 and SE-S6-2. Owner-authorized documentation corrections made: **`FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`**. The candidate is still not the approved S6 subject. S6 IN PROGRESS — NEW SINGLE-ENTRY CANDIDATE AWAITING OFFLINE VERIFICATION; `COPILOT_VALIDATED`: NO (record "Single-entry candidate: independent review and owner-script corrections" below) | — |
+| PRR | 2026-10-04 | **PR Reviewer integration: `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`.** Owner brief with Astra's analysis (`IMPLEMENT_WITH_CHANGES`); decisions D-PRR; record "PR Reviewer integration" below. Workflow version 6: after an accepting code review the engine assembles a PR review packet, a separate `pr-reviewer` must return `APPROVE`, and only then is the proposal composed, deterministically; `REQUEST_CHANGES` and `INCONCLUSIVE` block. Offline: typecheck clean; 226 tests, 225 pass, 1 skipped as before; two generations identical; 54 selected sensitivity cases detected, one of them (case 48) only after a one-line correction that the run itself prompted. Package manifest `47319169…0ace` (38 files), pending verification. **The work began while Astra's re-check of the single-entry candidate was still closing, and that re-check withheld approval because the source moved** ([astra-se-s6-documentation-recheck.md](astra-se-s6-documentation-recheck.md)): the two documentation findings are `VERIFIED_FIXED`; the owner chooses the subject for approval, the 115-file single-entry state (rebuilt and checked under `.rstack/pr-reviewer/single-entry-115/`) or this integrated candidate. **S6 IN PROGRESS — NEW CANDIDATE AWAITING OFFLINE VERIFICATION**; `COPILOT_VALIDATED`: NO; not `READY_FOR_S6`; nothing committed; no external pull request | — |
+| PRR review | 2026-10-05 | Astra's static review of the workflow-v6 candidate (relayed by the owner as text): **`CHANGES_REQUESTED`**, three findings (history not fully resolved; the reviewer's copy not measured; digests citable). Owner-authorized repairs made: **`FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`**. Committed and pushed on the owner's instruction as an unreviewed candidate. Sensitivity for the final source was not complete at the time of the record. Not approved for S6; `COPILOT_VALIDATED`: NO (record "PR Reviewer integration: independent static review and repairs" below) | — |
 
 **Source baselines** (ignored, in `rstack-sdlc/.baselines/`, outside test and runtime cleanup paths):
 
@@ -1245,3 +1249,304 @@ Both were listed as open for the owner in the preparation record above and in [s
 **Live resume point, unchanged.** [s6-owner-script.md](s6-owner-script.md), stage 1 (G0 host gate), every item established fresh. Both builders remain stopped until the owner has live Copilot access. No Copilot, Jira, or Bitbucket contact was made.
 
 **Rollback of this record only:** revert the docs-only commit that carries it. The checkpoint `07de93a` and the package identity are unaffected.
+
+## Single-entry UX candidate — 2026-10-04
+
+**Status: S6 IN PROGRESS — NEW SINGLE-ENTRY CANDIDATE AWAITING OFFLINE VERIFICATION. `COPILOT_VALIDATED`: NO.** The change below is `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`: an unreviewed candidate. The `READY_FOR_S6` verdict covers checkpoint `07de93a` and manifest `1f5eaef8…08fa` only, and nothing here extends it. Nothing below is host evidence. Nothing is staged, committed, or pushed; the branch head is still `07ffeeb`.
+
+**Authority.** The owner authorized this bounded change on 2026-10-04 after BUILD-02's investigation of model pinning and entry-point visibility, and set the candidate identity rule, the lanes, and the status wording. Decisions and the design are in [decisions.md](decisions.md), D-SE. Made by BUILD-02 alone in its lane; BUILD-03 kept the owner script and the disposable folder.
+
+**Files changed by BUILD-02** (working tree against `07ffeeb`).
+
+| File | Change |
+|---|---|
+| `core/contracts/records.ts` | `selector_status` gains `owner-pinned`. A non-null `host_selector` needs `owner-pinned` or `observed`. A selector must be one name; anything list-shaped, quoted, padded, or multi-line is refused as `UNSUPPORTED_SELECTOR` |
+| `adapters/copilot-vscode/generate.ts` | Every agent: `target: vscode` and `disable-model-invocation: true`. Coordinator: `user-invocable: true`. Every Skill: `user-invocable: false`. `model:` is written for `owner-pinned` and `observed`. The Coordinator gets a generated "On this host" section. Generator version 3 |
+| `tests/single-entry.test.ts` (new) | 18 tests: VISIBILITY-1 to 8, TARGET-1, PRECEDENCE-1 to 3, PROFILE-1 to 6 |
+| `tests/package.test.ts` | Three expectations follow the new output: generator version 3 in the manifest and in the stamp of each file, and `target` and `disable-model-invocation` in the set of allowed frontmatter keys. MODEL-1 is unchanged and passes |
+| `tests/extension.test.ts` | One expectation: an optional Skill's frontmatter now has `user-invocable: false` |
+| `tests/sensitivity.ts` | Case 41 follows the reworded generator line. Cases 121 to 134 are new |
+| `docs/decisions.md`, `docs/progress.md`, `docs/s6-host-validation.md` | Records: D-SE, this record and its row in the table above, and a dated status paragraph and log rows |
+
+Not changed: `adapters/copilot-vscode/coordinator.md` (byte-identical; 997 words against a budget of under 1000), `profiles/trial-v1.json` (`3338b15a…67a8`), the role prompts, the Skill texts, the engine, the installer, the workflow, the task envelope, and `C:\rstack-sdlc-smoke\`. `docs/s6-owner-script.md` was changed by BUILD-03 only (below).
+
+**Before and after** (`OFFLINE`: what the generated files declare, not what a host does).
+
+| | Before (`07de93a` package) | After (candidate) |
+|---|---|---|
+| Coordinator | `tools`, `agents` (the five role agents) | adds `target: vscode`, `user-invocable: true`, `disable-model-invocation: true`, and the "On this host" section |
+| Role agents | `tools`, `user-invocable: false` | adds `target: vscode`, `disable-model-invocation: true` |
+| Skills | `name`, `description` | adds `user-invocable: false` |
+| `model:` | written only for `observed` | written for `owner-pinned` and `observed`; with the trial profile, still in no file |
+| Profile contract | two selector states; any string accepted as a selector | three states; a selector is one name |
+| Authored role and Coordinator text inside the generated files | | identical; only frontmatter lines, the `v3` stamp, and the Coordinator's added section differ |
+
+**Checks** (times in UTC: 2026-10-05T00:15Z to 00:17Z, the evening of 2026-10-04 local time, unless noted; build machine; outputs in `.rstack/single-entry/`).
+
+| # | Command | Result |
+|---|---|---|
+| 0 | `node --test tests/single-entry.test.ts` before any implementation | 14 of 18 failed. The 4 that passed guard behaviour that already existed (VISIBILITY-2, VISIBILITY-6, PRECEDENCE-3, PROFILE-6); sensitivity cases 123, 131, 132, and 133 show each of them fails when its guard is broken |
+| 1 | `npm run typecheck` | exit 0 |
+| 2 | `node --test --test-reporter=tap tests/single-entry.test.ts` | exit 0; 18 tests, 18 pass |
+| 3 | the same for `package`, `install`, `rc6-package-verify`, `portable`, `extension`, `contracts`, `protocol` | exit 0; 44 tests, 44 pass |
+| 4 | `node --test --test-reporter=tap "tests/*.test.ts"` | exit 0; 204 tests, 203 pass, 0 fail, 1 skipped (`a symbolic link to a file is refused`, as before), 89 s. Before the change: 186 tests |
+| 5 | `node scripts/generate-package.ts`, twice (00:11Z) | both exit 0; the two trees are identical, 33 files; the two command outputs are identical |
+| 6 | `node scripts/check-scope.ts --base 07de93a` | `ok: true`, no path outside `rstack-sdlc/` |
+| 7 | `node tests/sensitivity.ts --cases 41,121,122,123,124,125,126,127,128,129,130,131,132,133,134` (00:08Z to 00:10Z) | exit 0; 15 of 15 `DETECTED`, both controls pass, live source digest equal before and after. A subset of 134 cases: not a full sensitivity run, and none was made |
+| 8 | check 4 again, after these records were written (00:20Z) | **exit 1; 204 tests, 202 pass, 1 fail, 1 skipped.** The failure: `RC3: in a second round the decision is bound to the round-two display`, with `EPERM: operation not permitted, rename` of `state.json.<random>.tmp` onto `state.json`, raised in `writeFileSynced` (`core/engine/engine.ts:174`) through `writeSnapshot` (line 236). Output kept: `7-final-full-suite.tap` |
+| 9 | `tests/rc3-displayed-brief.test.ts` alone, then check 4 once more (00:22Z to 00:24Z) | exit 0, 6 of 6 pass; then exit 0, 204 tests, 203 pass, 0 fail, 1 skipped, 88 s |
+
+**One intermittent failure, recorded and not explained.** The full suite was run four times on this source: three runs were clean (the first, finished 00:07Z and kept as `4a-full-suite-first.tap`, then check 4, then check 9) and one had the single failure of check 8. Neither the engine nor that test is touched by this change. The failure has the signature of the two `EPERM` rename failures that the R1 verification recorded as an intermittent engine reliability observation ([astra-r1-verification.md](astra-r1-verification.md)): the same call, the same line, a different test. The clean reruns do not establish its cause. No engine change was made, and none is proposed in this record; it is reported to the owner and the reviewer as seen.
+
+**Identities** (build machine, this working tree).
+
+- Candidate package, `dist/copilot-vscode/`: manifest SHA-256 `d5ce0c0cfd6fcffec8a2196ae53a7c5fccc4aac014be6fc39f6b7abffff814f9`; 33 files (6 agents, 2 Skills, 23 runtime, 1 profile, the manifest); profile `3338b15a…67a8`, unchanged. **PENDING INDEPENDENT VERIFICATION.**
+- Against the old package: the same 33 paths; 10 files differ (the 6 agents, the 2 Skills, the manifest, `runtime/core/contracts/records.ts`); 23 are identical.
+- The old package is kept: `C:\rstack-sdlc-smoke\package\` still has manifest `1f5eaef8…08fa` (read, not written). `dist/` now holds the candidate, so `dist/` and the disposable folder no longer match; that is intended until the candidate is approved and BUILD-03 rebuilds the folder.
+- Source inventory of the candidate: taken after this record was written, in `.rstack/single-entry/source-identities-final.txt`, with its digest beside it. Finding S6-P1 still applies: the package identity depends on the profile file's line endings, and no second checkout or machine was used.
+
+**Handoff to BUILD-03** (direct session messages, 2026-10-05T00:13Z and after). BUILD-02 sent the required script changes: the first live Copilot-specific experiment becomes a bounded probe (visibility; selector resolution for three candidate strings in a scratch context; one scratch dispatch for tier behaviour, the hidden worker, and the effective model), plus one visibility check of the root-installation layout. BUILD-03 acknowledged and drafted them in `docs/s6-owner-script.md`: additive (178 insertions, no deletion against `07ffeeb`), uncommitted. The stage 0 and stage 2 identities of the old candidate are untouched in it, and the new stages (P, the probe; L, the layout check) are marked as not runnable before Astra's approval and the rebuild. BUILD-03 raised three open points. BUILD-02 answered them: it rehearsed the layout stage's installer commands offline, in a throwaway folder outside the repository and the disposable folder, against a `git init` root with three subfolders (`PLAN_READY` with eight `CREATE`, `INSTALLED`, `CLEAN`, every file under the root `.github`; `.rstack/single-entry/layout-rehearsal/`), and it gave the documented id of the parent-repository setting. BUILD-03 revised stage L accordingly and reported no further change planned. SHA-256 of the script as BUILD-03 reported it and as BUILD-02 read it on disk: `405703f73715486891c2d68cf27ec1da3985fb094a769f64f8995c403c1919ae` (the first draft was `f3deb0cd…360d`). The script draft is part of the same unreviewed candidate.
+
+**Not claimed.** That any host hides a role agent or a Skill, reaches a hidden role agent, applies or refuses a model, or shows the model a role ran on. That any of the three candidate selector strings resolves. That the Coordinator follows the new instruction. That the candidate is reviewed. Each is in D-SE under "Host confirmation required" or waits for Astra.
+
+**Next.** A focused independent verification by Astra of: single-entry visibility, the selector states, package determinism, the absence of any fallback configuration, and the preservation of the previously approved behaviour. Live S6 does not resume before it passes. After approval BUILD-03 rebuilds the disposable folder from the approved package, and the probe is the first live Copilot step.
+
+**Rollback.** Restore the five tracked source and test files from `07ffeeb` and delete `tests/single-entry.test.ts`; regenerating is then expected to give manifest `1f5eaef8…08fa` again (not run).
+
+## Single-entry candidate: independent review and owner-script corrections — 2026-10-04
+
+**Status: S6 IN PROGRESS — NEW SINGLE-ENTRY CANDIDATE AWAITING OFFLINE VERIFICATION. `COPILOT_VALIDATED`: NO.** The corrections below are `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`. They are documentation only: no source, test, profile, or package file changed, and the candidate package is still manifest `d5ce0c0c…14f9`. Nothing below is host evidence. Nothing is staged, committed, or pushed; the branch head is still `07ffeeb`.
+
+**Independent review** (relayed by the owner). Astra's verdict is `CHANGES_REQUESTED_BEFORE_S6_HOST_CONFIRMATION`: [astra-single-entry-verification.md](astra-single-entry-verification.md), SHA-256 `6cd7484b97901bc2f6767ba6a87c42d50240a5aa1325e228f449777e3260972c`, kept unchanged.
+
+- Subject it recorded: 114 files, digest `7bb0eb73…0500`; package manifest `d5ce0c0c…14f9`; owner-script draft `405703f7…19ae`. These are the values of the record above.
+- `VERIFIED_OFFLINE`, each with its host boundary: single-entry visibility, profile pin support, Coordinator model precedence, Skill visibility, package determinism, existing pipeline regression.
+- `S6_PROBE_PREPARATION`: `STILL_FAILING`, with two findings, both P2 and both in the owner script. SE-S6-1: the first probe exercises scratch agents and defers the installed Coordinator-to-Planner dispatch to the full workflow. SE-S6-2: the script continues into the unpinned full workflow after the probe, while D-SE puts the pinning change and its verification first.
+- Its full suite: 204 tests, 202 pass, 0 fail, 2 skipped. The second skip is `the installed command lines keep their arguments whole under Git Bash`, which its environment could not run; that test ran and passed in the builder's runs. It did not reproduce the `EPERM` rename failure of check 8 above and records its cause as unconfirmed.
+- The report does not approve the candidate as the S6 subject.
+
+**Builder check of the findings**, before any authorization. Both were confirmed against the lines the report cites. Both trace to BUILD-02's handoff to BUILD-03: it said that the scratch pair could show the hidden-worker mechanism, with the real Planner first reached in the workflow, and that stage 3 keeps the baseline rule. BUILD-03's draft followed that wording. BUILD-02 also found that D-SE's sentence "the rest of D-S6 stands" left D-S6's "routing after a successful baseline run" in force by its wording. All of it was reported to the owner, and nothing was repaired before the authorization.
+
+**Authorization.** The owner: "I AUTHORIZE the SE-S6-1 and SE-S6-2 correction, following D-SE order".
+
+**Corrections.**
+
+| Finding | Correction | By |
+|---|---|---|
+| SE-S6-1 | Owner script, stage P: a new part I, one engine-granted dispatch of the installed Coordinator to the installed Planner (run P), with the commands that may be allowed, the stopping point, the evidence to keep, and four possible results of which only `REACHED` completes the item. A scratch result cannot complete it, and any other result stops the stage. Part D no longer defers the real Planner to stage 4 | BUILD-03 |
+| SE-S6-2 | Owner script: a gate at the end of stage P where the script stops in every outcome, with one next action per outcome and the D-SE order after a success; stage 3's "New candidate" paragraph and a gate paragraph in stage 4 say that the full workflow is not started from stage P. Decisions: the D-SE addendum states that order and that it replaces D-S6's "after a successful baseline run" for the new candidate | BUILD-03; BUILD-02 |
+
+Owner script after the corrections: SHA-256 `8ca646233460cbb2e3c54d8f743a09aab9c124955605764b595f0a0900809cae`, 257 insertions and no deletion against `07ffeeb`, as BUILD-03 reported it and as BUILD-02 read it on disk. The old candidate's identities in stages 0, 1, and 2 are untouched.
+
+**Rehearsal for part I** (BUILD-02, 2026-10-05T00:41Z; `OFFLINE`; the candidate package's own command line; a throwaway workspace outside the repository and the disposable folder; the repository's request and application fixtures, which are byte-identical to the disposable folder's copies; role content `SIMULATED`; `.rstack/single-entry/se-s6/rehearsal-single-dispatch.json`).
+
+| Step | Reply |
+|---|---|
+| `start` | `STARTED`, state version 1 |
+| `status` | stage `intent`, `MANUAL_TRANSPORT`, no pending attempt |
+| first `next` | `DISPATCHED` / `GRANTED`, state version 2: attempt `intent-1`, role `planner`, input `source`, `work/intent-1` |
+| `submit` of that attempt's `result.json` | `ACCEPTED`, state version 3 |
+| `status`, twice | stage `spec`, attempts `{"intent":1}`, no pending attempt, the same both times |
+| one more `next`, not part of the probe | `DISPATCHED` / `GRANTED` for `spec-1` |
+
+It shows that a clean stopping point exists after one accepted dispatch. It shows nothing about the host, the installed agents, or a real Planner, whose intent may raise a product question and leave the run at a human wait instead of stage `spec`.
+
+**Builder reading of the report's two acceptance checks** (a reading of the corrected script, not a verification).
+
+- SE-S6-1. Part I names both installed agents as the host shows them, the engine-granted attempt `intent-1`, the envelope comparison, the subagent block as invocation evidence, and the stop before a second `next`. "Only REACHED completes this item", a scratch `PONG` is excluded in words, and gate row 2 blocks progression on `NOT REACHED`, `REFUSED`, or `NOT EXERCISED`. The item stays `HOST_CONFIRMATION_REQUIRED` in the records.
+- SE-S6-2. The gate gives one next action for: a failed visibility check; the installed pair not reached; a string not resolved or unverified; a tier, model, or policy refusal; the scratch worker not reached for another reason; an effective model not shown or not the declared one; success. Every row is a stop. No row authorizes a pin, and an effective model that was not shown is recorded as unverified. After a success the listed order is the D-SE order: the owner's authorization, the pinned profile and regeneration, a focused independent verification, the rebuild with new identities, then the full workflow.
+
+**Open point for the owner** (recorded in the D-SE addendum and in the script's gate; not decided here). The probe as specified dispatches a Sonnet 5 lead to an Opus 5.5 worker only. A Sonnet 5 Coordinator dispatching a Sol 6.1 role is not dispatched by it, so that pairing's tier behaviour stays unverified after a successful probe.
+
+**What changed in this pass.** `docs/s6-owner-script.md` (BUILD-03); `docs/decisions.md` (D-SE addendum), `docs/progress.md` (this record and its row in the table above), `docs/s6-host-validation.md` (log rows) (BUILD-02). All additive: no existing line of the three records was changed. Before the corrections, each of the 114 reviewed files was byte-identical to the reviewed inventory and the only added file was the report (`.rstack/single-entry/se-s6/source-identities-before-corrections.report.json`). The comparison after the corrections was taken after this record was written and is beside it (`source-identities-after-corrections.report.json`); the only reviewed files expected to differ are the owner script and the three records. No test was rerun, because no file that a test, the generator, or the type check reads was changed.
+
+**Not claimed.** That the corrections are verified. That the candidate is approved as the S6 subject. Anything about a host.
+
+**Next.** Astra verifies this documentation delta against the acceptance checks in its report. Live S6 does not resume before that passes, the disposable folder is not rebuilt before it, and the full workflow does not run on the new candidate before the D-SE gate.
+
+## PR Reviewer integration — 2026-10-04
+
+**Status: PR REVIEWER INTEGRATION, `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`. S6 IN PROGRESS — NEW CANDIDATE AWAITING OFFLINE VERIFICATION. `COPILOT_VALIDATED`: NO.** This is an unreviewed candidate. It is not `READY_FOR_S6`: that verdict covers checkpoint `07de93a` and manifest `1f5eaef8…08fa` only, and builder tests do not extend it. Nothing below is host evidence. Nothing is staged, committed, or pushed; the branch head is still `07ffeeb`. No external pull request was created, and no Copilot, Jira, GitHub, or Bitbucket contact was made. The disposable folder `C:\rstack-sdlc-smoke\` was not touched.
+
+**Authority.** The owner's implementation brief of 2026-10-04 to BUILD-02, with Astra's analysis of the integration relayed as text (`IMPLEMENT_WITH_CHANGES`, a distinct PR reviewer). Decisions and the design are in [decisions.md](decisions.md), D-PRR, including how the work was authorized ("you can continue now") and the defaults BUILD-02 stated beforehand and applied. Made by BUILD-02 alone. BUILD-03 was not involved and no session message was sent.
+
+**The work overlapped Astra's re-check of the single-entry candidate. This is the first thing a reader should know.** When this work began (2026-10-05T00:53Z, the evening of 2026-10-04 locally), the checkout was the single-entry candidate as corrected: 115 files, digest `66f4f0ec…aa2b`, with its package `d5ce0c0c…14f9` in `dist/`. BUILD-02 recorded that state first, at 00:53:22Z (`.rstack/pr-reviewer/0-source-identities-before.txt`, `0-working-tree-before.diff`). The two other sessions showed as idle, and the owner had said to continue. Astra's re-check of that candidate was nevertheless still closing, which BUILD-02 did not know. Its report, [astra-se-s6-documentation-recheck.md](astra-se-s6-documentation-recheck.md) (written 00:57Z; BUILD-02 saw it at about 01:27Z; kept unchanged), finds SE-S6-1 and SE-S6-2 `VERIFIED_FIXED — OFFLINE` and then withholds candidate approval because the source changed under it: `core/policies/workflow.ts` at 00:53:46Z, then other files. Those changes are this work. Consequences:
+
+- The single-entry candidate has no closing approval. Astra asks for a stable subject: either the documented 115-file state, or a separately authorized integrated candidate that includes the PR review. This record describes the second. The choice is the owner's.
+- The 115-file state still exists exactly. BUILD-02 rebuilt it from `HEAD`, the saved diff, and the unchanged files into `.rstack/pr-reviewer/single-entry-115/` and checked every file and the aggregate digest against the inventory taken before the work: 115 of 115, digest `66f4f0ec…aa2b` (`single-entry-115.report.json`).
+- `dist/` no longer holds the single-entry package. It holds this candidate's. The single-entry package's file list and hashes are in `.rstack/single-entry/dist-tree-final.txt`; generating from the rebuilt tree is expected to give `d5ce0c0c…14f9` again (not run).
+
+**Recommendation followed.** `IMPLEMENT_WITH_CHANGES`. The table says where each part of the analysis landed.
+
+| Analysis | Implemented as |
+|---|---|
+| A distinct PR reviewer with a narrow job; the code review unchanged | Role `pr-reviewer`, `core/roles/pr-reviewer.md`; `reviewer.md` and the review contract are byte-identical |
+| Route: code review `ACCEPT`, deterministic packet, fresh PR review, composer | Workflow version 6: stages `pr-review-packet` and `pr-review` between `review` and `proposal` |
+| One retained, content-addressed packet of references, with measured facts and history to a journal cutoff | `pr-review-packet` schema 1; re-established before dispatch, acceptance, and composition |
+| A separate result contract with mandatory coverage and bounded text | `pr-review-result` schema 1 |
+| Non-approving verdicts use the existing `BLOCKED` phase; no repair, no reopening | `PR_REVIEW_CHANGES_REQUESTED`, `PR_REVIEW_INCONCLUSIVE` |
+| A deterministic composer with an explicit list of fields, machine facts apart from narrative, escaping | `core/engine/proposal.ts`; proposal `schema_version` 2 |
+| Workflow identity checked before replay; version-aware evaluator; a new rubric | `WORKFLOW_MISMATCH` before replay; evaluator reads 5 and 6; `run-v4` beside `run-v3` |
+| A new profile version; the approved profile's bytes kept | `profiles/trial-v2.json`; `trial-v1.json` unchanged |
+| Team seam in the procedure, bound into the run | Procedure text retained at start and named by the packet |
+| Not done here, as the analysis says they need a host or a later decision | Host evidence of a fresh worker; read-only evidence with a confined writer; a preview step; a publisher |
+
+**Files** (against the 115-file state; `.rstack/pr-reviewer/` holds the helper scripts that made the mechanical edits).
+
+| File | Change |
+|---|---|
+| `core/policies/workflow.ts` | Version 6; stages `pr-review-packet` and `pr-review`; contract `pr-review` |
+| `core/policies/pr-review-procedure.ts` (new) | The default procedure text |
+| `core/contracts/pr-review.ts` (new) | Packet format and parser; result format and parser; the mandatory coverage items; limits |
+| `core/contracts/records.ts` | Event `pr_review_packet_recorded`; `PrProposal` version 2; the earlier form kept as `PrProposalV1` |
+| `core/engine/pr-review-packet.ts` (new) | Assembles the packet; relationship checks; measured changes; history from the journal |
+| `core/engine/proposal.ts` (new) | The composer, the escaping, and the entry counts |
+| `core/engine/state.ts` | The packet event; PR review verdict transitions; an invalidation also drops the packet and the PR review and is allowed at the packet stage; optional `pr_review` in state |
+| `core/engine/engine.ts` | Procedure at start; workflow identity checked before replay; the packet stage; re-establishing the packet; the `pr-review` contract; the proposal built by the composer; `pr_review` in the `BLOCKED` directive and in `status`. The leaf and output re-reads of the proposal step moved into the packet re-establishment |
+| `core/roles/pr-reviewer.md` (new) | The role prompt |
+| `core/skills/application-records/SKILL.md` | Section `pr-review.json` |
+| `adapters/copilot-vscode/generate.ts` | Agent `pr-reviewer`; generator version 4; Skill description |
+| `adapters/copilot-vscode/coordinator.md` | Reply code `PR_REVIEW_PACKET_READY`; "both reviewers". 998 words |
+| `adapters/fake-transport/index.ts`, `application.ts` | A scripted PR review: approve, request changes, inconclusive, hostile. `SIMULATED` |
+| `evals/verify-packet.ts`, `evals/deterministic.ts`, `evals/rubrics.ts`, `evals/rubrics/run-v4.md` (new) | Version-aware reading; check `pr-review-gate`; evidence `pr_review`; rubric `run-v4` |
+| `scripts/assembly.ts`, `scripts/rstack.ts` | The procedure passed to the engine; `--pr-review-procedure`; default profile `trial-v2.json` |
+| `scripts/generate-package.ts`, `scripts/synthetic-run.ts`, `scripts/eval-cases.ts` | Default profile `trial-v2.json` |
+| `profiles/trial-v2.json` (new), `tests/fixtures/profiles/alt-test-v2.json` (new) | The role `pr-reviewer`, with the Code Reviewer's alias and limits |
+| `tests/pr-review.test.ts` (new) | 22 tests: PRR-1 to PRR-8, PRR-10 to PRR-20, and the contract cases |
+| 14 existing test files and `tests/support/harness.ts` | Expectations follow the new route, the seventh agent, profile version 2, and generator version 4. Three test names that counted agents were corrected (VISIBILITY-2, VISIBILITY-5, TARGET-1). `.rstack/pr-reviewer/edit-tests.cjs` lists every replacement |
+| `tests/sensitivity.ts` | Case 17 follows the moved line; cases 105 and 107 follow the moved guard; cases 123, 125, and 128 follow the renamed tests; cases 135 to 171 are new |
+| `docs/decisions.md`, `docs/progress.md`, `docs/s6-host-validation.md` | Records: D-PRR, this record and its row above, a status paragraph and log rows. Additive |
+
+Not changed: the Code Reviewer's prompt and contract; `core/contracts/app.ts`, `planning.ts`, `ports.ts`, `validate.ts`; the journal, lock, tree, execution, brief, and containment modules; the installer; the local proposal sink (it writes whatever record it is given, as before); the Jira and Bitbucket placeholders; `profiles/trial-v1.json` (`3338b15a…67a8`); `tests/fixtures/profiles/alt-test-v1.json` (kept; no test uses it now); `README.md` and the three numbered guidance documents; every `docs/astra-*.md`; `docs/s6-owner-script.md` (BUILD-03's lane; see "For BUILD-03" below).
+
+**Tests written with the change, not before it.** The new test file was written after the contracts and before the engine wiring was finished; no run of it against the earlier source was kept, because every test in it needs types and stages that did not exist. The mutation cases below are what shows that each guard is tested: each one breaks a single guard and names the test that must then fail. One defect was found by the new tests during the work and fixed: the packet's history was first selected from run state, which changes after the cutoff, so a packet assembled after an invalidation could not be reproduced once the next PR review was accepted (`PR_REVIEW_PACKET_STALE`). History is now selected from the journal up to the cutoff only.
+
+**Acceptance conditions.**
+
+| ID | Shown by | Note |
+|---|---|---|
+| PRR-1 | test PRR-1 | Order in the journal; replay refuses a journal that skips the packet, the review, or the approval |
+| PRR-2 | test PRR-2 | Packet content against the run's subjects; the reviewer's inputs |
+| PRR-3 | test PRR-3 | Wrong role, input, version, attempt, packet, candidate. **That the worker is fresh and separate is a host fact: not shown** |
+| PRR-4 | test PRR-4, PRR-15 | One proposal, once |
+| PRR-5, PRR-6 | tests PRR-5, PRR-6, and "a refused or failed invocation is not a negative review" | |
+| PRR-7 | test PRR-7; RC4 tests | Changed, substituted, and missing leaf; changed tree record |
+| PRR-8 | three tests PRR-8 | 26 dependencies, changed and removed, at three points; 12 relationship cases; invalidation after approval |
+| PRR-9 | **not shown** | The host boundary that would deny a write is not established; the tool set does not prevent it. Detection is shown by PRR-7 and PRR-8 |
+| PRR-10 | test PRR-10, PRR-14; contract cases | Unknown fields refused; a hostile review changes no machine fact |
+| PRR-11 | test PRR-11 | Constructed trees with added, modified, deleted; a real run |
+| PRR-12 | test PRR-12 | Entries by kind and status; no aggregate pass claim |
+| PRR-13 | test PRR-13 | Code review finding, limitations, unchecked items; unaudited amendment |
+| PRR-14 | tests PRR-10/PRR-14 and PRR-14 | 16 escaping cases; structure of a hostile body. A bare address may still be auto-linked by a renderer |
+| PRR-15 | test PRR-4, PRR-15 | `NOT_ATTEMPTED`; one local file |
+| PRR-16 | test PRR-16 | A version 5 run built in the test, with a proposal of the earlier form constructed by the test to stand for a finished one. Refused before replay; evaluated under version 5 rules. No retained real version 5 run was used as a fixture |
+| PRR-17 | test PRR-17 | Run and package refused with `trial-v1.json`; alias equal in both shipped profiles; procedure by file and by command line |
+| PRR-18 | test PRR-18; single-entry tests | Generated frontmatter; a team instruction changes no frontmatter line. `OFFLINE`: what the files declare |
+| PRR-19 | test PRR-19; test PROFILE-4 | Recomposing from retained records gives the retained bytes; an interrupted packet step is not repeated; two generations identical. Two separate runs do not give identical packets, because execution records carry durations and the journal carries times; that is not claimed |
+| PRR-20 | test PRR-20; test STUB-2 | The whole route in a process with network entry points denied; deferred modules not loaded |
+
+**Checks** (build machine; times UTC on 2026-10-05, the evening of 2026-10-04 locally; outputs in `.rstack/pr-reviewer/`).
+
+| # | Command | Result |
+|---|---|---|
+| 1 | `npm run typecheck` | exit 0 |
+| 2 | `node --test --test-reporter=tap tests/pr-review.test.ts` | exit 0; 22 tests, 22 pass |
+| 3 | the same for `engine`, `planning`, `persistence`, `dispatch`, `concurrency`, `evidence`, `contracts`, `architecture` | exit 0; 57 tests, 57 pass |
+| 4 | the same for `proof`, `rc4-proposal-evidence`, `rc7-test-environment`, `rc8-evaluation-freshness`, `evaluation`, `adapters` | **first run: exit 1; 55 tests, 54 pass, 1 fail** (`cross-run summary: denominators…`, `EPERM: operation not permitted, rename` of `state.json.<random>.tmp`, in `writeFileSynced` through `writeSnapshot`; kept as `6a-review-proposal-first-eperm.tap`). Second run: exit 0; 55 tests, 55 pass |
+| 5 | `node --test --test-reporter=tap "tests/*.test.ts"` | exit 0; 226 tests, 225 pass, 0 fail, 1 skipped (`a symbolic link to a file is refused`, as before), 98 s. Before the change: 204 tests |
+| 6 | the same for `package`, `install`, `rc6-package-verify`, `portable`, `extension`, `single-entry`, `protocol` | exit 0; 57 tests, 57 pass |
+| 7 | `node scripts/generate-package.ts`, twice | **first pair: the second call failed**, `EPERM` removing `dist/copilot-vscode`, right after BUILD-02's own hashing command had been run from inside that directory (kept as `9a-first-attempt-eperm-*`). Second pair, hashing from outside the directory: both exit 0; the two trees identical, 38 files; the two command outputs identical |
+| 8 | `node scripts/check-scope.ts --base 07de93a` | `ok: true`, no path outside `rstack-sdlc/` |
+| 9 | `node tests/sensitivity.ts --cases …` (54 of 171) | First run, 01:35Z to 02:05Z: exit 1; 8 controls pass; 53 of 54 `DETECTED`; **case 48 `NOT_DETECTED`**; live source digest equal before and after. After the correction described under "Sensitivity", cases 48 and 137 again (02:06Z): exit 0; 2 controls pass; both `DETECTED`. A subset of 171 cases: not a full sensitivity run, and none was made |
+| 10 | check 5 again, after the sensitivity run | After that correction (02:07Z to 02:09Z): typecheck exit 0; full suite exit 0, 226 tests, 225 pass, 0 fail, 1 skipped, 82 s; two more generations, identical, 38 files |
+
+**The intermittent `EPERM` again.** The failure in check 4 has the signature already recorded twice (R1 verification; the single-entry record): a rename onto `state.json` refused by the operating system, in a test that passes when run again. Its cause is still not established and no engine change is made or proposed here. The failure in check 7 is a different call (removing the output directory) and has a plain explanation in BUILD-02's own procedure; it did not recur when the directory was not entered.
+
+**Sensitivity.** Cases were chosen by hand: the 37 new ones (135 to 171), and 17 existing ones whose guard or whose detecting test this change touched (8, 9, 10, 17, 18, 19, 20, 26, 48, 105, 106, 107, 110, 123, 125, 128, 133). Before the run, a static check confirmed for all 171 cases that the text each one breaks is in the file it names and that the test it names exists (`check-mutations.cjs`); it had found three cases that this change had left without their text or their test (17, 123, 125), which were then corrected. Records: `sensitivity/` and `sensitivity-2/`.
+
+Case 48 was a real loss of sensitivity introduced by this change, and the run found it. The case removes the replay check that a proposal is recorded only at the proposal stage. BUILD-02 had added, directly after that check, a second one (a proposal needs an approving PR review of the current packet), and the second refused the forged record by itself, so the existing test passed with the first check gone. The second check now applies at the proposal stage only, which is the situation it is for (a definition that keeps the PR review stage but routes around it). That is a one-line change in `core/engine/state.ts`, made after the first run. Cases 48 and 137, the two that exercise those two checks, were then run and are both detected. **The other 52 cases were not run again after that line changed**; their results are for the source as it was one line earlier. The full suite, typecheck, and generation were repeated on the final source (check 10).
+
+Not covered by any mutation case: the host facts (a fresh worker, write confinement); the truth of narrative; the evaluator check `pr-review-gate` in its failing direction, for which no test builds a failing journal; the comparison of a re-assembled packet with the retained one as a comparison (case 149 removes it together with the re-assembly, and is detected through the dependencies no longer being read; with every retained byte intact, the two records cannot differ unless the assembling code itself changed).
+
+**Identities** (build machine, this working tree).
+
+- Candidate package, `dist/copilot-vscode/`: manifest SHA-256 `47319169217fa24155b6c0ed78561aefb92ab034ae3356b31d40ebfd02fd0ace`; 38 files (7 agents, 2 Skills, 27 runtime, 1 profile, the manifest); profile `trial-v2.json`, `92232966…f081`. **PENDING INDEPENDENT VERIFICATION.** Finding S6-P1 still applies: the identity depends on the profile file's line endings, and no second checkout or machine was used.
+- Against the single-entry candidate's package (33 files, `d5ce0c0c…14f9`): 6 paths added (the PR reviewer agent, four runtime files, `runtime/profiles/trial-v2.json`), 1 removed (`runtime/profiles/trial-v1.json`), 15 differ (the other six agents and both Skills, by the generator stamp and the Coordinator's text and list; the manifest; five runtime files), 17 identical (`9-dist-compare.json`).
+- The old package is kept where it was: `C:\rstack-sdlc-smoke\package\` was neither read nor written by this work.
+- Source inventory: taken after this record was written, in `.rstack/pr-reviewer/source-identities-final.txt`, with its digest and a comparison with the 115-file state beside it (`source-identities-final.digest.txt`, `source-identities-final.report.json`).
+
+**For BUILD-03** (not sent; BUILD-02 was asked not to intervene in the other sessions' work). If this candidate becomes the S6 subject, the owner script needs, at least: the profile file name `trial-v2.json` and the new stage 0 and stage 2 identities, only after Astra approves them; seven agent files and one more hidden worker in the visibility checks; a sixth name in the Coordinator's list; the two new engine steps in the full-workflow walkthrough (`PR_REVIEW_PACKET_READY`, then the `rstack-sdlc-pr-reviewer` dispatch) and the two new blockers; and one more host observation to keep, whether the PR reviewer ran as a separate subagent invocation. Stage P's single dispatch is unaffected.
+
+**Not claimed.** That the candidate is reviewed. That a PR review is produced by a separate worker on any host. That evidence cannot be written by the PR reviewer on a host. That any PR review's text is true. That the team's checklist is compatible; it was not supplied. Anything about a model.
+
+**Next.** Astra's independent verification of this implementation, on a subject the owner names. Live S6 does not resume before that passes.
+
+**Rollback.** `.rstack/pr-reviewer/single-entry-115/` is the earlier tree, complete and checked. Copying its `rstack-sdlc/` files over the working tree and deleting the nine new files listed above returns the checkout to digest `66f4f0ec…aa2b` (not run).
+
+## PR Reviewer integration: independent static review and repairs — 2026-10-05
+
+**Status: PR REVIEWER INTEGRATION, findings 1 to 3 `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`. S6 IN PROGRESS — NEW CANDIDATE AWAITING OFFLINE VERIFICATION. `COPILOT_VALIDATED`: NO.** The candidate is not approved for S6. `READY_FOR_S6` still covers checkpoint `07de93a` and manifest `1f5eaef8…08fa` only. Nothing below is host evidence. On the owner's instruction of 2026-10-05 the whole working tree was committed and pushed to `feat/rstack-sdlc-local-build` on top of `07ffeeb`, as an unreviewed candidate: the commit is a checkpoint, not an approval, and no tag was made. `C:\rstack-sdlc-smoke\` and `docs/s6-owner-script.md` were not touched, and no session message was sent.
+
+**The review.** Astra's static review of the integrated workflow-v6 candidate reached BUILD-02 on 2026-10-05 as text pasted by the owner; no report file for it is in `docs/`. Verdict: `CHANGES_REQUESTED`, three findings, "static control-flow findings; I did not execute reproductions". Astra's identity checks passed for the subject it reviewed: 125 source files, digest `26d2c0b3…d737`; 38 package files, manifest `47319169…0ace`; `HEAD` `07ffeeb`, nothing staged. It also noted that the sensitivity evidence was 53 of 54 before the one-line correction and 2 of 2 after it, which is not a 54-case pass on the final source; that detection-only tooling does not meet the literal "no ability to mutate" requirement; and that a fresh independent worker is unverified on the host.
+
+**Authority.** BUILD-02 first read the three findings against the source, reported that each holds, and proposed a repair without changing anything. The owner then wrote: "I AUTHORIZE BUILD-02 to repair Astra findings 1–3 on the workflow-v6 candidate, with focused tests and targeted sensitivity; no commit." Before the first edit BUILD-02 recorded the checkout: 125 files, digest `26d2c0b3…d737`, byte-identical to the inventory Astra reviewed (`.rstack/pr-reviewer-repair/0-source-identities-before.txt`). While the last sensitivity run was still going, the owner wrote "lets commit and push all changes" and then "dont wait for sensitivity tests, commit and push evrything". That replaces "no commit". This record was therefore written before that run ended, and says so below.
+
+**Findings and repairs.**
+
+| # | Astra's finding | Repair | Tests |
+|---|---|---|---|
+| 1 [P1] | The packet read the failed-verification records and the superseded result wrappers, but not what those depend on: the failed run's output, the earlier candidate's tree and files, the records a superseded result produced. Removing one could leave a proposal permitted | `core/engine/pr-review-packet.ts`: each failed verification is checked against the journal (purpose, tree, outcome) and read with its output and its candidate tree down to every file; each superseded result is checked to answer its attempt and read with every record the journal says it produced (a tree down to every file, a proof baseline with its output). The packet now names these: `failed_verifications[].output` and `superseded_results[].produced` (`core/contracts/pr-review.ts`). The assembly runs at all four points (assembly, dispatch, acceptance, composition), so the reads do too. The answers and dispositions records, which the packet names when a run has them, are now read as well; they were not before | PRR-8 sweep, now at four points: six history dependencies before assembly, 29 dependencies before dispatch and before acceptance, 31 before composition, each changed and then removed. Three new relationship cases. In the environment test, a new packet is not assembled while the dropped PR review's record is missing |
+| 2 [P2] | The PR reviewer's copy `work/pr-review-N/app` could be changed and the approval still accepted, because only the proof and implementation stages measured their copies | `core/engine/engine.ts`, `unchangedCopy`: at acceptance of a PR review the copy is measured and compared with the retained candidate, file for file. A difference is refused as `WRITE_BOUNDARY_VIOLATION` with the paths; a copy that cannot be read is refused as `UNSAFE_PATH`. Nothing is recorded. `core/roles/pr-reviewer.md` says so in its stop rules | New test "PRR-7: a PR review is accepted only while the copy of the candidate it was given is unchanged": a changed, an added, and a removed file, the copy taken away, then acceptance with the copy as given |
+| 3 [P2] | Every hash-shaped string in the packet was a permitted citation, including `technical_review.input_digest` and `history.journal_digest`, which name no retained record | `packetIdentities` is now a written-out list of the packet's record fields; the two digests are not on it. Every field on the list is one the assembly reads, and the assembly runs again each time the packet is re-established, so the permitted set is: the packet, records that were just read, and files of the three trees that were just read | PRR-2 (every citable identity is retained; neither digest is citable or retained); three contract cases; the engine refuses a digest-only citation at acceptance; the relationship test records what the assembly reads and requires every citable identity among it |
+
+**What the repairs do not do.** Stated so that no one reads more into them.
+
+- Finding 2 is a measurement at acceptance. A copy that was changed and put back before the result was submitted is not detected, and nothing shows what the reviewer actually read. The PR reviewer still has the `edit` tool; prevention is a host matter and an open owner decision (D-PRR "Builder defaults").
+- The technical `review` stage is given a copy of the candidate in the same way and is not measured either. Astra's finding names the PR review, the authorization names findings 1 to 3, and the Code Reviewer's path was to stay as it is, so BUILD-02 did not change it. The same four lines would cover it. **Open for the owner.**
+- Files of an earlier candidate are read at the four points but are not citable; only the earlier tree's record is.
+- BUILD-02 first added a second read of every citable identity in `currentPacket` and then took it out again (`edit-3-single-read.mjs`). It repeated the assembly's reads, no test could tell it apart from them, and it would have hidden a removed read from the existing sensitivity case 151. The link between "citable" and "read" is held by a test instead.
+- The packet format gained two fields under schema version 1. No version was added, because workflow version 6 and this packet format have never been approved or used outside tests. A packet retained by an earlier build of this candidate does not parse now.
+- The reply code for finding 2 is the existing `WRITE_BOUNDARY_VIOLATION`; no new code was added, and the Coordinator's text is unchanged.
+
+**Files changed** (against the 125-file state `26d2c0b3…d737`; the mechanical edits are `.rstack/pr-reviewer-repair/edit-1-source.mjs`, `edit-2-tests.mjs`, and `edit-3-single-read.mjs`).
+
+| File | Change |
+|---|---|
+| `core/contracts/pr-review.ts` | Two packet fields and their parsing; `packetIdentities` as an explicit list |
+| `core/engine/pr-review-packet.ts` | History dependencies read and checked; answers and dispositions read |
+| `core/engine/engine.ts` | `unchangedCopy` at acceptance of a PR review; a comment in `currentPacket` |
+| `core/roles/pr-reviewer.md` | One sentence in the stop rules |
+| `tests/pr-review.test.ts` | 23 tests (was 22): one new, five extended (the relationship test twice); the PRR-8 sweep renamed to name four points |
+| `tests/sensitivity.ts` | Cases 172 to 177 added at the end, so no existing case number moved; cases 148, 149, 151, and 152 follow the renamed test |
+| `docs/progress.md`, `docs/decisions.md`, `docs/s6-host-validation.md` | This record, its row, a D-PRR addendum, a status line and a log row. Additive |
+
+**Checks** (build machine, 2026-10-05; outputs in `.rstack/pr-reviewer-repair/`).
+
+| # | Command | Result |
+|---|---|---|
+| 1 | `node --test tests/pr-review.test.ts`, source repaired, tests not yet changed | exit 0; 22 tests, 22 pass. The earlier tests neither needed nor showed the repairs |
+| 2 | the same, with the new tests, on the final source | exit 0; 23 tests, 23 pass |
+| 3 | `npm run typecheck` | exit 0 |
+| 4 | `npm test` | **first run: exit 1; 227 tests, 224 pass, 2 fail, 1 skipped.** Both failures are `EPERM: operation not permitted, rename` of `state.json.<random>.tmp` in `writeSnapshot`, in `tests/persistence.test.ts` and `tests/planning.test.ts`, which this repair does not touch (kept as `4a-full-suite-first-eperm.tap`). Those two files again: exit 0; 17 tests, 17 pass. Second full run: exit 0; 227 tests, 226 pass, 0 fail, 1 skipped as before. **On the final source** (after `edit-3-single-read.mjs`): one run exit 1 with a single failure of the same kind, again in `tests/persistence.test.ts` (`4d-full-suite-eperm-again.tap`); the next run exit 0; 227 tests, 226 pass, 0 fail, 1 skipped |
+| 5 | `node .rstack/pr-reviewer/check-mutations.cjs` | 177 cases; every text to break is in its file and every named test exists |
+| 6 | `node scripts/generate-package.ts`, twice, on the final source | both exit 0; the two trees and the two outputs identical; 38 files |
+| 7 | `node scripts/check-scope.ts --base 07de93a` | `ok: true` |
+| 8 | `node tests/sensitivity.ts --cases …` | Three runs, none of them a result for the final source at the time of this record. (a) 60 of 177: **did not run**; it ended in its first control with `ENOSPC: no space left on device` (`sensitivity-0-enospc/`). (b) Cases 172 to 177, on the source one edit before the final one: exit 0; 1 control passes; 6 of 6 `DETECTED`; live source digest equal before and after (`sensitivity-1-before-edit-3/`). (c) 24 of 177 on the final source: **in progress when this record was written and committed**; 2 controls passed and 2 cases `DETECTED` at that moment; its outcome is not in this record (`sensitivity-2/`) |
+
+The `EPERM` in check 4 is the signature recorded three times before; it appeared in two of four full runs today. Its cause is still not established, and no engine change is made or proposed here.
+
+**Sensitivity.** BUILD-02 meant to run the 54 cases of the first run on this candidate plus the six new ones, to answer Astra's observation that no 54-case result existed for a final source. That run did not happen: drive C: of the build machine had no free space (see below). The selection was then reduced to what this repair touched: the six new cases, and the 18 existing ones whose guard lies in code the repair changed or whose detecting test it changed (105, 107, 142 to 155, 157, 158; `touched-cases.cjs`, `9-touched-cases.txt`). **Astra's observation therefore still stands: there is no 54-case result for one final source, and at the time of this record no completed sensitivity result for the final source of this repair at all.** What exists is run (b) in check 8, six of six on the source one edit earlier; that edit removed a duplicate read from `currentPacket` and added one assertion to the relationship test. No full sensitivity run was made. New cases: 172 (a failed run's output is read), 173 (every file of an earlier candidate is read), 174 (a failed verification must be the recorded run of that candidate), 175 (a record a superseded result produced is read), 176 (the reviewer's copy is measured at acceptance), 177 (a digest is not citable).
+
+**Disk space.** At 10:58Z drive C: reported 0 bytes free. `tests/.tmp/` held 9,325 scratch entries left by test runs since 2026-10-03. BUILD-02 deleted only the directories its own runs had created on 2026-10-05 (695 at first, then again after each later run), which gave about 140 MB, later about 300 MB as other use of the drive changed. About 8,600 older entries were left as they were, including three `sensitivity-*` directories of 2026-10-03 and 2026-10-04; whether to delete them is the owner's decision. No source or record file was found damaged: the typecheck, the full suite, and both generations were run after the event.
+
+**Identities** (build machine, this working tree).
+
+- Candidate package, `dist/copilot-vscode/`: manifest SHA-256 `3f254746ee5abf73bc140e2c3c5862e9bc6c5fc0cf678e4e149db70c747bb468`; 38 files; profile `trial-v2.json`, unchanged. Against the package Astra reviewed (`47319169…0ace`): 5 files differ (the PR reviewer agent, `runtime/core/contracts/pr-review.ts`, `runtime/core/engine/engine.ts`, `runtime/core/engine/pr-review-packet.ts`, the manifest), 33 identical, none added or removed. **PENDING INDEPENDENT VERIFICATION.** Finding S6-P1 still applies.
+- The identities Astra checked, `26d2c0b3…d737` and `47319169…0ace`, are history for the candidate as reviewed. They are not replaced anywhere as approved identities, because none was approved.
+- Source inventory: taken after this record was written, in `.rstack/pr-reviewer-repair/source-identities-final.txt`, with its digest and report beside it.
+
+**Not claimed.** That the findings are fixed in Astra's judgement. That the commit makes this candidate reviewed or approved. A completed sensitivity result for the final source. That the reviewer cannot write evidence or its copy on a host. That a PR review is produced by a separate worker on any host. That any review's text is true. A full sensitivity pass.
+
+**Next.** The outcome of sensitivity run (c), to be added to this record. Astra's re-check of findings 1 to 3 on the identity above. Two owner decisions stay open: whether the technical review's copy is measured the same way, and the PR reviewer's `edit` tool.
+
+**Rollback.** The 125-file state is recorded file by file in `.rstack/pr-reviewer-repair/0-source-identities-before.txt`. The repair changed four source files, two test files, and three records; reversing the three edit scripts' replacements and the one sentence in `core/roles/pr-reviewer.md` returns the source to `26d2c0b3…d737` (not run).

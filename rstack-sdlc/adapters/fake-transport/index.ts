@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import type { Audit, Dispositions, Plan } from '../../core/contracts/planning.ts';
 import type { RoleTransport, TransportDelivery } from '../../core/contracts/ports.ts';
 import type { RoleResult, TaskEnvelope } from '../../core/contracts/records.ts';
-import { review, writeImplementation, writeProof } from './application.ts';
+import { prReview, review, writeImplementation, writeProof } from './application.ts';
 
 // Delivery behaviors, plus content variants for the planning stages:
 //   open-decision  intent that still has an open product decision
@@ -162,6 +162,7 @@ export function createFakeTransport(runsRoot: string, script: FakeScript = {}): 
       dispositions: () => JSON.stringify(dispositions(runDir, envelope), null, 2),
       proof: () => JSON.stringify(writeProof(join(runDir, envelope.app_dir as string), behavior), null, 2),
       review: () => JSON.stringify(review(runDir, envelope, behavior), null, 2),
+      pr_review: () => JSON.stringify(prReview(runDir, envelope, behavior), null, 2),
     };
     if (envelope.step_id === 'implement') writeImplementation(join(runDir, envelope.app_dir as string), behavior);
     const files: Record<string, string> = {};

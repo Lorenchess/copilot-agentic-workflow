@@ -50,4 +50,21 @@ export const RUBRICS: Record<string, Rubric> = {
       ...q('control', 'unsuccessful-work-visible', 'evidence-classes-stated', 'outcome-claim-accurate'),
     ],
   },
+  // Version 3 is kept exactly as it was used. Version 4 repeats its questions
+  // and adds those about the PR review and the composed proposal. Answers
+  // under the two are never combined; for a run whose workflow has no PR
+  // review, the added questions are NOT_APPLICABLE.
+  'run-v4': {
+    id: 'run-v4',
+    file: 'evals/rubrics/run-v4.md',
+    answers: ['YES', 'NO', 'UNKNOWN', 'NOT_APPLICABLE'],
+    questions: [
+      ...q('content', 'spec-fidelity', 'plan-serves-spec', 'audit-verdict-supported', 'candidate-within-scope', 'review-verdict-supported'),
+      ...q('authorization', 'human-authorization-observed'),
+      ...q('proof', 'proof-red-meaningful', 'proof-satisfied-sensitive'),
+      ...q('execution', 'verification-supports-candidate'),
+      ...q('control', 'unsuccessful-work-visible', 'evidence-classes-stated', 'outcome-claim-accurate'),
+      ...q('content', 'pr-review-verdict-supported', 'pr-description-accurate', 'pr-testing-claims-bounded', 'pr-risks-disclosed'),
+    ],
+  },
 };

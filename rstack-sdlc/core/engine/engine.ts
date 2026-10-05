@@ -25,6 +25,7 @@ import {
 import { join, sep } from 'node:path';
 import {
   type Audit,
+  type FinalPlan,
   type Plan,
   buildFinalPlan,
   parseAudit,
@@ -44,6 +45,7 @@ import {
   parseReview,
 } from '../contracts/app.ts';
 import type { NotConfigured, ProposalSink, RequestSnapshot, TestExecutor, TransportClass } from '../contracts/ports.ts';
+import { type PrReviewPacket, packetIdentities, parsePrReview, parsePrReviewPacket } from '../contracts/pr-review.ts';
 import {
   type DecisionProvenance,
   type JournalEvent,
@@ -75,12 +77,15 @@ import { readContained } from './containment.ts';
 import { EngineBlock } from './errors.ts';
 import { classifyBaseline, classifyVerification } from './execution.ts';
 import { changedPaths, isUnder, manifestOf, manifestText, materialize, measureTree } from './tree.ts';
-import { type TailRecovery, appendEvent, quarantineTail, readJournal } from './journal.ts';
+import { type TailRecovery, JOURNAL_FILE, appendEvent, quarantineTail, readJournal } from './journal.ts';
 import { type HeldLock, type LockHolder, acquireLock, readHolder } from './lock.ts';
+import { buildPrReviewPacket, packetText } from './pr-review-packet.ts';
+import { composeProposal } from './proposal.ts';
 import { type RunState, applyEvent, currentStage, replay } from './state.ts';
 
 const SNAPSHOT_FILE = 'state.json';
 const MAX_SUBMISSION_BYTES = 256 * 1024;
+const MAX_PROCEDURE_BYTES = 64 * 1024;
 
 export type Directive =
   | { kind: 'CONTINUE'; pending: TaskEnvelope | null }
@@ -107,7 +112,14 @@ export type Directive =
       authorization: { decision_id: string; provenance: DecisionProvenance } | null;
       proposal: RunState['proposal'];
     }
-  | { kind: 'BLOCKED'; blocker: string; detail: string };
+  | {
+      kind: 'BLOCKED';
+      blocker: string;
+      detail: string;
+      // Present when a PR review stopped the run: its verdict and the retained
+      // record that holds its findings and limitations.
+      pr_review?: { verdict: string; record: string };
+    };
 
 export interface Reply {
   ok: boolean;
@@ -138,6 +150,9 @@ export interface StartInput {
   // retained at start; the run never writes to it.
   appDir: string;
   profileText: string;
+  // The procedure the PR reviewer follows: the default or a team's own. Its
+  // exact text is retained and every PR review in the run is bound to it.
+  prReviewProcedure?: string;
   sinkId: string;
   transportClass: TransportClass;
 }
@@ -296,7 +311,12 @@ export function createEngine(options: EngineOptions): Engine {
     const stage = currentStage(state, workflow);
     switch (state.phase) {
       case 'BLOCKED':
-        return { kind: 'BLOCKED', blocker: state.blocker?.code ?? 'UNKNOWN', detail: state.blocker?.detail ?? '' };
+        return {
+          kind: 'BLOCKED',
+          blocker: state.blocker?.code ?? 'UNKNOWN',
+          detail: state.blocker?.detail ?? '',
+          ...(state.pr_review && state.blocker?.code.startsWith('PR_REVIEW_') ? { pr_review: state.pr_review } : {}),
+        };
       case 'DONE':
         return {
           kind: 'DONE',
@@ -347,6 +367,13 @@ export function createEngine(options: EngineOptions): Engine {
 
   function loadState(runDir: string, runId: string, repair: boolean): { state: RunState; recovered: TailRecovery | null; tailBytes: number; events: number } {
     const read = readJournal(runDir, runId);
+    // Checked before anything is replayed. A run recorded under another
+    // definition is refused as that; its records are never read through this
+    // one, which would give them a meaning they did not have.
+    const recorded = read.events[0]?.type === 'run_started' ? read.events[0].data.workflow_ref : undefined;
+    if (recorded !== undefined && recorded !== wfRef) {
+      throw new EngineBlock('WORKFLOW_MISMATCH', 'the run was started under a different workflow definition', { recorded, engine: wfRef });
+    }
     const state = replay(read.events, workflow);
     if (!state) throw new EngineBlock('RUN_NOT_INITIALIZED', 'the run has no committed start record', {});
     if (state.workflow_ref !== wfRef) {
@@ -410,7 +437,7 @@ export function createEngine(options: EngineOptions): Engine {
 
   // Checks one delivered file against its contract and the records it must
   // agree with. An empty issue list means the record is accepted.
-  function checkContract(runDir: string, contract: string, text: string, inputs: Record<string, string>): { issues: string[]; open: boolean; verdict?: string } {
+  function checkContract(runDir: string, contract: string, text: string, inputs: Record<string, string>, state: RunState): { issues: string[]; open: boolean; verdict?: string } {
     const fail = (p: Parsed<unknown>): string[] => (p.ok ? [] : p.issues);
     switch (contract) {
       case 'intent': {
@@ -444,6 +471,14 @@ export function createEngine(options: EngineOptions): Engine {
           spec: inputs.spec as string,
           proof: inputs.proof as string,
         });
+        return { issues: fail(p), open: false, verdict: p.ok ? p.value.verdict : undefined };
+      }
+      case 'pr-review': {
+        // The packet is re-established first. A review is then accepted only for
+        // that packet and that candidate, citing only what the packet permits.
+        const current = currentPacket(runDir, state);
+        if (current.ref !== inputs.pr_review_packet) return { issues: ['pr_review: the packet in force is not the one this review was given'], open: false };
+        const p = parsePrReview(text, { packet: current.ref, candidate: inputs.candidate as string, permitted: current.permitted });
         return { issues: fail(p), open: false, verdict: p.ok ? p.value.verdict : undefined };
       }
       default:
@@ -481,51 +516,94 @@ export function createEngine(options: EngineOptions): Engine {
     return { ref: writeArtifact(runDir, html), location };
   }
 
-  function buildProposal(state: RunState): PrProposal {
+  // ------------------------------------------------------------ PR review
+
+  // Assembles the packet for journal records 1 to `cutoff` from what the run retains now.
+  function packetAt(runDir: string, state: RunState, cutoff: number): string {
+    const packet = buildPrReviewPacket({
+      state,
+      events: readJournal(runDir, state.run_id).events,
+      journal: readFileSync(join(runDir, JOURNAL_FILE)),
+      cutoff,
+      read: (name, ref) => readArtifact(runDir, name, ref),
+    });
+    return packetText(packet);
+  }
+
+  // The packet in force, re-established. Its retained bytes are read again by
+  // identity, the packet is assembled again from what the run retains now, and
+  // the two must be the same record. Every record it names, every file of its
+  // three trees, and what both real runs printed are read on the way, so a
+  // dependency that is missing, altered, or no longer consistent stops here.
+  // Returns the packet and every identity a review of it may cite.
+  function currentPacket(runDir: string, state: RunState): { ref: string; packet: PrReviewPacket; permitted: Set<string> } {
+    const ref = state.subjects.pr_review_packet;
+    const packet = retained('pr_review_packet', parsePrReviewPacket(readArtifact(runDir, 'pr_review_packet', ref)));
+    if (refOf(packetAt(runDir, state, packet.history.journal_cutoff)) !== ref) {
+      throw new EngineBlock('PR_REVIEW_PACKET_STALE', 'the PR review packet no longer matches the evidence it was assembled from', { packet: ref });
+    }
+    // Assembling the packet again has just read every record it names, so
+    // each identity permitted here is one that was resolved a moment ago.
+    const permitted = new Set<string>([ref as string, ...packetIdentities(packet)]);
+    for (const [name, treeRef] of Object.entries(packet.implementation)) {
+      for (const file of readTree(runDir, name, treeRef).files) {
+        readTreeFile(runDir, name, file.sha256, file.path);
+        permitted.add(`sha256:${file.sha256}`);
+      }
+    }
+    return { ref: ref as string, packet, permitted };
+  }
+
+  // A proposal is composed only for a candidate whose packet is still what was
+  // assembled and whose PR review of that packet approved it. The review is
+  // validated again here, against the packet as re-established, before any of
+  // its text is used.
+  function buildProposal(runDir: string, state: RunState): PrProposal {
     const evidence: Record<string, string> = {};
     for (const [stageId, accepted] of Object.entries(state.accepted)) evidence[stageId] = accepted.result_ref;
     const planning = state.planning;
     if (!planning) throw new EngineBlock('JOURNAL_CORRUPT', 'a proposal needs an authorized plan', {});
-    const need = (key: string): string => {
-      const ref = state.subjects[key];
-      if (!ref) throw new EngineBlock('MISSING_INPUT', `a proposal needs "${key}"`, { input: key });
-      return ref;
-    };
-    return {
-      schema_version: 1,
-      record_type: 'pr-proposal',
+    const decision = state.decisions[planning.decision_id];
+    if (!decision) throw new EngineBlock('JOURNAL_CORRUPT', 'a proposal needs the authorizing decision', {});
+    const reviewed = state.pr_review;
+    if (!reviewed || reviewed.verdict !== 'APPROVE' || reviewed.record !== state.subjects.pr_review) {
+      throw new EngineBlock('PR_REVIEW_REQUIRED', 'a proposal needs an approving PR review of the candidate', {});
+    }
+    const { ref, packet, permitted } = currentPacket(runDir, state);
+    const prReview = retained(
+      'pr_review',
+      parsePrReview(readArtifact(runDir, 'pr_review', reviewed.record), { packet: ref, candidate: packet.implementation.candidate, permitted }),
+    );
+    if (prReview.verdict !== 'APPROVE') throw new EngineBlock('PR_REVIEW_REQUIRED', 'the retained PR review does not approve the candidate', {});
+    const spec = retained('spec', parseSpec(readArtifact(runDir, 'spec', packet.requirements.spec)));
+    const execution = (name: string, id: string): ExecutionRecord => JSON.parse(readArtifact(runDir, name, id)) as ExecutionRecord;
+    return composeProposal({
       run_id: state.run_id,
       request_id: state.request_id,
-      title: `Proposal for request ${state.request_id}`,
-      body: `Local proposal assembled from run ${state.run_id}. The candidate is identified by its measured file tree and was verified by running the controlled proof locally. Nothing was published.`,
-      base_ref: need('base'),
-      candidate_ref: need('candidate'),
-      proof: need('proof'),
-      proof_tree: need('proof_tree'),
-      proof_baseline: need('proof_baseline'),
-      verification: need('verification'),
-      review: need('review'),
       source_ref: state.source_ref,
+      transport_class: state.transport_class,
       evidence,
-      planning_basis: {
-        final_plan: planning.final_plan,
-        last_audited_plan: planning.last_audited_plan,
-        audit: planning.audit,
-        decision: planning.decision_ref,
-        brief: planning.brief,
-        spec: state.subjects.spec ?? '',
-        intent: state.subjects.intent ?? '',
-      },
-      status: 'PR_PROPOSAL_READY',
-      publication_status: 'NOT_ATTEMPTED',
-      evidence_class: state.transport_class,
-      evidence_classes: {
-        role_results: state.transport_class,
-        review: state.transport_class,
-        test_execution: 'ACTUAL_LOCAL_EXECUTION',
-      },
-      candidate_verification: 'PASSED_LOCAL_EXECUTION',
-    };
+      packet_ref: ref,
+      packet,
+      pr_review_ref: reviewed.record,
+      pr_review: prReview,
+      review: retained(
+        'review',
+        parseReview(readArtifact(runDir, 'review', packet.technical_review.review), {
+          candidate: packet.implementation.candidate,
+          verification: packet.execution.verification,
+          spec: packet.requirements.spec,
+          proof: packet.execution.proof,
+        }),
+      ),
+      spec,
+      proof: retained('proof', parseProof(readArtifact(runDir, 'proof', packet.execution.proof), spec.criteria.map((c) => c.id))),
+      final_plan: JSON.parse(readArtifact(runDir, 'final_plan', packet.planning.final_plan)) as FinalPlan,
+      baseline: execution('proof_baseline', packet.execution.proof_baseline),
+      verification: execution('verification', packet.execution.verification),
+      decision: { decision_id: planning.decision_id, action: decision.action, provenance: decision.provenance },
+      controlled_tests_dir: appConfigOf(runDir, state).controlled_tests_dir,
+    });
   }
 
   // Takes the files a role result names from the attempt's directory, checks
@@ -544,7 +622,7 @@ export function createEngine(options: EngineOptions): Engine {
     for (const p of produces) {
       const file = readContained(ctx.runDir, workDir, result.files[p.key] as string);
       if (!file.ok) return { code: 'UNSAFE_PATH', detail: { key: p.key, reason: file.reason } };
-      const outcome = checkContract(ctx.runDir, p.contract, file.bytes.toString('utf8'), inputs);
+      const outcome = checkContract(ctx.runDir, p.contract, file.bytes.toString('utf8'), inputs, ctx.state);
       if (outcome.issues.length > 0) return { code: 'CONTRACT_VIOLATION', detail: { key: p.key, issues: outcome.issues } };
       open ||= outcome.open;
       verdict = outcome.verdict ?? verdict;
@@ -591,14 +669,17 @@ export function createEngine(options: EngineOptions): Engine {
   }
 
   // A proposal is assembled only from evidence that is still what was retained.
-  // Everything the proposal names, and everything those records name in turn,
-  // is read again by identity first: the frozen source, configuration, profile,
-  // and workflow; every current subject; every accepted result and recorded
-  // decision; the base, proof, and candidate trees down to each file; and what
-  // both real runs printed. Bytes that are missing or no longer match stop the
-  // proposal before anything is written. Work and execution directories, and
-  // records of superseded attempts, are not what the proposal relies on and are
-  // not read here; the packet verifier reports on the whole packet.
+  // Two steps establish that, and the proposal stage runs both. Building the
+  // proposal re-establishes the PR review packet (`currentPacket`): the base,
+  // proof, and candidate trees down to each file, what both real runs printed,
+  // the planning records, the code review, and the history the packet names.
+  // This function reads the rest again by identity: the frozen source,
+  // configuration, profile, and workflow; every current subject, which
+  // includes the packet, the PR review, and its procedure; every accepted
+  // result; and every recorded decision. Bytes that are missing or no longer
+  // match stop the proposal before anything is written. Work and execution
+  // directories are not what the proposal relies on and are not read; the
+  // packet verifier reports on the whole run.
   function assertProposalEvidence(runDir: string, state: RunState, proposal: PrProposal): void {
     const records: [string, string | undefined][] = [
       ['source', state.source_ref],
@@ -616,13 +697,20 @@ export function createEngine(options: EngineOptions): Engine {
       readArtifact(runDir, name, ref);
       read.add(ref as string);
     }
-    for (const [name, ref] of [['base', proposal.base_ref], ['proof_tree', proposal.proof_tree], ['candidate', proposal.candidate_ref]] as const) {
-      verifyTree(runDir, name, ref);
-    }
-    for (const [name, ref] of [['proof_baseline', proposal.proof_baseline], ['verification', proposal.verification]] as const) {
-      const record = JSON.parse(readArtifact(runDir, name, ref)) as ExecutionRecord;
-      readArtifact(runDir, `${name} output`, record.output);
-    }
+  }
+
+  // A verification stands only for the conditions it ran under. If they have
+  // changed, it and everything that relied on it are dropped and established
+  // again: nothing downstream is carried forward. Returns the reply when the
+  // evidence was found stale.
+  function invalidateIfStale(ctx: Ctx): Reply | null {
+    const { state } = ctx;
+    const verification = JSON.parse(readArtifact(ctx.runDir, 'verification', state.subjects.verification)) as ExecutionRecord;
+    const appConfig = appConfigOf(ctx.runDir, state);
+    const environment = executorFor(appConfig).environment(appConfig.test.env ?? []);
+    if (canonicalJson(environment) === canonicalJson(verification.environment) && verification.tree === state.subjects.candidate) return null;
+    commit(ctx, 'verification_invalidated', { reason: 'EXECUTION_ENVIRONMENT_CHANGED', was: verification.environment, now: environment });
+    return reply(ctx, true, 'EVIDENCE_STALE', { reason: 'EXECUTION_ENVIRONMENT_CHANGED' });
   }
 
   function appConfigOf(runDir: string, state: RunState): AppConfig {
@@ -713,6 +801,20 @@ export function createEngine(options: EngineOptions): Engine {
     return { candidate: retainTree(runDir, measured.files).ref };
   }
 
+  // PR review stage: the reviewer is given a copy of the candidate to read.
+  // A review is accepted only while that copy is still the candidate, file for
+  // file, so an approval cannot rest on an application other than the retained
+  // one. This measures the copy as it is at acceptance; it does not show what
+  // the copy held at any earlier moment.
+  function unchangedCopy(ctx: Ctx, attemptId: string, treeName: 'candidate'): Refusal | null {
+    const { runDir, state } = ctx;
+    const measured = measureTree(join(runDir, 'work', attemptId, 'app'));
+    if (!measured.ok) return { code: 'UNSAFE_PATH', detail: { reason: measured.reason } };
+    const changed = changedPaths(readTree(runDir, treeName, state.subjects[treeName]), manifestOf(measured.files));
+    if (changed.length === 0) return null;
+    return { code: 'WRITE_BOUNDARY_VIOLATION', detail: { reason: 'the PR review may not change the copy of the candidate it was given', paths: changed } };
+  }
+
   // ------------------------------------------------------------ entry points
 
   function start(input: StartInput): Reply {
@@ -736,6 +838,12 @@ export function createEngine(options: EngineOptions): Engine {
         throw new EngineBlock(profile.code === 'MALFORMED' ? 'INVALID_PROFILE' : profile.code, 'the profile was rejected', {
           issues: profile.issues,
         });
+      }
+      // A workflow that reviews every proposal needs the procedure for that review before a run exists.
+      const needsProcedure = workflow.stages.some((s) => (s.inputs ?? []).includes('pr_review_procedure'));
+      const procedure = input.prReviewProcedure ?? '';
+      if (needsProcedure && (procedure.trim().length === 0 || Buffer.byteLength(procedure) > MAX_PROCEDURE_BYTES)) {
+        throw new EngineBlock('INVALID_PR_REVIEW_PROCEDURE', `this workflow needs a PR review procedure of at most ${MAX_PROCEDURE_BYTES} bytes`, {});
       }
       mkdirSync(options.runsRoot, { recursive: true });
       const runDir = join(options.runsRoot, runId);
@@ -768,6 +876,7 @@ export function createEngine(options: EngineOptions): Engine {
             // The unchanged application, measured and retained before any work.
             base_ref: retainTree(runDir, app.files).ref,
             app_config_ref: writeArtifact(runDir, configBytes),
+            ...(needsProcedure ? { pr_review_procedure_ref: writeArtifact(runDir, procedure) } : {}),
             sink: input.sinkId,
             transport_class: input.transportClass,
             max_attempts: maxAttempts,
@@ -807,6 +916,7 @@ export function createEngine(options: EngineOptions): Engine {
         audit_budget: state.audit_budget,
         planning: state.planning,
         subjects: state.subjects,
+        ...(state.pr_review ? { pr_review: state.pr_review } : {}),
         journal: { events, incomplete_tail_bytes: tailBytes },
         snapshot: snapshotStatus(runDir, state),
         lock,
@@ -847,17 +957,23 @@ export function createEngine(options: EngineOptions): Engine {
         commit(ctx, 'verification_recorded', { verification_ref: run.ref, outcome, candidate });
         return reply(ctx, true, outcome === 'PASS' ? 'VERIFICATION_PASSED' : 'VERIFICATION_FAILED', { verification: run.ref, issues: run.record.classification.issues });
       }
+      if (stage.id === 'pr-review-packet') {
+        const stale = invalidateIfStale(ctx);
+        if (stale) return stale;
+        // Assembled from retained records and the journal as it stands now. The
+        // record is checked against its own format before it is retained.
+        const text = packetAt(ctx.runDir, state, state.version);
+        const packet = parsePrReviewPacket(text);
+        if (!packet.ok) throw new EngineBlock('PR_REVIEW_EVIDENCE_INCONSISTENT', 'the assembled PR review packet is not a valid record', { issues: packet.issues });
+        for (const [name, treeRef] of Object.entries(packet.value.implementation)) verifyTree(ctx.runDir, name, treeRef);
+        const packetRef = writeArtifact(ctx.runDir, text);
+        commit(ctx, 'pr_review_packet_recorded', { packet_ref: packetRef, journal_cutoff: state.version, candidate: state.subjects.candidate });
+        return reply(ctx, true, 'PR_REVIEW_PACKET_READY', { pr_review_packet: packetRef });
+      }
       if (stage.id === 'proposal') {
-        // A verification stands only for the conditions it ran under. If they have
-        // changed, it and the review that relied on it are established again.
-        const verification = JSON.parse(readArtifact(ctx.runDir, 'verification', state.subjects.verification)) as ExecutionRecord;
-        const appConfig = appConfigOf(ctx.runDir, state);
-        const environment = executorFor(appConfig).environment(appConfig.test.env ?? []);
-        if (canonicalJson(environment) !== canonicalJson(verification.environment) || verification.tree !== state.subjects.candidate) {
-          commit(ctx, 'verification_invalidated', { reason: 'EXECUTION_ENVIRONMENT_CHANGED', was: verification.environment, now: environment });
-          return reply(ctx, true, 'EVIDENCE_STALE', { reason: 'EXECUTION_ENVIRONMENT_CHANGED' });
-        }
-        const proposal = buildProposal(state);
+        const stale = invalidateIfStale(ctx);
+        if (stale) return stale;
+        const proposal = buildProposal(ctx.runDir, state);
         assertProposalEvidence(ctx.runDir, state, proposal);
         if (!options.resolveSink) throw new EngineBlock('SINK_UNAVAILABLE', 'no proposal sink was wired', {});
         const result: ReturnType<ProposalSink['prepare']> = options.resolveSink(state.sink).prepare(proposal, ctx.runDir);
@@ -882,6 +998,8 @@ export function createEngine(options: EngineOptions): Engine {
         readArtifact(ctx.runDir, key, ref);
         inputs[key] = ref;
       }
+      // A PR review is dispatched only on a packet that is still what was assembled.
+      if (stage.id === 'pr-review') currentPacket(ctx.runDir, state);
       const attemptId = `${stage.id}-${(state.attempts[stage.id] ?? 0) + 1}`;
       // The attempt's own write lane, created fresh. A directory left by an
       // interrupted dispatch of this same attempt id was never handed out.
@@ -964,6 +1082,10 @@ export function createEngine(options: EngineOptions): Engine {
         if ('code' in derived) return reject(derived.code as string, derived.detail as Record<string, unknown>);
         Object.assign(ingested.subjects, derived);
       }
+      if (stage.id === 'pr-review') {
+        const refusal = unchangedCopy(ctx, sub.attempt_id, 'candidate');
+        if (refusal) return reject(refusal.code as string, refusal.detail as Record<string, unknown>);
+      }
 
       commit(ctx, 'result_accepted', {
         attempt_id: sub.attempt_id,
@@ -976,7 +1098,7 @@ export function createEngine(options: EngineOptions): Engine {
         // role results from. Recorded per result so a reader need not infer it.
         evidence_class: state.transport_class,
         open_decisions: ingested.open,
-        ...(ingested.verdict ? { review_verdict: ingested.verdict } : {}),
+        ...(ingested.verdict ? (stage.id === 'pr-review' ? { pr_review_verdict: ingested.verdict } : { review_verdict: ingested.verdict }) : {}),
       });
       return reply(ctx, true, 'ACCEPTED', { duplicate: false, settled_version: ctx.state.version });
     });

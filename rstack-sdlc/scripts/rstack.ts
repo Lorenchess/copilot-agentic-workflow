@@ -2,7 +2,7 @@
 // exits 0 when the reply is ok, 2 when the engine refused, 1 on a usage error.
 //
 //   node scripts/rstack.ts start   --workspace <dir> --app <application dir> --request <file> [--request-id <id>]
-//                                  [--request-text <text>] [--profile <file>]
+//                                  [--request-text <text>] [--profile <file>] [--pr-review-procedure <file>]
 //                                  [--source local] [--sink local] [--run-id <id>] [--simulated]
 //   node scripts/rstack.ts status  --workspace <dir> --run <id>
 //   node scripts/rstack.ts next    --workspace <dir> --run <id>
@@ -82,6 +82,7 @@ async function main(): Promise<Reply> {
       'request-id': { type: 'string' },
       'request-text': { type: 'string' },
       profile: { type: 'string' },
+      'pr-review-procedure': { type: 'string' },
       source: { type: 'string' },
       sink: { type: 'string' },
       'run-id': { type: 'string' },
@@ -116,7 +117,8 @@ async function main(): Promise<Reply> {
       sink: values.sink,
       request: { path: values.request, text: values['request-text'], request_id: values['request-id'] },
       appDir: values.app ? resolve(values.app) : '',
-      profilePath: values.profile ?? join(PACKAGE_ROOT, 'profiles', 'trial-v1.json'),
+      profilePath: values.profile ?? join(PACKAGE_ROOT, 'profiles', 'trial-v2.json'),
+      prReviewProcedurePath: values['pr-review-procedure'] ? resolve(values['pr-review-procedure']) : undefined,
       runId: values['run-id'],
       transportClass: values.simulated ? 'SIMULATED' : 'MANUAL_TRANSPORT',
     });

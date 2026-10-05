@@ -26,7 +26,7 @@ const transport = createFakeTransport(assembly.runsRoot, { intent: ['timeout', '
 const started = await assembly.start({
   request: { path: join(PACKAGE_ROOT, 'tests', 'fixtures', 'requests', 'REQ-001.md') },
   appDir: join(PACKAGE_ROOT, 'tests', 'fixtures', 'sample-app'),
-  profilePath: join(PACKAGE_ROOT, 'profiles', 'trial-v1.json'),
+  profilePath: join(PACKAGE_ROOT, 'profiles', 'trial-v2.json'),
   transportClass: 'SIMULATED',
 });
 if (!started.ok || !started.run_id) {

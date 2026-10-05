@@ -20,7 +20,7 @@ import type { ExecutionRecord, TreeManifest } from '../core/contracts/app.ts';
 import type { PrProposal } from '../core/contracts/records.ts';
 import type { Reply } from '../core/engine/engine.ts';
 import { verifyPacket } from '../evals/verify-packet.ts';
-import { type TestRun, completeStep, decision, eventTypes, journalText, newRun, toHumanWait } from './support/harness.ts';
+import { type TestRun, completeStep, decision, eventTypes, journalText, newRun, prReviewStep, toHumanWait } from './support/harness.ts';
 
 const subjects = (run: TestRun): Record<string, string> => run.assembly.engine.status(run.runId).subjects as Record<string, string>;
 const artifactPath = (run: TestRun, ref: string): string => join(run.runDir, 'artifacts', ref.replace(/^sha256:/, ''));
@@ -46,6 +46,7 @@ async function atProposal(label: string): Promise<TestRun> {
   completeStep(run); // implement
   assert.equal(engine.next(run.runId).code, 'VERIFICATION_PASSED');
   completeStep(run); // review
+  prReviewStep(run); // PR review packet and PR review
   assert.equal(engine.status(run.runId).stage, 'proposal');
   return run;
 }
@@ -134,7 +135,7 @@ test('RC4: every record and file the proposal relies on is re-established before
   assert.ok(controlledTest, 'the proof tree holds a controlled test');
   const results = log.filter((e) => e.type === 'result_accepted').map((e) => String(e.data.result_ref));
   const decisions = log.filter((e) => e.type === 'decision_recorded').map((e) => String(e.data.decision_ref));
-  assert.equal(results.length, 7, 'intent, spec, plan, audit, proof, implement, review');
+  assert.equal(results.length, 8, 'intent, spec, plan, audit, proof, implement, review, PR review');
   assert.equal(decisions.length, 1);
 
   const relied: [string, string][] = [
@@ -152,6 +153,10 @@ test('RC4: every record and file the proposal relies on is re-established before
     // Proof and review.
     ['proof record', artifactPath(run, s.proof!)],
     ['review record', artifactPath(run, s.review!)],
+    // The PR review, the packet it was given, and the procedure it followed.
+    ['PR review packet', artifactPath(run, s.pr_review_packet!)],
+    ['PR review record', artifactPath(run, s.pr_review!)],
+    ['PR review procedure', artifactPath(run, s.pr_review_procedure!)],
     // Planning basis.
     ['intent', artifactPath(run, s.intent!)],
     ['specification', artifactPath(run, s.spec!)],

@@ -268,9 +268,9 @@ test('RC7 end to end: verification refuses a proof made under another environmen
     const verification = record(d, subjects(d).verification as string);
     assert.deepEqual(verification.environment, baseline.environment);
     step(d);
-    assert.equal(engine.status(d.runId).stage, 'proposal');
+    assert.equal(engine.status(d.runId).stage, 'pr-review-packet');
 
-    // Changed again before the proposal: the verification no longer stands, and
+    // Changed again before the PR review: the verification no longer stands, and
     // it is not re-established under an environment the proof was not made in.
     process.env[DECLARED] = BAD;
     const stale = engine.next(d.runId);
@@ -283,6 +283,8 @@ test('RC7 end to end: verification refuses a proof made under another environmen
     process.env[DECLARED] = GOOD;
     process.env[AMBIENT] = 'changed again';
     assert.equal(engine.next(d.runId).code, 'VERIFICATION_PASSED');
+    step(d);
+    assert.equal(engine.next(d.runId).code, 'PR_REVIEW_PACKET_READY');
     step(d);
     assert.equal(engine.next(d.runId).code, 'PROPOSAL_READY');
 
@@ -313,6 +315,9 @@ test('RC7 end to end: an unrelated change in the parent environment leaves the e
     process.env[AMBIENT] = 'two';
     step(d);
     process.env[AMBIENT] = 'three';
+    assert.equal(engine.next(d.runId).code, 'PR_REVIEW_PACKET_READY');
+    step(d);
+    process.env[AMBIENT] = 'four';
     assert.equal(engine.next(d.runId).code, 'PROPOSAL_READY');
     assert.ok(!eventTypes(d).includes('verification_invalidated'));
   } finally {

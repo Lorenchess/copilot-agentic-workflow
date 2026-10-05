@@ -107,6 +107,10 @@ export interface RunState {
   failed_verifications: number;
   proposal: { proposal_ref: string; location: string } | null;
   publication_status: 'NOT_ATTEMPTED';
+  // The accepted PR review of the current candidate: its verdict and the
+  // identity of the retained record, which holds the findings and limitations.
+  // Absent until a PR review is accepted, and in runs of a workflow without one.
+  pr_review?: { verdict: 'APPROVE' | 'REQUEST_CHANGES' | 'INCONCLUSIVE'; record: string };
 }
 
 function corrupt(event: JournalEvent, why: string): never {
@@ -160,6 +164,9 @@ export function applyEvent(prev: RunState | null, event: JournalEvent, workflow:
     const first = workflow.stages[0];
     if (!first) corrupt(event, 'workflow has no stages');
     const sourceRef = str(event, 'source_ref', REF_PATTERN);
+    // The PR-review procedure the run was started with, when its workflow has that review.
+    const procedure: Record<string, string> =
+      event.data.pr_review_procedure_ref === undefined ? {} : { pr_review_procedure: str(event, 'pr_review_procedure_ref', REF_PATTERN) };
     return {
       schema_version: 1,
       run_id: event.run_id,
@@ -183,7 +190,7 @@ export function applyEvent(prev: RunState | null, event: JournalEvent, workflow:
       entry_failures: 0,
       attempt_log: {},
       accepted: {},
-      subjects: { source: sourceRef, base: str(event, 'base_ref', REF_PATTERN) },
+      subjects: { source: sourceRef, base: str(event, 'base_ref', REF_PATTERN), ...procedure },
       app_config_ref: str(event, 'app_config_ref', REF_PATTERN),
       failed_verifications: 0,
       planning: null,
@@ -271,6 +278,34 @@ export function applyEvent(prev: RunState | null, event: JournalEvent, workflow:
           return state;
         }
       }
+      // Only an approving PR review lets a proposal be composed. Any other verdict
+      // stops the run with the review retained: nothing repairs, retries, or
+      // overrides it, and a changed candidate needs a new run.
+      if (stage.id === 'pr-review') {
+        const verdict = event.data.pr_review_verdict;
+        if (verdict !== 'APPROVE' && verdict !== 'REQUEST_CHANGES' && verdict !== 'INCONCLUSIVE') corrupt(event, 'bad PR review verdict');
+        const record = produced.pr_review;
+        if (!record) corrupt(event, 'no PR review record');
+        state.pr_review = { verdict, record };
+        if (verdict !== 'APPROVE') {
+          state.phase = 'BLOCKED';
+          state.blocker = {
+            code: verdict === 'REQUEST_CHANGES' ? 'PR_REVIEW_CHANGES_REQUESTED' : 'PR_REVIEW_INCONCLUSIVE',
+            detail: `the PR review of the candidate returned ${verdict}; its findings and limitations are in the retained record ${record}`,
+          };
+          return state;
+        }
+      }
+      enter(state, workflow, event, stage.next);
+      return state;
+    }
+    case 'pr_review_packet_recorded': {
+      // The packet is assembled only at its own stage, which follows an accepting
+      // code review, for the candidate in force, from the journal up to this record.
+      if (state.phase !== 'ACTIVE' || stage.id !== 'pr-review-packet') corrupt(event, 'no PR review packet allowed here');
+      if (str(event, 'candidate', REF_PATTERN) !== state.subjects.candidate) corrupt(event, 'the packet is for another candidate');
+      if (event.data.journal_cutoff !== state.version - 1) corrupt(event, 'the packet does not end at the record before it');
+      state.subjects.pr_review_packet = str(event, 'packet_ref', REF_PATTERN);
       enter(state, workflow, event, stage.next);
       return state;
     }
@@ -295,11 +330,15 @@ export function applyEvent(prev: RunState | null, event: JournalEvent, workflow:
       return state;
     }
     case 'verification_invalidated': {
-      // What the verification relied on has changed. It and the review that
-      // relied on it are dropped and must be established again.
-      if (state.phase !== 'ACTIVE' || stage.id !== 'proposal') corrupt(event, 'no invalidation allowed here');
+      // What the verification relied on has changed. It and every review that
+      // relied on it are dropped and must be established again: the code
+      // review, the PR review packet, and the PR review. None is carried forward.
+      if (state.phase !== 'ACTIVE' || (stage.id !== 'proposal' && stage.id !== 'pr-review-packet')) corrupt(event, 'no invalidation allowed here');
       delete state.subjects.verification;
       delete state.subjects.review;
+      delete state.subjects.pr_review_packet;
+      delete state.subjects.pr_review;
+      delete state.pr_review;
       enter(state, workflow, event, 'verify');
       return state;
     }
@@ -414,6 +453,11 @@ export function applyEvent(prev: RunState | null, event: JournalEvent, workflow:
     }
     case 'proposal_recorded': {
       if (state.phase !== 'ACTIVE' || stage.id !== 'proposal') corrupt(event, 'no proposal allowed here');
+      // Where the workflow has a PR review, a proposal follows its approval of the
+      // packet in force, and nothing else.
+      if (stage.id === 'proposal' && stageOf(workflow, 'pr-review') && (state.pr_review?.verdict !== 'APPROVE' || !state.subjects.pr_review_packet || state.pr_review.record !== state.subjects.pr_review)) {
+        corrupt(event, 'no approving PR review of the current packet');
+      }
       state.proposal = { proposal_ref: str(event, 'proposal_ref', REF_PATTERN), location: str(event, 'location') };
       state.phase = 'DONE';
       state.terminal = 'PR_PROPOSAL_READY';

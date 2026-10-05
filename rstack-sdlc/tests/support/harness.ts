@@ -13,7 +13,7 @@ import type { EngineOptions, Reply } from '../../core/engine/engine.ts';
 import { type Assembly, createAssembly } from '../../scripts/assembly.ts';
 
 export const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-export const PROFILE = join(PACKAGE_ROOT, 'profiles', 'trial-v1.json');
+export const PROFILE = join(PACKAGE_ROOT, 'profiles', 'trial-v2.json');
 export const REQUEST = join(PACKAGE_ROOT, 'tests', 'fixtures', 'requests', 'REQ-001.md');
 export const CLI = join(PACKAGE_ROOT, 'scripts', 'rstack.ts');
 // The synthetic application. Runs only read it; every attempt works on its own copy.
@@ -102,6 +102,13 @@ export function completeStep(run: TestRun, behavior: FakeBehavior = 'success'): 
   const accepted = run.assembly.engine.submit(run.runId, result(envelope, {}, behavior));
   assert.equal(accepted.code, 'ACCEPTED');
   return accepted;
+}
+
+// After an accepted code review: the engine assembles the PR review packet,
+// then the PR review is dispatched and accepted. `behavior` selects its content.
+export function prReviewStep(run: TestRun, behavior: FakeBehavior = 'success'): Reply {
+  assert.equal(run.assembly.engine.next(run.runId).code, 'PR_REVIEW_PACKET_READY');
+  return completeStep(run, behavior);
 }
 
 // Advances a run from the intent stage to the plan decision and returns the

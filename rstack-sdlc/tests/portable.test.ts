@@ -21,7 +21,7 @@ import type { TaskEnvelope } from '../core/contracts/records.ts';
 import { sha256Hex } from '../core/contracts/records.ts';
 import { APP, PACKAGE_ROOT, REQUEST, tmpDir } from './support/harness.ts';
 
-const ALT_PROFILE = readFileSync(join(PACKAGE_ROOT, 'tests', 'fixtures', 'profiles', 'alt-test-v1.json'), 'utf8');
+const ALT_PROFILE = readFileSync(join(PACKAGE_ROOT, 'tests', 'fixtures', 'profiles', 'alt-test-v2.json'), 'utf8');
 const DENY = join(PACKAGE_ROOT, 'tests', 'support', 'deny-network.ts');
 const forward = (p: string): string => p.replaceAll('\\', '/');
 

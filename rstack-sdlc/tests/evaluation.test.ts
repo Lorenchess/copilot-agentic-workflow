@@ -97,6 +97,7 @@ test('a valid packet is not falsely rejected, and its evidence classes stay sepa
     ['gate-ordering', 'PASS'],
     ['decision-basis', 'PASS'],
     ['audit-inputs-limited', 'PASS'],
+    ['pr-review-gate', 'PASS'],
     ['proposal-links', 'PASS'],
     ['publication-not-attempted', 'PASS'],
   ]);
@@ -107,6 +108,7 @@ test('a valid packet is not falsely rejected, and its evidence classes stay sepa
     role_results: 'SIMULATED',
     test_execution: 'ACTUAL_LOCAL_EXECUTION',
     review: 'SIMULATED',
+    pr_review: 'SIMULATED',
     authorization: { decision_id: 'D1', provenance: 'SCRIPTED', human_observed: 'NO' },
     host_validation: 'NOT_OBSERVED',
   });
@@ -160,7 +162,7 @@ test('a run in a record format the evaluator does not interpret is reported as s
   const run = await finishedRun('eval-format');
   const first = JSON.parse(readFileSync(join(run.runDir, 'journal.jsonl'), 'utf8').split('\n')[0]!.slice(65)) as { data: { workflow_ref: string } };
   const workflow = join(run.runDir, 'artifacts', first.data.workflow_ref.slice(7));
-  writeFileSync(workflow, readFileSync(workflow, 'utf8').replace('"workflow_version":5', '"workflow_version":2'));
+  writeFileSync(workflow, readFileSync(workflow, 'utf8').replace('"workflow_version":6', '"workflow_version":2'));
   const r = evaluateDeterministic(run.runDir);
   assert.equal(r.interpreted, false);
   assert.match(r.not_interpreted_reason!, /workflow version 2/);
@@ -177,7 +179,7 @@ test('incomplete and blocked runs are outcomes with their own classes, not failu
   assert.equal(w.evidence.authorization, 'NOT_APPLICABLE');
   assert.equal(w.evidence.test_execution, 'NOT_APPLICABLE');
   assert.equal(w.proof, 'NOT_APPLICABLE');
-  assert.deepEqual(w.control.filter((c) => c.result === 'NOT_APPLICABLE').map((c) => c.id), ['decision-basis', 'proposal-links', 'publication-not-attempted']);
+  assert.deepEqual(w.control.filter((c) => c.result === 'NOT_APPLICABLE').map((c) => c.id), ['decision-basis', 'pr-review-gate', 'proposal-links', 'publication-not-attempted']);
   assert.equal(w.control.find((c) => c.id === 'gate-ordering')?.result, 'PASS');
 
   const blocked = await finishedRun('eval-blocked', { implement: ['wrong', 'wrong'] });
@@ -224,7 +226,7 @@ test('an evaluation writes only in its own area and leaves the evidence unchange
   assert.equal(request.judgeable, true);
   assert.deepEqual(request.evidence, before);
   assert.match(request.rubric.sha256, /^[0-9a-f]{64}$/);
-  assert.equal(request.identities.workflow_version, 5);
+  assert.equal(request.identities.workflow_version, 6);
   assert.deepEqual(readdirSync(judgeDir(run, 'EVAL-1')), [], 'the judge area starts empty');
   assert.deepEqual(readdirSync(controlDir(run, 'EVAL-1')).sort(), ['deterministic.json', 'request.json']);
 

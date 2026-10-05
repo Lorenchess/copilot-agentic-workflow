@@ -49,7 +49,16 @@ export function canonicalJson(value: unknown): string {
 // ---------------------------------------------------------------- profile
 
 export const EFFORT_POLICIES = ['host-default'] as const;
-export const SELECTOR_STATUSES = ['requires-host-observation', 'observed'] as const;
+// Where a catalog entry's selector comes from, which decides whether it is
+// written. `requires-host-observation`: there is no selector and none is
+// written. `owner-pinned`: the owner configured it; it is written, and nothing
+// says a host has seen it. `observed`: it was confirmed on the host; it is
+// written. Owner configuration is never recorded as `observed`.
+export const SELECTOR_STATUSES = ['requires-host-observation', 'owner-pinned', 'observed'] as const;
+// A selector is one name, written as given: no list, no quoting, no second
+// line. A list of names would be a fallback, and version 1 has none.
+const SELECTOR_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9 ._+/()-]*[A-Za-z0-9)])?$/;
+const SELECTOR_MAX = 200;
 
 export interface RoleProfile {
   model_alias: string;
@@ -109,9 +118,14 @@ export function parseProfile(text: string, dispatchRoles: readonly string[]): Pa
         issues.list.push(`${p}: a null host_selector cannot be reported as ${status}`);
       }
     } else {
-      asString(e.host_selector, `${p}.host_selector`, issues, { max: 200 });
-      if (status !== 'observed') {
-        issues.list.push(`${p}: a host_selector requires selector_status "observed"`);
+      const selector = e.host_selector;
+      if (typeof selector !== 'string' || selector.length > SELECTOR_MAX || !SELECTOR_PATTERN.test(selector)) {
+        issues.list.push(
+          `${p}.host_selector: UNSUPPORTED_SELECTOR, expected one name of at most ${SELECTOR_MAX} characters (letters, digits, spaces, and . _ + / ( ) -); a list of names is a fallback and is not permitted`,
+        );
+      }
+      if (status === 'requires-host-observation') {
+        issues.list.push(`${p}: a host_selector requires selector_status "owner-pinned" or "observed"`);
       }
     }
   }
@@ -344,6 +358,7 @@ export const EVENT_TYPES = [
   'decision_recorded',
   'verification_recorded',
   'verification_invalidated',
+  'pr_review_packet_recorded',
   'proposal_recorded',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
@@ -375,7 +390,10 @@ export function parseEvent(text: string): Parsed<JournalEvent> {
 
 // ---------------------------------------------------------------- local proposal
 
-export interface PrProposal {
+// The proposal as written before the PR review existed (workflow versions up
+// to 5). Kept so a retained proposal of that form can still be named; nothing
+// writes it any more, and it is never read as if it carried a PR review.
+export interface PrProposalV1 {
   schema_version: 1;
   record_type: 'pr-proposal';
   run_id: string;
@@ -419,4 +437,29 @@ export interface PrProposal {
     test_execution: 'ACTUAL_LOCAL_EXECUTION';
   };
   candidate_verification: 'PASSED_LOCAL_EXECUTION';
+}
+
+// Version 2: a proposal exists only after a PR review approved the exact
+// candidate. Every field except `title` and the narrative sections of `body`
+// is taken from retained evidence by the engine. The title is the PR
+// reviewer's recommendation; the body is composed deterministically, and its
+// machine-owned sections do not come from any model.
+export interface PrProposal extends Omit<PrProposalV1, 'schema_version' | 'evidence_classes'> {
+  schema_version: 2;
+  // Format of `body`, as bound into the PR review packet.
+  composer_format: string;
+  pr_review_packet: string;
+  pr_review: string;
+  reviews: {
+    code_review: { record: string; verdict: 'ACCEPT' };
+    pr_review: { record: string; verdict: 'APPROVE' };
+  };
+  // Measured from the retained trees: unchanged application to candidate.
+  changes: { added: number; modified: number; deleted: number; paths: { path: string; change: 'ADDED' | 'MODIFIED' | 'DELETED' }[] };
+  evidence_classes: {
+    role_results: 'SIMULATED' | 'MANUAL_TRANSPORT';
+    review: 'SIMULATED' | 'MANUAL_TRANSPORT';
+    pr_review: 'SIMULATED' | 'MANUAL_TRANSPORT';
+    test_execution: 'ACTUAL_LOCAL_EXECUTION';
+  };
 }

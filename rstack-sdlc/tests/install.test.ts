@@ -18,11 +18,13 @@ const profileText = readFileSync(PROFILE, 'utf8');
 const MANIFEST = '.github/rstack-sdlc-install.json';
 const REVIEWER = '.github/agents/rstack-sdlc-reviewer.agent.md';
 const PLANNER = '.github/agents/rstack-sdlc-planner.agent.md';
+const PR_REVIEWER = '.github/agents/rstack-sdlc-pr-reviewer.agent.md';
 const OWNED = [
   '.github/agents/rstack-sdlc-coordinator.agent.md',
   '.github/agents/rstack-sdlc-developer.agent.md',
   '.github/agents/rstack-sdlc-plan-auditor.agent.md',
   PLANNER,
+  PR_REVIEWER,
   REVIEWER,
   '.github/agents/rstack-sdlc-tester.agent.md',
   '.github/skills/rstack-sdlc-application-records/SKILL.md',
@@ -124,7 +126,7 @@ test('a dry run reports the plan and writes nothing; applying it writes only own
   const done = install({ packageDir, workspace, dryRun: false });
   assert.deepEqual([done.ok, done.code], [true, 'INSTALLED']);
   assert.deepEqual(done.applied, [...OWNED, MANIFEST]);
-  assert.deepEqual(files(workspace), ['.github/agents/my-own.agent.md', ...OWNED.slice(0, 6), MANIFEST, ...OWNED.slice(6), '.github/workflows/ci.yml', 'README.md'].sort());
+  assert.deepEqual(files(workspace), ['.github/agents/my-own.agent.md', ...OWNED.slice(0, 7), MANIFEST, ...OWNED.slice(7), '.github/workflows/ci.yml', 'README.md'].sort());
   for (const line of before.filter((l) => !l.endsWith('/'))) assert.ok(snapshot(workspace).includes(line), `unrelated file kept: ${line}`);
 
   // The manifest names exactly the owned files with the hashes of what was written.
@@ -138,7 +140,7 @@ test('a dry run reports the plan and writes nothing; applying it writes only own
   const coordinator = readFileSync(join(workspace, OWNED[0]!), 'utf8');
   const engine = `node "${forward(packageDir)}/runtime/scripts/rstack.ts"`;
   assert.equal(done.engine_command, engine);
-  assert.ok(coordinator.includes(`${engine} start --workspace "${forward(workspace)}" --profile "${forward(packageDir)}/runtime/profiles/trial-v1.json" --app`));
+  assert.ok(coordinator.includes(`${engine} start --workspace "${forward(workspace)}" --profile "${forward(packageDir)}/runtime/profiles/trial-v2.json" --app`));
   assert.ok(coordinator.includes(`The run directory is \`${forward(workspace)}/.rstack/runs/<run-id>/\``));
   for (const p of OWNED) assert.doesNotMatch(readFileSync(join(workspace, p), 'utf8'), /\{\{[A-Z_]+\}\}/, p);
 
@@ -182,8 +184,8 @@ test('PACKAGE-1: a file the installer did not install is never overwritten', () 
 
   // Once the user removes that file, a normal installation and a repeated one work as before.
   rmSync(join(other.workspace, PLANNER));
-  assert.deepEqual(kinds(install({ packageDir: other.packageDir, workspace: other.workspace, dryRun: false })), { CREATE: 8 });
-  assert.deepEqual(kinds(install({ packageDir: other.packageDir, workspace: other.workspace, dryRun: false })), { UNCHANGED: 8 });
+  assert.deepEqual(kinds(install({ packageDir: other.packageDir, workspace: other.workspace, dryRun: false })), { CREATE: 9 });
+  assert.deepEqual(kinds(install({ packageDir: other.packageDir, workspace: other.workspace, dryRun: false })), { UNCHANGED: 9 });
   assert.equal(verify(other.workspace).code, 'CLEAN');
 });
 
@@ -207,7 +209,7 @@ test('drift: a file changed after installation is detected, never overwritten, a
 
   // Removal: the plan says what will be kept; applying it removes the rest and nothing else.
   const plan = uninstall({ workspace });
-  assert.deepEqual([plan.code, plan.dry_run, kinds(plan)], ['PLAN_READY_WITH_PRESERVED_FILES', true, { REMOVE: 7, PRESERVED_USER_MODIFIED: 1 }]);
+  assert.deepEqual([plan.code, plan.dry_run, kinds(plan)], ['PLAN_READY_WITH_PRESERVED_FILES', true, { REMOVE: 8, PRESERVED_USER_MODIFIED: 1 }]);
   assert.deepEqual(snapshot(workspace), before, 'the dry run removed nothing');
   const removed = uninstall({ workspace, dryRun: false });
   assert.equal(removed.code, 'UNINSTALLED_WITH_PRESERVED_FILES');
@@ -225,7 +227,7 @@ test('drift: a file changed after installation is detected, never overwritten, a
   const whole = snapshot(missing.workspace);
   rmSync(join(missing.workspace, PLANNER));
   assert.deepEqual(verify(missing.workspace).files.filter((f) => f.status !== 'OK'), [{ path: PLANNER, status: 'MISSING' }]);
-  assert.deepEqual(kinds(install({ packageDir: missing.packageDir, workspace: missing.workspace, dryRun: false })), { CREATE: 1, UNCHANGED: 7 });
+  assert.deepEqual(kinds(install({ packageDir: missing.packageDir, workspace: missing.workspace, dryRun: false })), { CREATE: 1, UNCHANGED: 8 });
   assert.deepEqual(snapshot(missing.workspace), whole);
 });
 
@@ -238,7 +240,7 @@ test('repeated installation and removal are predictable and return the workspace
   install({ packageDir, workspace, dryRun: false });
   const installed = snapshot(workspace);
   const second = install({ packageDir, workspace, dryRun: false });
-  assert.deepEqual([second.code, kinds(second)], ['INSTALLED', { UNCHANGED: 8 }]);
+  assert.deepEqual([second.code, kinds(second)], ['INSTALLED', { UNCHANGED: 9 }]);
   assert.deepEqual(second.applied, [MANIFEST]);
   assert.deepEqual(snapshot(workspace), installed, 'a second installation changes no byte');
 
@@ -268,10 +270,10 @@ test('an update from a regenerated package changes only unmodified owned files a
   generatePackage({ profileText, outDir: packageDir });
   assert.equal(verify(workspace).package, 'CHANGED', 'verify reports that the package behind the installation changed');
   const plan = install({ packageDir, workspace });
-  assert.deepEqual(kinds(plan), { UNCHANGED: 7, UPDATE: 1, REMOVE: 1 });
+  assert.deepEqual(kinds(plan), { UNCHANGED: 8, UPDATE: 1, REMOVE: 1 });
   const updated = install({ packageDir, workspace, dryRun: false });
   assert.deepEqual(updated.applied, ['.github/agents/rstack-sdlc-developer.agent.md', skill, MANIFEST]);
-  assert.deepEqual(files(workspace), [...OWNED.slice(0, 6), MANIFEST, ...OWNED.slice(6), 'notes.txt'].sort());
+  assert.deepEqual(files(workspace), [...OWNED.slice(0, 7), MANIFEST, ...OWNED.slice(7), 'notes.txt'].sort());
   assert.ok(!existsSync(join(workspace, '.github/skills/rstack-sdlc-change-notes')), 'the dropped Skill directory is gone');
   assert.equal(verify(workspace).code, 'CLEAN');
 
@@ -392,10 +394,10 @@ test('a failed installation is undone: no partial install and no lost user conte
   const installed = snapshot(workspace);
   const moved = join(base, 'package moved');
   cpSync(packageDir, moved, { recursive: true });
-  assert.deepEqual(kinds(install({ packageDir: moved, workspace })), { UPDATE: 1, UNCHANGED: 7 }, 'only the coordinator names the package location');
+  assert.deepEqual(kinds(install({ packageDir: moved, workspace })), { UPDATE: 1, UNCHANGED: 8 }, 'only the coordinator names the package location');
   const withSkill = join(base, 'package-with-skill');
   generatePackage({ profileText, outDir: withSkill, extensionsText: OPTIONAL_SKILL });
-  assert.deepEqual(kinds(install({ packageDir: withSkill, workspace })), { UPDATE: 2, UNCHANGED: 6, CREATE: 1 });
+  assert.deepEqual(kinds(install({ packageDir: withSkill, workspace })), { UPDATE: 2, UNCHANGED: 7, CREATE: 1 });
   for (const n of [2, 3, 4]) {
     assert.equal(codeOf(() => install({ packageDir: withSkill, workspace, dryRun: false, beforeChange: failAt(n) })), 'INSTALL_FAILED_ROLLED_BACK');
     assert.deepEqual(snapshot(workspace), installed, `update failure at change ${n}`);
@@ -418,7 +420,7 @@ test('a failed update that removes a Skill restores it, and an undo step that fa
     install({ packageDir, workspace, dryRun: false });
     const without = join(base, 'package-without-skill');
     generatePackage({ profileText, outDir: without });
-    assert.deepEqual(kinds(install({ packageDir: without, workspace })), { UPDATE: 2, UNCHANGED: 6, REMOVE: 1 });
+    assert.deepEqual(kinds(install({ packageDir: without, workspace })), { UPDATE: 2, UNCHANGED: 7, REMOVE: 1 });
     return { workspace, without, installed: snapshot(workspace) };
   };
 
@@ -519,7 +521,7 @@ test('an existing file where the manifest is written through is a collision: it 
 
   // Once the user moves it away, installation works; one that appears later stops an update and survives removal.
   rmSync(join(workspace, TMP));
-  assert.deepEqual(kinds(install({ packageDir, workspace, dryRun: false })), { CREATE: 8 });
+  assert.deepEqual(kinds(install({ packageDir, workspace, dryRun: false })), { CREATE: 9 });
   put(workspace, TMP, earlier);
   const { packageDir: withSkill } = fixture('install-tmp-existing-update', OPTIONAL_SKILL);
   refused(withSkill, workspace, 'update');
@@ -585,7 +587,7 @@ test('a malformed install manifest is refused by name before it is used, and not
   // Control: the manifest as the installer wrote it is accepted by all three operations.
   writeFileSync(manifestPath, original);
   assert.equal(verify(workspace).code, 'CLEAN');
-  assert.deepEqual(kinds(install({ packageDir, workspace, dryRun: false })), { UNCHANGED: 8 });
+  assert.deepEqual(kinds(install({ packageDir, workspace, dryRun: false })), { UNCHANGED: 9 });
   assert.equal(uninstall({ workspace, dryRun: false }).code, 'UNINSTALLED');
   assert.deepEqual(files(workspace), ['notes.txt']);
 });

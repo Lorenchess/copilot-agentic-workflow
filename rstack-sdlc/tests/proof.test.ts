@@ -29,6 +29,7 @@ import {
   REQUEST,
   type TestRun,
   completeStep,
+  prReviewStep,
   decision,
   eventTypes,
   journalText,
@@ -440,7 +441,7 @@ test('REVIEW-1: when what the verification relied on changes, the verification a
   const { engine } = run.assembly;
   completeStep(run);
   const before = subjects(run);
-  assert.equal(engine.status(run.runId).stage, 'proposal');
+  assert.equal(engine.status(run.runId).stage, 'pr-review-packet');
 
   // Same candidate, same files; the execution environment is no longer the one the verification ran under.
   version = 'v99.0.0-test';
@@ -472,11 +473,21 @@ test('REVIEW-1: when what the verification relied on changes, the verification a
   assert.equal(review.attempt_id, 'review-2');
   assert.equal(review.inputs.verification, again.verification, 'the new review is of the new verification');
   engine.submit(run.runId, result(review));
+  prReviewStep(run);
   assert.equal(engine.next(run.runId).code, 'PROPOSAL_READY');
   const proposal = JSON.parse(readFileSync(join(run.runDir, 'proposal', 'pr-proposal.json'), 'utf8')) as PrProposal;
   assert.equal(proposal.verification, again.verification);
   assert.equal(proposal.review, subjects(run).review);
-  assert.deepEqual(eventTypes(run).slice(-5), ['verification_invalidated', 'verification_recorded', 'task_dispatched', 'result_accepted', 'proposal_recorded']);
+  assert.deepEqual(eventTypes(run).slice(-8), [
+    'verification_invalidated',
+    'verification_recorded',
+    'task_dispatched',
+    'result_accepted',
+    'pr_review_packet_recorded',
+    'task_dispatched',
+    'result_accepted',
+    'proposal_recorded',
+  ]);
 });
 
 test('retained candidate bytes that no longer match their identity stop verification and the proposal', async () => {
@@ -500,6 +511,7 @@ test('retained candidate bytes that no longer match their identity stop verifica
   assert.equal(engine.next(run.runId).code, 'MISSING_INPUT');
   assert.ok(!existsSync(join(run.runDir, 'proposal')));
   writeFileSync(manifestPath, manifest);
+  prReviewStep(run);
   assert.equal(engine.next(run.runId).code, 'PROPOSAL_READY');
 });
 
@@ -529,7 +541,7 @@ test('the proposal traces to the candidate, both real runs, the review, and the 
   assert.equal(proposal.review, s.review);
   assert.equal(proposal.planning_basis.final_plan, s.final_plan);
   assert.equal(proposal.publication_status, 'NOT_ATTEMPTED');
-  assert.deepEqual(proposal.evidence_classes, { role_results: 'SIMULATED', review: 'SIMULATED', test_execution: 'ACTUAL_LOCAL_EXECUTION' });
+  assert.deepEqual(proposal.evidence_classes, { role_results: 'SIMULATED', review: 'SIMULATED', pr_review: 'SIMULATED', test_execution: 'ACTUAL_LOCAL_EXECUTION' });
   assert.doesNotMatch(text, /https?:|Users|[A-Z]:\\\\|PR_CREATED|commit/i, 'no address, no local path, no commit claim');
   // Each link in the chain names the next one exactly.
   assert.equal(execution(run, proposal.verification).tree, proposal.candidate_ref);

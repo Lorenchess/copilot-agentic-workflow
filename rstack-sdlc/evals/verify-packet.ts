@@ -123,6 +123,8 @@ export function verifyPacket(packetDir: string): PacketReport {
       case 'run_started': {
         artifact(d.source_ref, `${where} source_ref`);
         artifact(d.app_config_ref, `${where} app_config_ref`);
+        // Recorded only by runs whose workflow has a PR review.
+        if (d.pr_review_procedure_ref !== undefined) artifact(d.pr_review_procedure_ref, `${where} pr_review_procedure_ref`);
         const profile = artifact(d.profile_ref, `${where} profile_ref`);
         if (profile) {
           const p = JSON.parse(profile) as { profile_id: string; profile_version: number };
@@ -190,12 +192,48 @@ export function verifyPacket(packetDir: string): PacketReport {
       }
       case 'verification_invalidated':
         break;
+      case 'pr_review_packet_recorded': {
+        // The packet and every identity it names, at any depth.
+        const text = artifact(d.packet_ref, `${where} packet_ref`);
+        if (text) {
+          const walk = (v: unknown, path: string): void => {
+            if (typeof v === 'string') {
+              if (REF.test(v)) artifact(v, `PR review packet ${path}`);
+            } else if (typeof v === 'object' && v !== null) {
+              // A digest identifies bytes that are not retained under it; the two the packet carries are checked below.
+              for (const [key, value] of Object.entries(v)) if (!key.endsWith('_digest')) walk(value, `${path}.${key}`);
+            }
+          };
+          const packet = JSON.parse(text) as {
+            implementation?: { candidate?: string };
+            technical_review?: { attempt_id?: string; input_digest?: string };
+            history?: { journal_cutoff?: number; journal_digest?: string };
+          };
+          walk(packet, 'packet');
+          if (packet.implementation?.candidate !== d.candidate) problems.push(`${where}: the packet names another candidate than the journal`);
+          // The journal it was assembled from is the journal in this packet directory, up to its cutoff.
+          const cutoff = packet.history?.journal_cutoff ?? -1;
+          const lines = readFileSync(journal, 'utf8').split('\n').slice(0, Math.max(cutoff, 0));
+          if (cutoff !== event.seq - 1 || refOf(lines.map((l) => `${l}\n`).join('')) !== packet.history?.journal_digest) {
+            problems.push(`${where}: the packet's journal digest does not match the journal records before it`);
+          }
+          const dispatch = events.find((e) => e.type === 'task_dispatched' && e.data.attempt_id === packet.technical_review?.attempt_id);
+          if (!dispatch || dispatch.data.input_digest !== packet.technical_review?.input_digest) {
+            problems.push(`${where}: the packet's code review dispatch is not the one in the journal`);
+          }
+        }
+        break;
+      }
       case 'proposal_recorded': {
         const text = file(d.location, d.proposal_ref, `${where} proposal file`);
         if (text) {
           const proposal = JSON.parse(text) as Record<string, string> & { planning_basis: Record<string, string>; evidence: Record<string, string>; source_ref: string };
           for (const key of ['base_ref', 'candidate_ref', 'proof', 'proof_tree', 'proof_baseline', 'verification', 'review']) {
             artifact(proposal[key], `proposal ${key}`);
+          }
+          // A proposal that follows a PR review names the packet and the review as well.
+          if ((proposal as { schema_version?: unknown }).schema_version === 2) {
+            for (const key of ['pr_review_packet', 'pr_review']) artifact(proposal[key], `proposal ${key}`);
           }
           report.candidate = { base: String(proposal.base_ref), candidate: String(proposal.candidate_ref), verification: String(proposal.verification), review: String(proposal.review) };
           report.planning_basis = proposal.planning_basis;

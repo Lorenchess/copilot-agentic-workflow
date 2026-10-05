@@ -17,9 +17,16 @@
 // bundled, so the package is not self-contained.
 //
 // Host syntax used below (file locations, frontmatter keys, tool-set names)
-// comes from VS Code documentation read on 2026-10-03. It has not been
-// observed on a host: the package is PACKAGE_TESTED at most, never
-// COPILOT_VALIDATED, until the smoke procedure is run.
+// comes from VS Code documentation read on 2026-10-03, and for the visibility,
+// target, and model keys on 2026-10-04. It has not been observed on a host:
+// the package is PACKAGE_TESTED at most, never COPILOT_VALIDATED, until the
+// smoke procedure is run.
+//
+// One human entry point: the coordinator is the only agent a user can select.
+// The role agents are hidden and are reached only through the coordinator's
+// list of names. Skills are kept out of the slash-command menu and stay
+// loadable by the model. What the host actually shows, hides, or allows is
+// HOST_CONFIRMATION_REQUIRED.
 
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
@@ -32,7 +39,7 @@ import { type GeneratedFile, INSTALL_TOKENS, PACKAGE_MANIFEST, PREFIX, PackageEr
 
 const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const GENERATOR = 'rstack-sdlc/adapters/copilot-vscode/generate.ts';
-export const GENERATOR_VERSION = 2;
+export const GENERATOR_VERSION = 4;
 export const HOST = 'copilot-vscode';
 export const EXTENSIONS_SOURCE = 'adapters/copilot-vscode/extensions.json';
 // Commands the installed package must be able to run.
@@ -101,6 +108,20 @@ const AGENTS: AgentSpec[] = [
     worker: true,
     skill: 'application-records',
   },
+  // The PR reviewer gets the code reviewer's tool sets and no more: it reads
+  // retained records and writes its own record. The editing tool is there only
+  // for that record. The host is not known to confine it, so the tool set does
+  // not prevent a write elsewhere; the engine re-reads everything a proposal
+  // relies on by identity and refuses what was altered. It has no terminal, no
+  // agent tool, and nothing that could publish.
+  {
+    role: 'pr-reviewer',
+    source: 'core/roles/pr-reviewer.md',
+    description: 'RSTACK SDLC PR reviewer: independently decides whether one accepted candidate is ready to submit and writes a PR review record.',
+    tools: ['read', 'search', 'edit'],
+    worker: true,
+    skill: 'application-records',
+  },
 ];
 
 const SKILLS = [
@@ -114,9 +135,38 @@ const SKILLS = [
     name: `${PREFIX}application-records`,
     source: 'core/skills/application-records/SKILL.md',
     description:
-      'Exact formats for RSTACK SDLC proof and review records (proof.json, review.json) and the rules the engine applies when it runs the application tests. Use when writing controlled tests, implementing, or reviewing for a task envelope.',
+      'Exact formats for RSTACK SDLC proof and review records (proof.json, review.json, pr-review.json) and the rules the engine applies when it runs the application tests. Use when writing controlled tests, implementing, or reviewing for a task envelope.',
   },
 ];
+
+// A selector is written only for these states of a catalog entry. The value
+// comes from the profile and from nowhere else: no model is named in this file,
+// in a role prompt, or in the coordinator's text.
+const WRITTEN_SELECTOR_STATUSES: readonly string[] = ['owner-pinned', 'observed'];
+
+// Host rules for the coordinator, placed after its authored text the way the
+// role agents get theirs. On this host the model argument of the subagent tool
+// outranks a role agent's own model (documented), so the coordinator must
+// never use it. Whether the host refuses, ignores, or applies a role's model
+// is not known from this text.
+const COORDINATOR_LANE = [
+  '',
+  '## On this host',
+  '',
+  "A role agent's model is set by its installed agent file, never by you. Invoke each role by its exact name and leave the subagent tool's model argument unset: never choose, pass, substitute, or override a role's model.",
+  '',
+  "If the host does not run the named role agent as installed, do not retry, do not name another model or agent, do not omit the agent name, and do not do the role's work yourself. When the host's message is about a model or a cost tier, report exactly this:",
+  '',
+  '```text',
+  'RSTACK MODEL REQUIREMENT NOT AVAILABLE',
+  'Role: <directive.pending.role>',
+  'Required model: <the `model:` value in the frontmatter of that role\'s agent file under `.github/agents/` in the workspace, or "not pinned" if it has none>',
+  "Host result: <the host's message, unchanged>",
+  '```',
+  '',
+  'For any other refusal, report the host\'s message unchanged. In both cases the attempt stays pending: tell the human its attempt id and stop. Only the human can settle it, under the abandon rule.',
+  '',
+].join('\n');
 
 // ---------------------------------------------------------------- extensions
 
@@ -328,9 +378,9 @@ export function generatePackage(options: GenerateOptions): PackageManifest {
     const role = profile.roles[agent.role];
     const entry = role ? profile.catalog[role.model_alias] : undefined;
     if (!role || !entry) throw new PackageError('INVALID_PROFILE', `profile has no model entry for role "${agent.role}"`);
-    // A selector that was not observed on the host is never written as if it
-    // were pinned: the key is left out and the agent uses the picker's model.
-    const selector = entry.selector_status === 'observed' ? entry.host_selector : null;
+    // A selector the profile does not state is never written as if it were
+    // pinned: the key is left out and the agent uses the picker's model.
+    const selector = WRITTEN_SELECTOR_STATUSES.includes(entry.selector_status) ? entry.host_selector : null;
     models[agent.role] = {
       alias: role.model_alias,
       owner_label: entry.owner_label,
@@ -342,8 +392,14 @@ export function generatePackage(options: GenerateOptions): PackageManifest {
       `name: ${PREFIX}${agent.role}`,
       // Quoted: an unquoted value containing ": " is not valid YAML.
       `description: '${agent.description}'`,
+      'target: vscode',
       `tools: ${yamlList(agent.tools)}`,
-      ...(agent.worker ? ['user-invocable: false'] : [`agents: ${yamlList(workers)}`]),
+      // The coordinator is the one agent a user selects, and the only one that
+      // may delegate: to the role agents, by name, and to nothing else.
+      ...(agent.worker ? ['user-invocable: false'] : [`agents: ${yamlList(workers)}`, 'user-invocable: true']),
+      // No agent is offered to other agents. The coordinator reaches the role
+      // agents because it names them (documented; not observed).
+      'disable-model-invocation: true',
       ...(selector ? [`model: ${selector}`] : []),
       '---',
     ];
@@ -356,7 +412,7 @@ export function generatePackage(options: GenerateOptions): PackageManifest {
       .join('');
     const lane = agent.worker
       ? `\n## On this host\n\nUse the \`${PREFIX}${agent.skill}\` Skill for record formats. Write only inside the attempt directories you were given. This host is not known to confine your file or terminal tools to those directories, so staying inside them is your responsibility.\n${optional}`
-      : '';
+      : COORDINATOR_LANE;
     // Only active instructions are written. A retired one stays in the
     // definition, with its reason, and is recorded in the manifest.
     const extra = instructions
@@ -373,7 +429,9 @@ export function generatePackage(options: GenerateOptions): PackageManifest {
   }
 
   const skill = (name: string, description: string, source: string, text: string, hash: string): void => {
-    const front = ['---', `name: ${name}`, `description: '${description}'`, '---'];
+    // Out of the slash-command menu, still loaded by the model from its
+    // description. Automatic loading is never disabled: the roles depend on it.
+    const front = ['---', `name: ${name}`, `description: '${description}'`, 'user-invocable: false', '---'];
     emit(`.github/skills/${name}/SKILL.md`, `${front.join('\n')}\n${header(source, hash)}\n\n${text}`, 'skill', source, hash);
   };
   for (const s of SKILLS) {

@@ -15,7 +15,7 @@ import { WORKFLOW } from '../core/policies/workflow.ts';
 import { PACKAGE_ROOT, PROFILE, type TestRun, cli, eventTypes, newRun, pendingOf, result, tmpDir } from './support/harness.ts';
 
 const SKILLS = ['planning-records', 'application-records'];
-const ROLES = ['planner', 'plan-auditor', 'tester', 'developer', 'reviewer'];
+const ROLES = ['planner', 'plan-auditor', 'tester', 'developer', 'reviewer', 'pr-reviewer'];
 const RESULT_KEYS = ['schema_version', 'record_type', 'run_id', 'attempt_id', 'role', 'expected_version', 'input_digest', 'outcome', 'summary', 'outputs', 'files'];
 
 const source = (path: string): string => readFileSync(join(PACKAGE_ROOT, path), 'utf8');

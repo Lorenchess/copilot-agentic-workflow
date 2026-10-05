@@ -22,7 +22,7 @@ import { PROFILE, tmpDir } from './support/harness.ts';
 const profileText = readFileSync(PROFILE, 'utf8');
 const ENGINE = 'runtime/core/engine/engine.ts';
 const LOCK = 'runtime/core/engine/lock.ts';
-const PROFILE_FILE = 'runtime/profiles/trial-v1.json';
+const PROFILE_FILE = 'runtime/profiles/trial-v2.json';
 const REVIEWER_TEMPLATE = '.github/agents/rstack-sdlc-reviewer.agent.md';
 
 // Every file with its hash, and every directory.
@@ -60,7 +60,7 @@ test('RC6 control: an unchanged package verifies CLEAN, with no package file rep
   const report = verifyReadOnly(base, workspace);
   assert.deepEqual([report.ok, report.code, report.package], [true, 'CLEAN', 'PRESENT']);
   assert.deepEqual(report.package_files, []);
-  assert.ok(report.files.length === 8 && report.files.every((f) => f.status === 'OK'));
+  assert.ok(report.files.length === 9 && report.files.every((f) => f.status === 'OK'));
 });
 
 test('RC6: a runtime file changed after installation is reported as drift while the package manifest is unchanged', () => {

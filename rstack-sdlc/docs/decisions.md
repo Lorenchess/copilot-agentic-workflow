@@ -492,3 +492,258 @@ Limits. (1) Text typed inline for `--recorded-by` that a shell expands into plai
 - *Finding S6-P1: `FUTURE_HARDENING / PORTABILITY`.* No source repair before baseline S6; the `READY_FOR_S6` checkpoint and package stay unchanged. The identity check in the owner script's stage 0 remains the gate: it recomputes the source and package identities on the live machine, and the run proceeds only if they match the expected `READY_FOR_S6` identities. A mismatch stops the run before host testing and is reported and kept as portability evidence. Byte reproducibility across checkouts and machines has not been demonstrated and is not claimed.
 - *Commits.* No further source or documentation commit or push is made unless live S6 produces evidence that belongs in the project record, a real host defect requires a repair, or the owner authorizes one. The owner authorized one bounded docs-only correction on 2026-10-04 to make the committed S6 instructions and records match these decisions. It changed no production source, test, profile, generated package, model selector, or package identity.
 - *Status and resume point.* Unchanged: S6 IN PROGRESS — LIVE HOST EXECUTION PENDING ACCESS; `COPILOT_VALIDATED` = NO; Jira and Bitbucket deferred. Live execution resumes at the owner script's stage 1 (G0 host gate), with every G0 item established fresh and nothing inferred from earlier observations. If entitlement is unavailable, the result is `COPILOT_VALIDATION_BLOCKED_BY_ENTITLEMENT` and live S6 stops.
+
+## D-SE — 2026-10-04 — single entry point, selector states, and a new unreviewed candidate
+
+**Status of this section:** owner decisions as given, and the builder's implementation of them, `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`. Nothing here is host evidence. `COPILOT_VALIDATED` = NO.
+
+**Owner decisions** (2026-10-04, after BUILD-02's investigation of model pinning and entry-point visibility). The owner's authorization replaced the earlier "investigate, do not implement" instruction for this bounded change.
+
+1. RSTACK has one human entry point in VS Code: the Coordinator. Planner, Plan Auditor, Tester, Developer, and Reviewer are not offered as selectable chat entry points.
+2. The five role agents remain internal subagents.
+3. The internal record Skills are not user slash commands.
+4. The package targets VS Code.
+5. The intended model map is unchanged: Coordinator, Tester, and Developer on Sonnet 5; Planner and Reviewer on Opus 5.5; Plan Auditor on Sol 6.1. The trial profile's aliases already say this (section 5).
+6. No silent fallback is acceptable. If a required model cannot be used, the problem is surfaced; RSTACK does not knowingly proceed on another model.
+7. No selector string is activated until a live host confirms it. `profiles/trial-v1.json` is unchanged, and no pinned profile is added by this change.
+8. Candidate identity. The `READY_FOR_S6` verdict covers checkpoint `07de93a` and manifest `1f5eaef8…08fa`, and remains valid history for that candidate. The source after this change is an **unreviewed single-entry UX candidate awaiting independent verification**. Its identity does not replace the old one in the owner script's stage 0 and stage 2 because builder tests pass. Order: implement, validate, compute the new identity, hand it to Astra, obtain focused approval; only then does the new identity become the subject of the live run.
+9. Lanes are kept. BUILD-02: generator, profile contract, Coordinator source, package, profile, visibility, and model-support tests, sensitivity integration, final source and package integration. BUILD-03: `docs/s6-owner-script.md`, the probe wording, `C:\rstack-sdlc-smoke\`, and the owner-facing live procedure. The smoke folder is not updated to the new package before it is approved.
+10. Status: **S6 IN PROGRESS — NEW SINGLE-ENTRY CANDIDATE AWAITING OFFLINE VERIFICATION.** This is not a return to "not started": preparation continues, and live execution cannot use the new candidate until it is independently verified. No Copilot, Jira, or Bitbucket contact.
+
+For this change these decisions replace two points of D-S6 ("Owner decisions after preparation"): that the `READY_FOR_S6` package stays unchanged before the baseline run, and that the first live run uses that package. The rest of D-S6 stands, including: no selector before a host confirms it, no fallback, and a real host refusal blocks the path and returns the decision to the owner.
+
+**What the generated files declare** (`OFFLINE`: read from the generated package. What a host does with a key is `DOC` at most, and is listed again under "Host confirmation required").
+
+| File | Frontmatter after the change | Documented meaning relied on |
+|---|---|---|
+| Coordinator | `target: vscode`; `tools` unchanged (`execute`, `read`, `agent`); `agents`: exactly the five role agents; `user-invocable: true`; `disable-model-invocation: true` | A user-invocable agent is listed in the agents dropdown. `disable-model-invocation: true` keeps other agents from invoking it as a subagent. A named `agents` list permits only the named agents |
+| Each role agent | `target: vscode`; `tools` unchanged, none has `agent`; `user-invocable: false`; `disable-model-invocation: true` | Hidden from the dropdown, still available as a subagent. "Explicitly listing an agent in `agents` overrides that agent's `disable-model-invocation: true`", which is how the Coordinator still reaches a role agent |
+| Each Skill, required or optional | `name`, `description`, `user-invocable: false`; no `disable-model-invocation` key | Not in the `/` menu, still loaded by the agent automatically. Both keys set would disable the Skill, so the second is never written |
+| `model`, any agent | Written only when the catalog entry's state is `owner-pinned` or `observed`. With the trial profile no file has it | See "Selector states" |
+
+`DOC` here is the VS Code documentation dated 2026-09-30 (subagents, custom agents, agent skills, customization overview) and GitHub's custom agents reference, read on 2026-10-04. On that day the VS Code pages were served from `/docs/agents/run/subagents` and `/docs/agent-customization/`; the `/docs/copilot/...` addresses redirected there. This table extends items 1 and 2 of the host syntax list in D-S0, section 6.
+
+The role agents carry `disable-model-invocation: true`, not `false`, on the owner's acceptance of the investigation: with `false`, any agent that has no `agents` list could be asked to run a role agent directly, outside the engine.
+
+**Selector states** (`core/contracts/records.ts`). A catalog entry's `selector_status` now has three values.
+
+| State | `host_selector` | Written as `model:` | Meaning |
+|---|---|---|---|
+| `requires-host-observation` | must be `null` | no | No selector is known |
+| `owner-pinned` | one name | yes | The owner configured it. It says nothing about a host having seen it |
+| `observed` | one name | yes | It was confirmed on the host |
+
+Owner configuration is never recorded as `observed`. A selector is one name: at most 200 characters, beginning with a letter or digit, made of letters, digits, spaces, and `. _ + / ( ) -`, and not ending in a space. A JSON list, bracketed or comma-separated text, a quoted name, a second line, a comment, a mapping, or a padded name is refused with `UNSUPPORTED_SELECTOR` before anything is generated. `fallbacks` must still be empty (`UNSUPPORTED_FALLBACK`). The profile's catalog is the only authored place where a role's model is stated: the generator's tables, the role prompts, the Coordinator's text, the workflow table, and the task envelope name no model, and tests check each.
+
+**Coordinator instruction.** The generated Coordinator file gains a section "On this host", placed after its authored text the way each role agent gets its host section. It says: a role agent's model is set by its installed agent file and never by the Coordinator; invoke each role by its exact name and leave the subagent tool's model argument unset; never choose, pass, substitute, or override a role's model. If the host does not run the named role agent, the Coordinator does not retry, does not name another model or agent, does not omit the agent name, and does not do the role's work itself. For a host message about a model or a cost tier it reports a fixed block, `RSTACK MODEL REQUIREMENT NOT AVAILABLE`, with the role, the required model, and the host's message unchanged; for any other refusal it reports the host's message unchanged. In both cases it says that the attempt stays pending, gives the attempt id, and stops; only the human settles it, under the existing abandon rule.
+
+- No model is named in that text. "Required model" is read at that moment from the `model:` line of the installed role agent's own file, so the role-to-model mapping is not repeated in the Coordinator's prose.
+- The authored `adapters/copilot-vscode/coordinator.md` is unchanged, byte for byte. It stands at 997 words against a review budget of under 1000, and its verified protocol text is left as verified. Putting the rule in the authored file instead would need reviewed text shortened or the budget raised; that choice is open to the reviewer and the owner.
+- It is an instruction. It enforces nothing on the host, and no host enforcement is claimed.
+
+**Generator version 3** (was 2). The same inputs now give different agent and Skill files, so the stamp in every generated file changes. The manifest schema stays 2 and the installer needs no change.
+
+**Not done, by decision.** No pinned profile and no selector for any model in any file. No change to the engine, installer, workflow, role prompts, Skill texts, or task envelope. No model-discovery mechanism. No change by BUILD-02 to the owner script or the smoke folder.
+
+**Host confirmation required.** Unknown until seen on the host, in the bounded probe BUILD-03 is adding to the owner script as the first live Copilot-specific experiment:
+
+1. That each selector string resolves exactly. Candidates to test, written to no profile: `Claude Sonnet 5 (copilot)`, `Claude Opus 5.5 (copilot)`, `GPT-6.1 Sol (copilot)`. The names are those in GitHub's supported-models reference; the `Name (vendor)` form is the documented qualified form. GitHub's per-client table does not list the third for VS Code.
+2. Cost tier (unknown U3). `DOC`: a subagent model above the main model's cost tier does not run. Whether a Sonnet 5 Coordinator may dispatch an Opus 5.5 or a Sol 6.1 role is not known. If the host refuses, the routing decision returns to the owner and the map is not changed automatically.
+3. That a hidden role agent with `disable-model-invocation: true` is reached through the Coordinator's list.
+4. That the agents dropdown and the `/` menu hide what the keys say.
+5. That the Coordinator leaves the model argument unset (unknown U4).
+6. Whether the host shows the model a role actually ran on (unknown U5).
+7. What the host does with a role pin it cannot resolve. Read in the public VS Code source on 2026-10-04 (`runSubagentTool.ts` on `main`; this is not documentation and not evidence about the installed build): an agent-configured model name that does not resolve is skipped without an error and the subagent runs on the main model, while an explicit model argument that does not resolve raises an error. If the host behaves that way, an unavailable role pin is a silent fallback that frontmatter cannot prevent. It would be recorded as a host limitation and never as successful pinning.
+8. What `target: vscode` changes outside Local sessions.
+9. For one installation at the root of a repository with several projects: one visible Coordinator, hidden role agents, the same behaviour whichever project is the run's `--app`; a subfolder opened alone follows the parent-repository customization setting (`DOC`: off by default); only a second installation is expected to show a second Coordinator.
+
+**After the probe (not executed).** If all three strings resolve and the tier pairing is usable, a separate bounded change adds a production profile with the confirmed selectors at `selector_status: observed`, the package is regenerated, and a focused independent verification covers the exact pins, visibility, determinism, and the absence of any fallback, before the full S6 workflow runs.
+
+### D-SE addendum — 2026-10-04 — order after the probe, and the installed-pair check (review findings SE-S6-1, SE-S6-2)
+
+**Status:** owner decision as given; the corrections it authorizes are `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`. Nothing here is host evidence. `COPILOT_VALIDATED` = NO.
+
+**Review.** Astra's focused verification of the single-entry candidate ([astra-single-entry-verification.md](astra-single-entry-verification.md), kept unchanged) gave `CHANGES_REQUESTED_BEFORE_S6_HOST_CONFIRMATION`. Generated visibility, the selector states, Coordinator model precedence, Skill visibility, package determinism, and regression are `VERIFIED_OFFLINE` in that report, each with its host boundary. Two findings, both in the owner script and neither in source: SE-S6-1, the first probe exercises scratch agents and defers the installed Coordinator-to-Planner dispatch to the full workflow; SE-S6-2, the script continues into the unpinned full workflow after the probe while D-SE puts the pinning change and its verification first. The report does not approve the candidate as the S6 subject.
+
+**Owner decision.** "I AUTHORIZE the SE-S6-1 and SE-S6-2 correction, following D-SE order." The correction is documentation only: the owner script (BUILD-03) and these records (BUILD-02). No source, test, profile, or package file changes.
+
+**Order after the probe, for the new candidate.** D-SE's "After the probe" paragraph governs. The sentence above that "the rest of D-S6 stands" does not keep D-S6's statement that model-specific routing is a separate experiment after a successful baseline run: for the new candidate that statement is replaced by this order. It remains the record of what was decided for the old candidate.
+
+1. The bounded probe runs first, after the host gate and the installation check. It includes one engine-granted dispatch of the installed Coordinator to the installed Planner, and it stops there.
+2. The full workflow does not start after the probe.
+3. If the probe succeeded: the owner authorizes a separate bounded change that adds a production profile with the confirmed selectors at `selector_status: observed`; the package is regenerated; a focused independent verification covers it; BUILD-03 rebuilds the disposable folder from the verified package; then the full workflow runs.
+4. Otherwise the decision returns to the owner, as below.
+
+| Probe outcome | Next action | What it does not allow |
+|---|---|---|
+| All three strings resolve, the scratch dispatch ran with its worker shown on its declared model, and the installed pair was reached | Stop. Hand the evidence back. Step 3 above, on the owner's authorization | Starting the full workflow on the unpinned package; writing a selector without that authorization |
+| A string does not resolve, or the editor shows nothing either way | Stop. The owner decides. No pin for that role | A substitute model, an Auto setting, or a "nearest" string written anywhere but a scratch probe file |
+| The host refuses the scratch dispatch for a tier, model, or policy reason | Stop. The routing decision returns to the owner | Changing the role-to-model map, a retry with another model |
+| A worker ran but the host shows another model, or shows no model | Stop. Recorded as a host limitation or as unverified. The owner decides | Recording the pin as confirmed |
+| The installed Planner is not reached by the installed Coordinator, or the Coordinator does the work itself, names another agent, or omits the agent name | Stop. Host defect path: BUILD-03 keeps the reproduction, BUILD-02 classifies it | Counting a scratch success as the installed-pair result |
+
+**Not covered by the probe as specified.** The owner specified one scratch dispatch, a Sonnet 5 lead to an Opus 5.5 worker. A Sonnet 5 Coordinator dispatching a Sol 6.1 role is looked up as a string but is not dispatched, so its tier behaviour stays unverified after a successful probe. It would first be seen when the pinned package runs, unless the owner adds a second scratch dispatch to the probe. This is recorded as an open point for the owner, not decided here.
+
+**The installed-pair check** (SE-S6-1). One dispatch, granted by the engine, with the unpinned candidate: the installed Coordinator invokes the installed Planner by name with the unchanged envelope, the result is submitted, and the run is not continued. It shows whether a hidden role agent with `disable-model-invocation: true` is reached through the Coordinator's list. It shows nothing about a pin, because the installed files carry no `model:` line. The scratch pair stays for the tier and model experiment and cannot stand in for this check. The engine replies for that single dispatch were rehearsed offline by BUILD-02 with the candidate package's own command line and simulated role content: `STARTED`; `DISPATCHED` / `GRANTED` for `intent-1`, role `planner`; `ACCEPTED`; then `status` twice with no attempt pending and nothing moving (`.rstack/single-entry/se-s6/`).
+
+## D-PRR — 2026-10-04 — a PR review before every proposal (workflow version 6)
+
+**Status of this section:** owner decisions as given, and the builder's implementation of them: **PR REVIEWER INTEGRATION, `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`.** Nothing here is host evidence. `COPILOT_VALIDATED` = NO. **S6 IN PROGRESS — NEW CANDIDATE AWAITING OFFLINE VERIFICATION.** The new source is not `READY_FOR_S6` because builder tests pass.
+
+**Authority.** The owner sent BUILD-02 an implementation brief on 2026-10-04 together with the text of Astra's independent analysis of the PR Reviewer integration. That analysis reached BUILD-02 as text in the owner's message; no report file for it is in `docs/`. Its recommendation was `IMPLEMENT_WITH_CHANGES`, option A, a distinct PR reviewer. BUILD-02 did not start at once: two other sessions were then changing files this work needs. It reported that, stated the defaults listed under "Builder defaults" below, and asked for the owner's word. The owner answered "you can continue now". That sentence is the authorization this change rests on; the owner did not use the words "I AUTHORIZE".
+
+**Owner decisions** (from the brief).
+
+1. Every proposal is preceded by a separate agent review. Only its approval lets RSTACK produce `PR_PROPOSAL_READY`.
+2. The role is `pr-reviewer`: a fresh, independent worker, hidden from users. It may not publish, may not edit source or evidence, and may not start a Developer repair.
+3. Verdicts: `APPROVE`, `REQUEST_CHANGES`, `INCONCLUSIVE`. `REQUEST_CHANGES` and `INCONCLUSIVE` block the proposal. No automatic repair, no retry with another model, no Coordinator override.
+4. The existing Code Reviewer stays as it is.
+5. It uses the Code Reviewer's model alias for now. No separate model-routing mechanism.
+6. The Coordinator stays the only user-facing agent.
+7. Creating an external pull request stays deterministic and outside this change. Nothing here contacts GitHub or Bitbucket.
+8. The earlier checkpoint and Astra's evidence are kept. The new candidate is verified separately before it becomes the S6 subject. The live smoke folder is not rebuilt yet.
+
+**What Astra's analysis fixed in the design.** Where the brief's sketch and the analysis differed on an implementation detail, the analysis was followed.
+
+- The PR reviewer's job is narrow: is this change ready to submit, and is what will be said about it supported by retained evidence. Technical acceptance stays with the Code Reviewer. The PR reviewer cannot override a rejection; it can only stop a submission after an acceptance.
+- Its input is one retained, content-addressed record of references, not a loose set of inputs and not a narrative.
+- Its output is a separate contract. The Code Reviewer's contract is unchanged.
+- A verdict other than `APPROVE` uses the existing `BLOCKED` phase. No new human wait and no reopening.
+- A new workflow version and a new proposal format, so that an earlier run or proposal can never look compliant.
+- The workflow identity is checked before a run is replayed.
+- A new profile version; the approved profile's bytes are kept.
+
+**Workflow.** `core/policies/workflow.ts`, version 6 (was 5), 15 stages (was 13). Everything up to the code review is unchanged.
+
+```text
+verify ─► review (reviewer)
+            ACCEPT ─► pr-review-packet (engine)
+                        ─► pr-review (pr-reviewer)
+                             APPROVE          ─► proposal (engine) ─► PR_PROPOSAL_READY, publication NOT_ATTEMPTED
+                             REQUEST_CHANGES  ─► BLOCKED  PR_REVIEW_CHANGES_REQUESTED
+                             INCONCLUSIVE     ─► BLOCKED  PR_REVIEW_INCONCLUSIVE
+            REJECT / INCONCLUSIVE ─► BLOCKED (as before)
+```
+
+**PR review packet** (`pr-review-packet`, schema 1; `core/contracts/pr-review.ts`, assembled by `core/engine/pr-review-packet.ts`). One record, retained under its hash as the subject `pr_review_packet`. It holds identities and measured facts and no account of the work.
+
+| Part | Content |
+|---|---|
+| `identity` | workflow, profile, application configuration, PR review procedure (all by identity), the body format `rstack-pr-body/v1`, the evidence class of the run |
+| `requirements` | request, intent, specification, the answers record or `null` |
+| `planning` | audited plan, audit, final plan, decision, brief, plan status, dispositions or `null` |
+| `implementation` | unchanged application, proof tree, candidate (tree identities) |
+| `execution` | proof, proof baseline and what it printed, verification and what it printed |
+| `technical_review` | the code review record, its verdict `ACCEPT`, the accepted result, its attempt, and the digest of the inputs it was dispatched with |
+| `changes` | two measured comparisons, each with `added`, `modified`, `deleted` and the list of paths with the identity of the file's bytes on both sides: unchanged application to candidate (the whole proposed change), and proof tree to candidate (the implementation without the controlled tests) |
+| `history` | the journal record the packet ends at and the digest of the journal up to it; failed attempts; failed verifications; superseded results; the number of invalidated verifications; and `not_included`, which says that refused submissions are not journal records and are not bound |
+
+- It is deterministic: no time, no path, nothing from a role. History is selected from the journal up to the cutoff only, so a later journal record does not change the packet, and accepting the PR review does not invalidate its own subject.
+- The engine validates the record against its format before retaining it.
+- It is re-established at four points: when assembled, before the PR review is dispatched, before a PR review is accepted, and before a proposal is composed. Re-establishing means: the retained bytes are read again by identity; the packet is assembled again from what the run retains now and must be the same record; every record it names, every file of its three trees, and both execution outputs are read on the way; and the relationships between the records are checked, not only their hashes. Missing or altered bytes give `MISSING_INPUT`; records that are intact but do not agree give `PR_REVIEW_EVIDENCE_INCONSISTENT`; a packet that can no longer be reproduced gives `PR_REVIEW_PACKET_STALE`. In each case nothing is recorded and nothing is repaired.
+- Relationships checked: the final plan and audit are the authorized ones and the final plan names the recorded decision, audit, audited plan, brief, specification, and intent; the baseline is a valid run of this proof on this proof tree; the verification is a passing run of this proof on this candidate under this specification and final plan; the code review is a valid `ACCEPT` of this candidate, verification, specification, and proof, is the last one accepted before the packet, and was dispatched with the source, specification, final plan, audit, proof, trees, and verification in force.
+- The leaf and output re-reads that RC4 added to the proposal step now happen in this re-establishment, which the proposal step runs first. Sensitivity cases 105 and 107 were re-pointed to it and are detected by the same RC4 tests.
+
+**PR review result** (`pr-review-result`, schema 1; file `pr-review.json`, subject `pr_review`).
+
+```text
+schema_version, record_type
+subject { packet, candidate }
+verdict            APPROVE | REQUEST_CHANGES | INCONCLUSIVE
+title              one line, at most 120 characters
+summary            at most 1200 characters
+change_analysis[]  { text, evidence[] }   at most 12
+testing_analysis[] { text, evidence[] }   at most 8
+risks[]            { text, evidence[] }   at most 8
+limitations[]      text                   at most 8
+reviewer_notes[]   text                   at most 8
+findings[]         the existing Finding shape
+coverage[]         the existing Coverage shape
+evidence_references[]
+```
+
+Enforced by the parser, and by the engine with the packet as re-established:
+
+- `subject` is exactly the packet and candidate the attempt was given. The pending run, role, attempt, input digest, and state version are checked as for every role result.
+- No unknown field at any level. There is no field for a path, a count, a command, a test result, another review's verdict, an authorization, or a publication status.
+- Seven coverage items are mandatory, by exact name: `intent-fidelity`, `measured-change-fidelity`, `verification-claims`, `technical-review-disclosure`, `material-risks`, `title-and-scope`, `submission-readiness`. None may be missing, none may appear twice. Further items are allowed.
+- `APPROVE`: all seven `CHECKED`, at least one `change_analysis` entry and one `testing_analysis` entry, no `BLOCKING` or `MAJOR` finding. `REQUEST_CHANGES`: at least one finding, with non-blank evidence, consequence, and resolution. `INCONCLUSIVE`: at least one limitation.
+- Every identity cited must be one the packet names, the packet itself, or a file of its three trees. Each `change_analysis` and `testing_analysis` entry cites at least one.
+- Text is bounded, not blank, and free of control characters; the title is one line. The whole record is at most 64 KiB.
+- What a parser cannot do: show that a sentence is true. That remains the reviewer's obligation and a question for the post-run judge.
+
+**A verdict other than APPROVE.** The record is retained first. The run then goes to `BLOCKED` with `PR_REVIEW_CHANGES_REQUESTED` or `PR_REVIEW_INCONCLUSIVE`. The blocker text names the verdict and the identity of the retained record; the `BLOCKED` directive and `status` carry `pr_review { verdict, record }`; the findings and limitations are in that record. No proposal is written, nothing is dispatched afterwards, and `next` and `resume` do not reopen it. A changed candidate needs a new run: that cost is accepted for version 1. A refused or failed invocation is a different thing from a negative review: it closes that attempt under the role's attempt limit, as for any role, and the same packet is used for the next attempt. A valid negative review is never asked again.
+
+**Deterministic composer** (`core/engine/proposal.ts`; proposal `schema_version` 2). The proposal is built field by field from an explicit list. A PR review is never merged into it as an object.
+
+| Machine-owned: read from retained records, never from a model | Narrative: from the PR review, only in the places named |
+|---|---|
+| Request, run, and candidate identities | `title` (its own field, plain text, not placed in the body) |
+| Measured paths and added, modified, deleted counts, for both comparisons | Summary |
+| Acceptance criteria from the specification, each with its proof route and the reported status of its named tests | "PR reviewer's analysis of the change" |
+| For both executions: outcome, exit code, executor, command, and report entries counted by kind and status | "PR reviewer's reading of the testing" |
+| Code review: verdict, limitations, findings, unchecked items. PR review: verdict, findings, unchecked items | PR reviewer's risks and limitations |
+| Plan status, audit verdict and round, unaudited amendments, unchecked audit items, open audit findings | PR reviewer's notes |
+| The authorizing decision, its action, and its provenance, with the statement that `HUMAN_RECORDED` is a recorder's claim and not authentication | |
+| Evidence classes, unsuccessful work counted from the packet, evidence identities, publication status `NOT_ATTEMPTED` | |
+
+- Body sections, in this order: Summary; What changed; Verification; Risks and limitations; Review and planning basis; Evidence references. The headings and list structure come only from the composer.
+- Report entries are never called tests that passed. The line states entries, single tests by status, and containers, and says that what is nested in a container is not reported.
+- The code review's limitations, findings, and unchecked items, and the plan's unaudited amendments, are rendered whether or not the PR review mentions them.
+- All text that did not originate in the composer is escaped before it is placed: narrative, and also evidence-derived text such as paths, test names, and criteria. Line breaks become spaces, so supplied text cannot start a block; other control characters are shown as U+FFFD; `&`, `<`, `>` become entities; backslash, backtick, `*`, `_`, braces, brackets, `|`, and `~` are escaped; a leading `-`, `+`, `=`, `#`, or list number is escaped.
+- The composer refuses anything but an approving PR review of this packet and an accepting code review. The same retained records always give the same bytes.
+
+**Team adaptation seam.** Three places, none of which is engine semantics.
+
+1. The procedure. `core/policies/pr-review-procedure.ts` holds the default text. A run is started with a procedure text (`--pr-review-procedure <file>` on `start`, or the default); the engine retains its exact bytes, binds its identity into the packet, and hands it to the PR reviewer as an input. A team's mandatory checklist goes here, because this is what a retained run can be shown to have used.
+2. Coverage. A procedure may add items; the reviewer reports them under `coverage` beside the mandatory seven.
+3. Role instructions. The existing package extensions can add instruction text for the role `pr-reviewer`, recorded in the package manifest with its source identity. This is style and guidance: a package manifest does not show which instructions a given run relied on.
+
+A procedure or an instruction cannot grant publishing, add a tool or a model, remove or rename a mandatory item, change what a verdict means, or lift a block: there is no field or path for any of it. The team's actual checklist was not supplied and is not in the inspected scope; nothing here claims compatibility with it.
+
+**Versions.**
+
+| Thing | Before | After | Earlier form |
+|---|---|---|---|
+| Workflow | 5 | 6 | A run started under 5 is refused with `WORKFLOW_MISMATCH` by the version 6 engine, before any replay; it is not continued, relabelled, or read as corrupt |
+| Proposal record | `schema_version` 1 | 2 | Type `PrProposalV1` is kept so a retained proposal can be named; nothing writes it |
+| Journal events | 9 types | 10: adds `pr_review_packet_recorded` | Earlier runs contain none |
+| `run_started` | | adds `pr_review_procedure_ref` when the workflow has a PR review | |
+| Run state | | optional `pr_review { verdict, record }` | Absent in runs without the stage |
+| Profile | `trial-v1.json` | `trial-v2.json` adds the role `pr-reviewer`, alias `opus`, the Code Reviewer's | `trial-v1.json` is byte-identical (`3338b15a…67a8`); with version 6 it is refused as incomplete before a run or a package exists |
+| Generator | 3 | 4 | |
+| Evaluator | interprets workflow 5 | interprets 5 and 6, each replayed with the definition the run retained | For 5: check `pr-review-gate` is `NOT_APPLICABLE` and evidence `pr_review` is `NOT_IN_THIS_WORKFLOW_VERSION` |
+| Rubric | `run-v3` | adds `run-v4`: the same twelve questions and four about the PR review and the composed proposal | `run-v3` is unchanged and still selectable; answers under the two are never combined |
+
+The alias is equal in both shipped profiles and a test checks it. The engine does not enforce it, because the owner's decision is "for now".
+
+**Copilot package.** Seven agents (was six). `rstack-sdlc-pr-reviewer`: `target: vscode`, tools `read`, `search`, `edit`, `user-invocable: false`, `disable-model-invocation: true`, no `agent` tool, no `execute`, no `model` line with the shipped profile. The Coordinator's `agents` list names six role agents. `coordinator.md` gained one engine reply code, `PR_REVIEW_PACKET_READY`, and "both reviewers" in the sentence about never passing on the developer's account; it stands at 998 words against the budget of under 1000. The application-records Skill gained the `pr-review.json` section.
+
+**Builder defaults.** Stated to the owner before starting and applied. The owner's reply did not address them one by one, so they are open to the owner and the reviewer.
+
+1. Tools. The PR reviewer has the Code Reviewer's tool sets. The editing tool is there to write its own record, and the host is not known to confine it. So the owner's "may not edit source or evidence" is met by instruction, by the role having no terminal and no delegation, and by detection: everything a proposal relies on is read again by identity and altered bytes are refused. It is **not** prevention. Prevention needs read-only evidence access and a confined writer or a transport that captures the result, which is a host mechanism and an architecture change this change does not make.
+2. No step in which a human previews the rendered text before the proposal is written.
+3. The team seam is built and documented; no team content is added.
+4. After a non-approving verdict, remediation is a new run.
+5. A fresh invocation on the same model alias is treated as the separate agent the owner asked for.
+
+**Not established by this change.**
+
+- That the PR reviewer runs as a fresh worker separate from the session that implemented or reviewed. The envelope binds role and attempt; it does not identify the process or session that produced a result. `HOST_CONFIRMATION_REQUIRED`.
+- That the host hides the agent, reaches it through the Coordinator's list, or applies any model to it.
+- That any sentence of a PR review is true. Structure, bounds, subject, and citations are checked; meaning is not.
+- That a bare address written in narrative or evidence text is not turned into a link by a renderer. No link text can be disguised and no structure can be changed, but automatic linking is the renderer's behaviour.
+- A mapping from tree identities to commits, file modes, or a remote pull request's diff. A future publisher has to establish that mapping and check freshness against the real base and head. An approving PR review is not authorization to publish.
+- Token or cost figures for the added invocation. Runs record none.
+
+### D-PRR addendum — 2026-10-05 — repairs after Astra's static review (findings 1 to 3)
+
+**Status:** `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`. Authority: the owner's "I AUTHORIZE BUILD-02 to repair Astra findings 1–3 on the workflow-v6 candidate, with focused tests and targeted sensitivity; no commit", and later the owner's instruction to commit and push everything without waiting for the sensitivity run. The account of the work is in [progress.md](progress.md), "PR Reviewer integration: independent static review and repairs".
+
+Builder choices made inside that authorization, each open to the owner:
+
+1. **The packet names the history it relies on.** `failed_verifications[].output` and `superseded_results[].produced` were added under packet schema version 1, without a new version, because workflow version 6 and this packet have never been approved or used outside tests.
+2. **Citable identities are a written-out list of record fields.** The two digests are not on it. Files of an earlier candidate are read but are not citable.
+3. **A changed reviewer copy is refused with the existing code `WRITE_BOUNDARY_VIOLATION`** (or `UNSAFE_PATH` when the copy cannot be read). No new reply code, and no change to the Coordinator's text.
+4. **Only the PR review stage measures its copy.** The technical `review` stage receives a copy of the candidate in the same way and is not measured. Astra's finding and the authorization name the PR review, and decision 4 of D-PRR keeps the Code Reviewer as it is. **Open owner decision.**
+5. **Measurement, not prevention.** The check is made at acceptance. It does not show what the copy held earlier, and the PR reviewer keeps the `edit` tool. The owner decision listed under "Builder defaults" is unchanged.

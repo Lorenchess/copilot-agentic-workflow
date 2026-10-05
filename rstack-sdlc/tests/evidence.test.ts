@@ -200,8 +200,8 @@ test('the review packet alone resolves the workflow, the profile, every referenc
   assert.deepEqual(report.problems, []);
   assert.equal(report.ok, true);
   assert.equal(report.events, journalText(run).split('\n').filter(Boolean).length);
-  assert.deepEqual(report.workflow, { workflow_id: 'local-request-to-proposal', workflow_version: 5, stages: 13 });
-  assert.deepEqual(report.profile, { profile_id: 'trial', profile_version: 1 });
+  assert.deepEqual(report.workflow, { workflow_id: 'local-request-to-proposal', workflow_version: 6, stages: 15 });
+  assert.deepEqual(report.profile, { profile_id: 'trial', profile_version: 2 });
   assert.equal(report.transport_class, 'SIMULATED');
   assert.deepEqual(report.unsuccessful_attempts.map((a) => [a.attempt_id, a.kind]), [['intent-1', 'EXECUTION_UNCERTAIN'], ['spec-1', 'TIMEOUT']]);
   for (const a of report.unsuccessful_attempts) {

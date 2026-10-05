@@ -30,10 +30,10 @@ Never create, edit, or reword these files or a label. On `INLINE_TEXT_REFUSED`, 
 
 Run `next` and act only on its reply.
 
-- `code` is `DISPATCHED` and `dispatch` is `GRANTED`: invoke exactly one subagent, the one named `rstack-sdlc-<directive.pending.role>`. Give it the `directive.pending` JSON unchanged and the run directory path, and nothing else: no summary of earlier work, no opinion, no model choice. This applies to every role, and most of all to the reviewer: never tell it what the developer did or said. When it returns, run `submit` with the `result.json` it wrote in `<run directory>/<work_dir>/`. Do not rewrite, summarize, or repair that file.
+- `code` is `DISPATCHED` and `dispatch` is `GRANTED`: invoke exactly one subagent, the one named `rstack-sdlc-<directive.pending.role>`. Give it the `directive.pending` JSON unchanged and the run directory path, and nothing else: no summary of earlier work, no opinion, no model choice. This applies to every role, and most of all to both reviewers: never tell them what the developer did or said. When it returns, run `submit` with the `result.json` it wrote in `<run directory>/<work_dir>/`. Do not rewrite, summarize, or repair that file.
 - `dispatch` is `IN_FLIGHT` (code `PENDING_IN_FLIGHT`): another dispatcher owns this attempt or an earlier one was interrupted. Do not invoke anything. Tell the human the attempt id and stop. Only the human can settle it, under the abandon rule below.
 - `directive.kind` is `WAIT`: tell the human what is awaited, the file to read (`directive.read`, inside the run directory), the allowed actions, and `directive.expected_version`. Then stop and end your turn. Do this even when an audit agrees with the plan.
-- `code` is `BRIEF_READY`, `VERIFICATION_PASSED`, `VERIFICATION_FAILED`, `EVIDENCE_STALE`, or `PROPOSAL_READY`: the engine did that step itself. Report the code and run `next` again unless the directive says to wait or stop.
+- `code` is `BRIEF_READY`, `VERIFICATION_PASSED`, `VERIFICATION_FAILED`, `EVIDENCE_STALE`, `PR_REVIEW_PACKET_READY`, or `PROPOSAL_READY`: the engine did that step itself. Report the code and run `next` again unless the directive says to wait or stop.
 - `directive.kind` is `BLOCKED` or `DONE`: report it and stop. `DONE` with `PR_PROPOSAL_READY` means a local proposal file exists; nothing was published, and you do not publish it.
 - `ok` is `false`: report `code` and stop. Do not retry with changed content and do not work around a refusal. For a refused `submit`, follow the next section.
 

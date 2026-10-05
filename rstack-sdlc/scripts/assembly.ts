@@ -10,6 +10,7 @@ import { createNodeTestExecutor } from '../adapters/node-test-executor/index.ts'
 import type { NotConfigured, ProposalSink, RequestLocator, RequestSource, TransportClass } from '../core/contracts/ports.ts';
 import { type Engine, type EngineOptions, type Reply, createEngine } from '../core/engine/engine.ts';
 import { EngineBlock } from '../core/engine/errors.ts';
+import { DEFAULT_PR_REVIEW_PROCEDURE } from '../core/policies/pr-review-procedure.ts';
 
 export interface DeferredFactories {
   jira: () => Promise<RequestSource>;
@@ -28,6 +29,9 @@ export interface AssemblyStart {
   // The application the request is about. It is read, measured, and retained; never written.
   appDir: string;
   profilePath: string;
+  // A team's PR-review procedure, as a file. Without it the default procedure
+  // is used. Either way the run retains the exact text it was started with.
+  prReviewProcedurePath?: string;
   runId?: string;
   // How role results will reach this run. Defaults to MANUAL_TRANSPORT; a run
   // fed by the fake transport must be started as SIMULATED.
@@ -96,11 +100,17 @@ export function createAssembly(
       if (!existsSync(input.profilePath)) {
         return refusal('MISSING_INPUT', { message: 'the profile file does not exist', locator: input.profilePath });
       }
+      if (input.prReviewProcedurePath !== undefined && !existsSync(input.prReviewProcedurePath)) {
+        return refusal('MISSING_INPUT', { message: 'the PR review procedure file does not exist', locator: input.prReviewProcedurePath });
+      }
       return engine.start({
         runId: input.runId,
         snapshot,
         appDir: input.appDir,
         profileText: readFileSync(input.profilePath, 'utf8'),
+        // Line endings are normalized so the procedure's identity does not depend on checkout settings.
+        prReviewProcedure:
+          input.prReviewProcedurePath === undefined ? DEFAULT_PR_REVIEW_PROCEDURE : readFileSync(input.prReviewProcedurePath, 'utf8').replaceAll('\r\n', '\n'),
         sinkId,
         transportClass: input.transportClass ?? 'MANUAL_TRANSPORT',
       });

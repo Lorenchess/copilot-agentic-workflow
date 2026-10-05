@@ -3,7 +3,7 @@
 //
 //   node scripts/generate-package.ts [--profile <file>] [--extensions <file>]
 //
-// Without --profile the active profile (profiles/trial-v1.json) is used;
+// Without --profile the active profile (profiles/trial-v2.json) is used;
 // without --extensions the authored definition, which adds nothing.
 
 import { readFileSync } from 'node:fs';
@@ -17,7 +17,7 @@ const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const { values } = parseArgs({ options: { profile: { type: 'string' }, extensions: { type: 'string' } } });
 try {
   const manifest = generatePackage({
-    profileText: readFileSync(values.profile ?? join(PACKAGE_ROOT, 'profiles', 'trial-v1.json'), 'utf8'),
+    profileText: readFileSync(values.profile ?? join(PACKAGE_ROOT, 'profiles', 'trial-v2.json'), 'utf8'),
     extensionsText: values.extensions ? readFileSync(values.extensions, 'utf8') : undefined,
     outDir: join(PACKAGE_ROOT, 'dist', 'copilot-vscode'),
   });
