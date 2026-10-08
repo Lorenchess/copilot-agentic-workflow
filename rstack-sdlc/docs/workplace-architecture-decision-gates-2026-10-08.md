@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-08  
 **Purpose:** Second, decision-focused design review and Claude Code handoff  
-**Scope:** Evolved downstream/workplace RSTACK-SDLC, compared against the **public GitHub reference**  
+**Scope:** Current RSTACK-SDLC artifact storage, agent write boundaries, independent verification, and recovery  
 **Decision state:** **NOT APPROVED FOR IMPLEMENTATION** — evidence collection and owner decisions first  
 **Change class:** Documentation only. This is not an approved architecture migration or security certification.
 
@@ -10,52 +10,42 @@
 
 **Read with:** [Original artifact-storage analysis](artifact-storage-and-agent-write-boundaries-2026-10-08.md), [Factory contract](../01-FACTORY-CONTRACT.md), [Workflows](../core/policies/workflow.ts), and [Previous decisions](decisions.md). Those describe the GitHub reference, **not necessarily the newer workplace engine**.
 
-**Public-repository caution:** This design memo deliberately avoids proprietary application names, organization-specific directories, internal code, credentials, and raw workplace evidence. Store detailed workplace code excerpts, screenshots, machine/environment identifiers, logs, and measurements **only** in approved private company storage. Do not copy those into this public repository.
+**Confidentiality boundary:** This public design memo contains no proprietary application code, internal paths, credentials, logs, or detailed company-environment data. Keep implementation evidence and sensitive test results in approved private company storage.
 
 ## 0. Instructions to the next Claude Code session
 
 **Do not begin with parallel I/O or a storage rewrite.** Begin by verifying the current workplace repository state, the meaning of every artifact, and the integrity of the *real application repository* now that accepted changes are applied during a run.
 
-Deliver a design-decision packet with falsifiable answers to **D1–D10** below, a reproducible benchmark comparing architectures, and a recommended sequence of narrowly scoped changes. Separate **CONFIRMED** (directly inspected/tested), **REPORTED** (workplace-agent screenshots or prior notes), **INFERRED** (engineering analysis), and **UNVERIFIED** (needs a host test).
+Deliver a design-decision packet with falsifiable answers to **D1–D10** below, a reproducible benchmark comparing architectures, and a recommended sequence of narrowly scoped changes. Separate **CONFIRMED** (directly inspected/tested), **WORKING ASSUMPTION** (must be verified against the current implementation), **INFERRED** (engineering analysis), and **UNVERIFIED** (needs a host test).
 
 **No source edits, deletions, environment changes, new worktrees, refactors, or cleanup during this first decision pass.** Do not assume that having a hash proves write prevention, that keeping a CAS implies keeping full copies, or that deleting the CAS is automatically an optimization.
 
-## 1. What changed between the reference and the evolved workplace pipeline?
+## 1. Current pipeline behaviors that matter to the decision
 
-The first memo examined GitHub reference code. The owner then supplied screenshots of a separate Claude Code investigation against the **newer workplace implementation**, derived from that reference. This is not the same commit or necessarily the same design.
+The company pipeline is the **implementation of record**; the public GitHub reference is background, not a guarantee about current runtime behavior. Claude must inspect the active engine rather than transplant assumptions, limits, or line numbers from the earlier design.
 
-| Topic | GitHub reference (confirmed from source during prior review) | Workplace version (reported by the user's screenshots; re-check locally) | Consequence |
-|---|---|---|---|
-| Content retention | `artifacts/<sha256>` per run deduplicates identical bytes **within** the run | Reportedly still true; a local experiment noted a relatively small stored starting application | CAS is already partly efficient; do not misidentify every hash as a duplicate |
-| Tree-size bound | `2,000 files / 20 MiB` fixture limit | Reportedly raised to `10,000 files / 100 MiB` | Earlier numeric bound is obsolete for work; whole-tree memory strategy still needs review |
-| Whole-tree memory | `measureTree` retains bytes of every included file while measuring | Reportedly still retains all measured file bytes in memory | Large repositories threaten peak memory; raising limits is not streaming |
-| Agent workspaces | Separate materialized copies for Tester, Developer, technical reviewer, PR reviewer | Reportedly still four materializations on the successful path | Copies may dominate *transient* allocated disk and startup latency |
-| Execution workspaces | RED baseline and candidate verification materialize trees | Reportedly those plus a background full-suite execution | Additional disk/CPU pressure; execution isolation and evidence fidelity need independent design |
-| Direct writes to user's app | Reference start documented not writing into the source app itself | Workplace engine reportedly applies **accepted changes directly to the real application directory as the run progresses** | **New trust boundary:** full repository drift, source-baseline changes, and attribution must be handled |
-| Role write checks | Diff of controlled tests / protected config in agent-copy at submission | Reportedly re-checks only engine-applied files against real app, not every file an agent could have touched | An unanticipated file edit may remain undetected |
-| Sibling repositories | Not part of reference evidence | Reportedly no checking of other repositories in the VS Code workspace | Agents with filesystem/shell reach may change unrelated repositories |
-| Late worker | Reference has a test showing one abandoned worker can write into another attempt's live copy | Reportedly still reproducible | Attempt directories are not OS security isolation |
-| Reviewer | PR-reviewer copy checked at acceptance, temporary edit-and-restore invisible; technical reviewer not equivalently checked | Reportedly technical reviewer remains unchecked | Check-at-hand-in is not proof of read-only review |
-| Executor | Reference Node executor explicitly says "no sandbox" | Workplace screenshots report Node, Vitest/Jest, and Maven execution without an OS sandbox | Tests/build scripts must be considered untrusted code with broad process rights |
-| Storage evaluation | Reference metric excludes `work/` and `exec/` and sums apparent file lengths | Reportedly unchanged | Existing metric understates peak/actual disk allocation |
-| Lifecycle | Run evidence and materialization retained for later use | Reportedly working copies are reclaimed only when the run folder is deleted by a final cleanup after documentation | Failed/interrupted/long runs can accumulate transient copies |
+The following are **working assumptions to verify**, not independent assertions that the current implementation has been audited.
 
-**Important limits of this comparison:** All workplace behaviors above are **REPORTED**, not independently inspected through this public repository. In particular, examine the current workplace `engine.ts`, workflow, test-runner adapters, artifact store, final cleanup, and the actual host tool policy. Source line numbers differ and should not be treated as stable across branches.
+| Concern | Current design hypothesis to verify | Decision impact |
+|---|---|---|
+| Content store | `artifacts/<sha256>` deduplicates identical file bytes **within** a run | Retention and per-run versus cross-run duplication must be measured, not guessed |
+| Tree measurement | Full application source is fingerprinted and may be held in memory; capacity is believed to be around 10,000 files/100 MiB | Need a streaming/bounded-memory strategy, not just a larger limit |
+| Working views | Tester, Developer, technical reviewer and PR reviewer receive materialized application views | Determine which views actually require writable, physical copies |
+| Execution views | RED, GREEN and possibly a background full-suite run reconstruct their own trees | Preserve independently executed exact-subject proof while reducing needless transient disk |
+| Accepted changes | The controller may apply accepted changes to the real application directory **during** the workflow | Test whether this is required, and how unauthorized direct edits are detected or prevented |
+| Enforcement | Tests and protected config paths are checked, but broader file classes may not be fully classified | Require explicit role-based deny-by-default rules for all tests, build/CI, governance, and unknown paths |
+| Multi-repository scope | Agent tools may access repositories beyond the target root | Define which roots are protected and whether host controls enforce that boundary |
+| Abandoned workers | Separate attempt directories do not inherently remove stale workers' access | Preserve noninterference under retries, abandonment and cleanup |
+| Reviewers | A submission-time hash comparison does not prove a reviewer operated read-only | Prefer enforced immutable reviewer inputs |
+| Executors | Test commands can invoke code with broader OS authority than their source folder suggests | Verification processes need an explicit filesystem/process trust boundary |
+| Accounting | Artifact metrics may exclude transient work and execution directories | Measure **allocated**, peak and retained bytes over a full run |
+| Retention | Working views may survive until final run cleanup | Find safe quiescence-aware reclamation points rather than assuming terminal success |
 
-### Workplace experiment reported in the screenshots
+### Preliminary I/O measurements — useful but not decisive
 
-A ~7,700-file/~73 MB repository was used for a local timing experiment:
+Prior local experiments suggested file fingerprinting could improve from roughly 11.8–12.9 s to 1.3–2.2 s with concurrent reads, and full-copy creation from 40.8 s to 10.1 s with parallel writes. These are not complete-pipeline or disk-allocation results. A tested CoW/reflink operation was unavailable on one NTFS volume; that says nothing definitive about other filesystems or host configurations.
 
-| Operation | Serial / prior | Proposed parallel | What has actually been demonstrated |
-|---|---:|---:|---|
-| SHA/content fingerprinting, 32 concurrent reads | ~11.8–12.9 s | ~1.3–2.2 s | Potential latency reduction, same logical input/identities |
-| Creating a physical working copy | ~40.8 s | ~10.1 s | Faster **copying**, not fewer bytes copied |
-| Reflink/CoW attempt on that drive | Not measured as an improvement | `ENOSYS` on tested NTFS volume | Unsupported **in that test**; no universal Windows/enterprise capability conclusion |
-| Timestamp-only shortcut | — | ~7.7 s | Inadequate as an authoritative content identity and slower than reported parallel hashing |
-
-**Do not promote these timings to pipeline evidence.** They were reported from a busy machine with real-time scanning, not cold- and warm-cache controlled runs, no peak disk/RSS study, and not a full RSTACK run. The experiment does not compare the alternative Git/CAS storage designs.
-
-The screenshots also show a session UI with **25 files changed** at that moment while its narrative says no pipeline code was changed for the investigation. These facts might be compatible (pre-existing changes or unrelated session actions), but **confirm the actual base, current diff, file owners, and clean/dirty state before doing any new work**. Do not discard or overwrite unexplained changes.
+**Interpretation:** faster scanning and full copying can reduce latency, but they do not establish that the duplicated bytes are necessary, nor do they reduce the number of physical copies. Benchmark full A/B/C storage designs first, then consider parallel I/O separately.
 
 ## 2. Engineering verdict: separate four questions
 
@@ -143,7 +133,7 @@ Java/Spring examples to classify: `src/main/**` vs `src/test/**`, `pom.xml`, `bu
 
 ### R4 — Reviewer read-only semantics
 
-The workplace screenshot reports that PR review receives a final-state check but technical review may have no such check. Even checking both copies at submission **does not establish read-only execution**, because an edit can be restored.
+Check whether the PR reviewer and technical reviewer have equivalent immutable-subject controls. A copy being checked only at submission **does not establish read-only execution**, because an edit can be restored before the check.
 
 Preferred: reviewer reads a controller-frozen candidate through a read-only mechanism proven for the **actual harness**. If impossible, measure at acceptance and label it **DETECT_AFTER**, not `READ_ONLY_PREVENTED`. Do not permit shared mutable reviewer workspaces.
 
@@ -246,7 +236,7 @@ Per-attempt directories reduce accidental collision but do not stop a stale proc
 
 ## 7. Effective host permissions: investigate rather than speculate
 
-The screenshot asserts that real write prevention is "not possible" because Copilot tools can write anywhere and no CoW is available on that NTFS drive. The **measured fact** is narrower: one tested CoW mechanism returned `ENOSYS`; current session tools reportedly have broad write/command reach. These facts do not prove all preventive architecture alternatives are impossible.
+A preliminary filesystem experiment found the attempted CoW mechanism unavailable on one volume (`ENOSYS`), and the agent runtime may currently expose broad file and command tools. Neither fact proves that preventive write controls are architecturally impossible. Validate the **effective** host, operating-system, and tool boundaries before reaching that conclusion.
 
 **Different execution surfaces must not be conflated.** A custom agent running as a VS Code **Local** session is not automatically subject to the same controls as a **Copilot Agent Host** session. Tool frontmatter may be guidance or enforced depending on harness. Terminal sandboxing does not necessarily sandbox separate VS Code built-in edit/write tools, nor host-external MCP/process paths.
 
@@ -357,7 +347,7 @@ Claude must produce a structured decision record with **question, options, measu
 
 ## 12. Recommended sequencing (proposal, not authorization)
 
-**Phase 0 — Forensics and evidence, READ ONLY.** Inspect current workplace pipeline and current diff before anything else. Trace source-copy producer/consumer graph, all direct-app mutations, all agent/shell/runner privileges, every repository root, persistence schema and cleanup. Produce baseline disk/latency/RSS measurements and the D1–D10 decision packet.
+**Phase 0 — Artifact and enforcement investigation, READ ONLY.** Inspect the current workplace pipeline's storage and security implementation. Trace each retained artifact's producer/consumer, direct-app mutation path, agent/shell/runner authority, relevant repository roots, persistence schema and cleanup rules. Produce baseline disk/latency/RSS measurements and the D1–D10 decision packet.
 
 **Phase 1 — Architecture experiment, disposable only.** Prototype A/B/C against sanitized or synthetic throwaway repositories; exact content and recovery tests; compare physical storage. Do not modify the company pipeline or checkout. Present recommendation to owner with failure cases.
 
@@ -378,7 +368,7 @@ After approval, propose separately reviewable production changes in this **risk 
 
 Before asking to implement anything, deliver:
 
-1. **Verified source-state report:** actual workplace branch/revision, current dirty files, who owns them, run engine files examined, and differences from the public reference. Do not paste company code into the public GitHub document.
+1. **Verified implementation map:** the current engine's artifact retention, materialization, mutation admission, runner isolation, reviewer access, scope enforcement, and cleanup mechanisms. Identify only those current-code facts that affect the architectural decisions; keep sensitive company source out of this public document.
 2. **Artifact flow map:** all file bytes/manifest hashes, producer, reader, retention, cleanup, materialization frequency and authority classification.
 3. **Security surface map:** role tools, shell, test subprocesses, candidate/review/evidence storage, target and sibling repos, observed vs claimed boundaries.
 4. **A/B/C decision matrix and measurements:** physical disk peak/final, memory, time, dedup, recovery, risk and rollback on identical fixtures.
@@ -388,7 +378,7 @@ Before asking to implement anything, deliver:
 
 ## 14. Copy-ready instructions for Claude Code
 
-> Read `rstack-sdlc/docs/workplace-architecture-decision-gates-2026-10-08.md` and the first artifact-storage memo. The GitHub implementation is a **reference**; our workplace RSTACK-SDLC is a newer, diverged engine. Verify every reported difference against the **current workplace source** and our approved test environment. Do not assume the reference line numbers, 2,000-file limit, or old "never writes to app" semantics remain valid.
+> Read `rstack-sdlc/docs/workplace-architecture-decision-gates-2026-10-08.md` and the first artifact-storage memo. The GitHub implementation is a **reference**; the actual company RSTACK-SDLC is the implementation whose storage and enforcement behavior must be evaluated. Verify every reported difference against the **current workplace source** and our approved test environment. Do not assume the reference line numbers, 2,000-file limit, or old "never writes to app" semantics remain valid.
 >
 > **Read-only decision pass. No code changes.** Do not immediately optimize parallel reads/writes or treat `artifacts/` as an immutable design choice. Inventory durable bytes versus disposable materializations and compare three designs: per-run CAS, pinned Git + immutable change sets, and hybrid Git + protected CAS. Prove exact reconstruction with dirty/untracked inputs and unavailable source checkout. Report allocated disk/memory/time across complete candidate/retry/full-suite lifecycles.
 >
@@ -404,4 +394,4 @@ Before asking to implement anything, deliver:
 - [Node.js file copy and reflink behavior](https://nodejs.org/download/release/v24.20.0/docs/api/fs.html).
 - [VS Code agent trust/safety](https://code.visualstudio.com/docs/agents/concepts/trust-and-safety), [Agent Host sandbox](https://code.visualstudio.com/docs/agents/run/agent-sandboxing), and [agent customization](https://code.visualstudio.com/docs/agent-customization/custom-agents).
 
-**Boundary of this memo:** analysis, not execution. No workplace repo was accessed through this GitHub commit; all workplace-specific findings are **REPORTED** by screenshots. No current-host security enforcement, benchmark speedup, Git/CAS recovery result, or pipeline modification is claimed proven by creating this document.
+**Boundary of this memo:** analysis, not execution. The current engine's detailed behavior must be verified in its own authorized environment. No current-host security enforcement, benchmark speedup, Git/CAS recovery result, or pipeline modification is established merely by publishing this document.
