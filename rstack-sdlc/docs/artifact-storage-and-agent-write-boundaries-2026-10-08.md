@@ -169,7 +169,7 @@ For non-Git or dirty source, retain the unique missing bytes once in the protect
 
 Two separate optimizations:
 
-1. **Transient views:** where supported and approved, use CoW/reflink/overlay materialization for ``work/` and `exec/`. Read-only reviewer views are better than writable reviewer copies when the host permits them. Do not use hardlinks. For unsupported filesystems (notably unknown native Windows configurations), use the existing verified full-copy fallback or fail if policy requires a stronger guarantee. Report which path was used.
+1. **Transient views:** where supported and approved, use CoW/reflink/overlay materialization for `work/` and `exec/`. Read-only reviewer views are better than writable reviewer copies when the host permits them. Do not use hardlinks. For unsupported filesystems (notably unknown native Windows configurations), use the existing verified full-copy fallback or fail if policy requires a stronger guarantee. Report which path was used.
 2. **Durable retention:** optionally share the immutable byte store across runs of the same permitted security scope; keep per-run manifests/references. Pin accepted candidates and evidence for retention. Only reclaim unreferenced objects after proving no active run/evaluation/recovery reference remains.
 
 A CoW workspace still requires exclusive ownership. Worker A must not be able to write Worker B's upper layer, scratch or controller state. A writeable overlay is **not** the prevention boundary by itself.
