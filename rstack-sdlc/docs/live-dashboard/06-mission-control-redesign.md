@@ -9,6 +9,7 @@
 - [01 — Product and UX](01-product-and-ux.md) (section 3.5 is amended by section 3 below)
 - [02 — Architecture and Read Model](02-architecture-and-read-model.md)
 - [04 — Engine Findings, Reference Research, and Decisions](04-engine-findings-research-and-decisions.md)
+- [08 — Porting guide](08-porting-guide.md) (using this dashboard as the reference for another one)
 
 ---
 
