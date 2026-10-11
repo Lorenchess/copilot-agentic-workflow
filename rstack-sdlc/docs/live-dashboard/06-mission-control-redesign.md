@@ -3,7 +3,7 @@
 **Document:** `06-mission-control-redesign.md`
 **Date:** 2026-10-11. **Author:** Claude (Opus 5.5), from a design session with the owner.
 **Baseline:** `main` at `52ac37a`, branch `feat/rstack-sdlc-dashboard-mission-control`.
-**Status:** design agreed section by section in conversation with the owner; this written spec awaits owner review. Not implemented. Nothing here is host evidence.
+**Status:** design agreed section by section in conversation with the owner; the owner then said "go ahead and implement it" (2026-10-11). Implemented on the branch per [07 — implementation plan](07-mission-control-implementation-plan.md); not committed. Section 11 lists where the build differs from the text as first written. Nothing here is host evidence.
 **Visual reference:** [mockups/06-live-view-mockup.html](mockups/06-live-view-mockup.html) (fixed-width, SIMULATED, animations looped for preview only).
 **Related documents:**
 - [01 — Product and UX](01-product-and-ux.md) (section 3.5 is amended by section 3 below)
@@ -101,7 +101,7 @@ Hero states:
 
 ### 4.2 Inspect view
 
-Everything the shipped dashboard shows — the Now card, run facts, and the seven tabs (timeline, agent attempts, test execution, plan audits, reviews, evidence, problems) — restyled in the new tokens. Fixes included: role badges on timeline rows; event type names never break mid-word; digest refs collapse into an expandable "refs" chip; the Now card title names the stage and the role once each, and only once when they are the same (today it reads "Developer, Developer"). Clicking a stage card in Live opens Inspect with that stage selected (today's stage selection behaviour). Selecting another run returns to Live; reloading the page keeps the mode stored in the address. Inspect keeps the full re-render with its existing focus, scroll and disclosure restoration.
+Everything the shipped dashboard shows — the Now card, run facts, and the seven tabs (timeline, agent attempts, test execution, plan audits, reviews, evidence, problems) — restyled in the new tokens. Fixes included: role badges on timeline rows; event type names never break mid-word; digest refs collapse into an expandable "refs" chip; the Now card title names the stage and the role once each, and only once when they are the same (today it reads "Developer, Developer"). Clicking a stage card in Live opens Inspect with that stage selected (today's stage selection behaviour). A run chosen from the run switcher or the landing page opens in Live; a run chosen from the Inspect sidebar stays in Inspect; reloading the page keeps the mode stored in the address. Inspect keeps the full re-render with its existing focus, scroll and disclosure restoration.
 
 ### 4.3 Run switching
 
@@ -125,10 +125,10 @@ Role identity tokens (badges, card top stripe, swimlane bars; never used to sign
 
 | Role | Dark | Light |
 |---|---|---|
-| Planner | `#a78bfa` | `#7c5cf0` |
+| Planner | `#a78bfa` | `#7352e8` (was `#7c5cf0`) |
 | Plan Auditor | `#e879f9` | `#b42bc4` |
 | You (human) | `#fbbf24` | `#b7791f` |
-| Tester | `#2dd4bf` | `#0f8f81` |
+| Tester | `#2dd4bf` | `#0d7d71` (was `#0f8f81`) |
 | Developer | `#60a5fa` | `#2f6fdf` |
 | Code Reviewer | `#f472b6` | `#d02670` |
 | PR Reviewer | `#818cf8` | `#4f5bd5` |
@@ -139,7 +139,7 @@ Before shipping, the implementation validates both palettes for WCAG AA text con
 ### 4.5 Containment and responsive layout
 
 - No fixed pixel widths for panels; every grid or flex child that holds text has `min-width: 0`.
-- Pipeline columns by container width: 7 per row at 1400 px and wider; 5 per row from 900 to 1399 px; a single vertical list below 900 px. Rows = `ceil(stages / columns)`. The layout function takes any stage count.
+- Pipeline columns by the pipeline's own content width: 7 per row at 940 px and wider; 5 per row from 640 to 939 px; a single vertical list below 640 px. (At a 1440 px window this gives 7 columns, at 1024–1280 px 5 columns, and the list on narrow windows.) Rows = `ceil(stages / columns)`. The layout function takes any stage count.
 - From 900 to 1199 px the vitals panel moves below the pipeline; below 900 px the swimlane and feed stack.
 - Wires are SVG paths computed from measured card rectangles and recomputed by a `ResizeObserver`; the hand-off packet follows the same path.
 - Text that does not fit is truncated with an ellipsis; the full text is in the element's accessible name and `title`. Badges size to their text.
@@ -220,3 +220,24 @@ SSE `run-changed` → `loadRun` (as today) → `motion.cues(previous, next)` →
 ## 10. Out of scope
 
 Desktop notifications and sound; any dashboard action that changes a run; host telemetry (effective model, token use, durations measured by the host); canvas or WebGL rendering; new runtime dependencies; downloaded web fonts.
+
+## 11. Changes during implementation (2026-10-11)
+
+Where the build differs from the text above as first written, and why. Each is a builder choice open to the owner.
+
+1. **Column thresholds** (4.5) are measured on the pipeline's own width, not the window's, so the vitals panel beside it cannot push cards out of their box. Values: 940 px and 640 px.
+2. **Run selection** (4.2): a run chosen from the Inspect sidebar stays in Inspect; the switcher and the landing page open Live. Jumping to Live from a list meant for inspection was judged unhelpful.
+3. **Landing page:** with no run selected, Live shows one tile per run (status, mini strip, last activity), runs that need a human first. The spec had no screen for this case.
+4. **Light-theme tokens** (4.4): planner and tester darkened within their hue so white badge text reaches 4.5:1. The `--faint` text token is `#7383aa` (dark) and `#6b7486` (light), raised from the plan's `#55658c` and `#8a94a6`, which were near 3:1 against their surfaces.
+5. **Loop keyframes** (rule 8): both loops animate opacity only; the amber pulse has no scale, so it cannot reach outside a card's box.
+6. **Modules** (5.1): the cue effects live in `live.js` (`animate`), which owns the elements; `motion.js` stays pure apart from its diagnostic log. A small `dom.js` holds the in-place patch helpers and the SVG namespace constant. `derive.axis` returns milliseconds (`ms`), not seconds.
+7. **Package check** (5.3): the forbidden-pattern check now covers every web module. The SVG namespace identifier `http://www.w3.org/2000/svg` is the one URL-shaped string allowed: it is a name that DOM SVG creation requires, not a resource, and nothing is fetched.
+8. **Diagnostic log:** `motion.js` keeps the last 50 cues played on `globalThis.rstackMotionLog` (run, kind, journal number, reduced). The browser tests read it to prove each cue plays once; it holds no run content.
+9. **Pause button** reads "Pause" / "Resume"; its accessible name is still "Pause live updates" / "Resume live updates".
+10. **Test driver:** `tests/support/browser.ts` now sends the text of Enter and Space with the key, so a focused button is activated as with a real key press.
+11. **Branch chips** (4.1) hang above the main-path stage they rejoin (`next` in the retained definition), because the stage a branch leaves from is not in the definition; once entered, the chip names its observed origin from the timeline.
+12. **Wording and counts:** an in-progress run is labelled "In progress", not "Running", so no run-level label reads as an agent at work; the top bar's "active" count uses the same rule as the switcher's Active group (in progress and not waiting for a human).
+13. **Paused updates** stop all Live motion, including the heartbeat beat (6).
+14. **Update failures in Live:** when a background reload fails, Live shows "Update unavailable … Showing the last received state", as Inspect already did.
+15. **Full screen** (owner request, 2026-10-11): a "Full screen" button in the top bar and the `F` key put the whole dashboard on the whole screen (browser full-screen mode; `Esc` or `F` exits). The Live view always fills the window's height: the lower row (swimlane and feed) takes the height left over.
+16. **Review fixes** (builder-side review of the whole change): a review that rejects and blocks its stage plays only the block cue; each feed row slides in once per event; a ring's colour follows the card's state; the hero's "next" stage comes from the current stage's own `next`, so branch stages show the stage they rejoin; the "events while you were away" count belongs to one run.

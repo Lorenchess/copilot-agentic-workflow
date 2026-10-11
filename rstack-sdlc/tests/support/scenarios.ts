@@ -6,6 +6,7 @@
 import assert from 'node:assert/strict';
 import { createFakeTransport } from '../../adapters/fake-transport/index.ts';
 import { driveRun } from '../../core/engine/drive.ts';
+import type { EngineOptions } from '../../core/engine/engine.ts';
 import { type TestRun, completeStep, decision, failure, newRun, pendingOf, prReviewStep, result, toHumanWait } from './harness.ts';
 
 export const SCENARIOS = [
@@ -31,9 +32,11 @@ export interface ScenarioRun extends TestRun {
 }
 
 // Builds one run in the given state inside `workspace` (a fresh temp
-// workspace when not given) and returns it. The run id is engine-generated.
-export async function scenarioRun(scenario: Scenario, label = `scenario-${scenario}`, runId?: string, workspaceDir?: string): Promise<ScenarioRun> {
-  const run = await newRun(label, {}, 'SIMULATED', runId, workspaceDir);
+// workspace when not given) and returns it. The run id is engine-generated
+// unless given. `engineOptions` pass through to the engine (the demo uses
+// them for a clock that spaces commit times out).
+export async function scenarioRun(scenario: Scenario, label = `scenario-${scenario}`, runId?: string, workspaceDir?: string, engineOptions: Partial<EngineOptions> = {}): Promise<ScenarioRun> {
+  const run = await newRun(label, engineOptions, 'SIMULATED', runId, workspaceDir);
   const { engine } = run.assembly;
   const transport = createFakeTransport(run.assembly.runsRoot);
   switch (scenario) {

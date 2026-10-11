@@ -259,6 +259,8 @@ export interface RunSummary {
   last_committed_at: string | null;
   journal_version: number;
   view_digest: string;
+  // Each stage's state in stage-graph order, for the run list's mini pipeline strip.
+  stage_states: { stage_id: string; state: StageState }[];
 }
 
 // Stage labels for the known definition; an unknown stage id is shown as given.

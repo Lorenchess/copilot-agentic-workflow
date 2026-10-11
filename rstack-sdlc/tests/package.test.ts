@@ -77,10 +77,18 @@ const RUNTIME_FILES = [
   'runtime/dashboard/report-writer.ts',
   'runtime/dashboard/server.ts',
   'runtime/dashboard/watch.ts',
+  'runtime/dashboard/web/alerts.js',
   'runtime/dashboard/web/app.css',
   'runtime/dashboard/web/app.js',
-  'runtime/dashboard/web/graph.js',
+  'runtime/dashboard/web/clock.js',
+  'runtime/dashboard/web/derive.js',
+  'runtime/dashboard/web/dom.js',
+  'runtime/dashboard/web/feed.js',
+  'runtime/dashboard/web/flow.js',
   'runtime/dashboard/web/index.html',
+  'runtime/dashboard/web/lanes.js',
+  'runtime/dashboard/web/live.js',
+  'runtime/dashboard/web/motion.js',
   'runtime/dashboard/web/views.js',
   'runtime/package.json',
   'runtime/profiles/trial-v2.json',
@@ -128,13 +136,18 @@ test('the runtime is what the commands import, the requirements are stated, and 
   assert.deepEqual(runtimeSources(), RUNTIME_FILES.filter((f) => f.endsWith('.ts')).map((f) => f.slice('runtime/'.length)));
   assert.deepEqual(manifest.engine, { entry: 'runtime/scripts/rstack.ts', installer: 'runtime/scripts/install-package.ts', resolution: 'INSTALL_TIME_ABSOLUTE_PATH' });
   // The dashboard page files ship beside the server that serves them, byte for byte.
-  for (const asset of ['app.css', 'app.js', 'graph.js', 'index.html', 'views.js']) {
+  const webAssets = RUNTIME_FILES.filter((f) => f.startsWith('runtime/dashboard/web/')).map((f) => f.slice('runtime/dashboard/web/'.length));
+  for (const asset of webAssets) {
     assert.equal(readFileSync(join(out, 'runtime/dashboard/web', asset), 'utf8'), readFileSync(join(PACKAGE_ROOT, 'dashboard/web', asset), 'utf8').replaceAll('\r\n', '\n'));
   }
-  // The page loads scripts and styles from itself only: no remote asset.
+  // The page loads scripts and styles from itself only: no remote asset, no markup parsing, no eval.
+  // The SVG namespace identifier is a name, not a resource, and is the one URL-shaped string allowed.
   const page = readFileSync(join(out, 'runtime/dashboard/web/index.html'), 'utf8');
   assert.doesNotMatch(page, /https?:\/\//);
-  assert.doesNotMatch(readFileSync(join(out, 'runtime/dashboard/web/app.js'), 'utf8'), /https?:\/\/|innerHTML|eval\(/);
+  for (const asset of webAssets.filter((a) => a.endsWith('.js'))) {
+    const code = readFileSync(join(out, 'runtime/dashboard/web', asset), 'utf8').replaceAll("'http://www.w3.org/2000/svg'", "'SVG_NS'");
+    assert.doesNotMatch(code, /https?:\/\/|innerHTML|eval\(/, `${asset} stays self-contained`);
+  }
   // Node is required and not bundled; the package does not claim to be self-contained.
   const nodeRange = (JSON.parse(readFileSync(join(PACKAGE_ROOT, 'package.json'), 'utf8')) as { engines: { node: string } }).engines.node;
   assert.deepEqual(manifest.runtime_requirements, { node: nodeRange, bundled: false, third_party_packages: 'none' });

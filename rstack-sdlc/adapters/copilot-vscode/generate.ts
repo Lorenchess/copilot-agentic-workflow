@@ -47,7 +47,8 @@ export const EXTENSIONS_SOURCE = 'adapters/copilot-vscode/extensions.json';
 export const RUNTIME_ENTRIES = ['scripts/rstack.ts', 'scripts/install-package.ts', 'dashboard/main.ts'];
 // The dashboard page, served by the dashboard server from beside itself. Not
 // reached by an import, so listed here; shipped as read, line endings normalized.
-export const RUNTIME_ASSETS = ['dashboard/web/index.html', 'dashboard/web/app.css', 'dashboard/web/app.js', 'dashboard/web/graph.js', 'dashboard/web/views.js'];
+export const WEB_ASSETS = ['index.html', 'app.css', 'app.js', 'views.js', 'dom.js', 'derive.js', 'motion.js', 'flow.js', 'lanes.js', 'feed.js', 'live.js', 'clock.js', 'alerts.js'];
+export const RUNTIME_ASSETS = WEB_ASSETS.map((name) => `dashboard/web/${name}`);
 export { PREFIX };
 
 interface AgentSpec {

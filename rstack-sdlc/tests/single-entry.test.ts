@@ -316,8 +316,8 @@ test('PROFILE-4: two generations from the same profile are byte-identical, pinne
     generatePackage({ profileText: text, outDir: join(base, name, 'a') });
     generatePackage({ profileText: text, outDir: join(base, name, 'b') });
     assert.equal(digest(join(base, name, 'a')), digest(join(base, name, 'b')), name);
-    // 7 agents, 2 Skills, 44 runtime files (engine, installer, dashboard, page), the manifest.
-    assert.equal(listFiles(join(base, name, 'a')).length, 54, name);
+    // 7 agents, 2 Skills, 52 runtime files (engine, installer, dashboard, 13 page files), the manifest.
+    assert.equal(listFiles(join(base, name, 'a')).length, 62, name);
   }
 });
 

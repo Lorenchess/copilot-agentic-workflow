@@ -1,6 +1,9 @@
-// Panels and tabs. Everything is built with `h`, which sets text through
-// textContent: no record text ever becomes markup. Each state carries a
-// glyph, a label, and a colour; nothing animates to suggest activity.
+// Panels and tabs of the Inspect view. Everything is built with `h`, which
+// sets text through textContent: no record text ever becomes markup. Each
+// state carries a glyph, a label, and a colour. Nothing here animates; the
+// Live view's motion is started only by committed events (motion.js).
+
+import { roleBadge as badgeFor, roleToken } from './derive.js';
 
 export const STATE_TEXT = {
   NOT_REACHED: 'Not reached',
@@ -29,7 +32,7 @@ export const STATE_GLYPH = {
 };
 
 export const OUTCOME_TEXT = {
-  IN_PROGRESS: 'Running',
+  IN_PROGRESS: 'In progress',
   WAITING_HUMAN: 'Waiting for you',
   LOCAL_PR_PROPOSAL_PREPARED: 'Completed: local proposal',
   REJECTED: 'Rejected',
@@ -164,7 +167,7 @@ function findingList(findings) {
 export function humanBand(view, ctx) {
   const ha = view.human_action;
   const audit = ha.audit;
-  const planActions = ha.allowed_actions.map((a) => h('li', {}, h('strong', {}, ACTION_LABEL[a] || a), ` — ${ACTION_TEXT[a] || a}.`));
+  const planActions = ha.allowed_actions.map((a) => h('li', {}, h('code', { class: 'action' }, a), ` ${ACTION_LABEL[a] || a}: ${ACTION_TEXT[a] || a}.`));
   const read = ha.read
     ? ha.awaiting === 'PLAN_DECISION'
       ? h('button', { type: 'button', class: 'btn primary', 'data-focus': 'read-brief', onclick: () => ctx.openBrief(ha.round) }, `Review decision brief (round ${ha.round})`)
@@ -246,6 +249,15 @@ export function stageLabel(view, id) {
 
 // ---------------------------------------------------------------- now panel
 
+// The stage, and who holds it when that adds something ("Developer", not "Developer, Developer").
+function nowTitle(view, a) {
+  const stage = stageLabel(view, a.stage_id);
+  if (a.kind === 'role') return roleLabel(a.role) === stage ? stage : `${stage}, ${roleLabel(a.role)}`;
+  if (a.kind === 'human') return `${stage}, you`;
+  if (a.kind === 'deterministic') return `${stage}, engine step`;
+  return stage;
+}
+
 export function nowPanel(view) {
   const a = view.current_activity;
   const model = a.configured_model;
@@ -254,7 +266,7 @@ export function nowPanel(view) {
   return h('section', { class: 'panel', 'aria-label': 'Current activity', 'data-testid': 'now-panel' },
     h('h2', {}, 'Now'),
     h('div', { class: 'content' },
-      h('div', { class: 'big' }, `${stageLabel(view, a.stage_id)}${a.kind === 'role' ? `, ${roleLabel(a.role)}` : a.kind === 'human' ? ', human' : a.kind === 'deterministic' ? ', engine step' : ''}`),
+      h('div', { class: 'big' }, nowTitle(view, a)),
       kv([
         ['Status', pending ? 'Dispatched, awaiting result' : view.engine.phase === 'WAITING_HUMAN' ? 'Waiting for a human decision' : view.engine.phase === 'BLOCKED' ? 'Blocked' : view.engine.phase === 'DONE' ? 'Ended' : 'Nothing dispatched'],
         ['Configured model', model ? model.owner_label : undefined],
@@ -376,21 +388,33 @@ export function tabCounts(view) {
 const CATEGORY_GLYPH = { start: '▶', dispatch: '◇', result: '✓', failure: '×', human: '!', verification: '⚙', review: '◆', proposal: '✓', deterministic: '·' };
 const CATEGORY_TONE = { start: 'neutral', dispatch: 'info', result: 'ok', failure: 'danger', human: 'human', verification: 'info', review: 'ok', proposal: 'ok', deterministic: 'neutral' };
 
+// Who an event belongs to, as a role badge: the stage's role, you for decisions, the engine otherwise.
+function eventWho(view, t) {
+  if (t.category === 'human') return { badge: 'YOU', token: 'you' };
+  if (['start', 'deterministic', 'verification', 'proposal'].includes(t.category)) return { badge: 'EN', token: 'engine' };
+  const s = view.stage_graph.find((x) => x.stage_id === t.stage_id);
+  return s ? { badge: badgeFor(s.role, s.kind), token: roleToken(s.role, s.kind) } : { badge: 'EN', token: 'engine' };
+}
+
 export function timelineTab(view, ctx) {
   const rows = view.timeline.slice().reverse();
   return h('div', {},
     h('p', { class: 'hint' }, `${view.timeline.length} committed journal records, newest first. Times are engine commit times.`),
     h('table', { class: 'data', 'data-testid': 'timeline' },
       h('thead', {}, h('tr', {}, h('th', { class: 'num' }, '#'), h('th', {}, 'At'), h('th', {}, 'Event'), h('th', {}, 'What happened'))),
-      h('tbody', {}, rows.map((t) => h('tr', { 'data-seq': t.seq, 'data-reading-anchor': `event-${t.seq}` },
-        h('td', { class: 'num' }, t.seq),
-        h('td', { class: 't' }, fmtTime(t.at)),
-        h('td', { class: 'ev' }, h('span', { class: `glyph state-${CATEGORY_TONE[t.category] || 'neutral'}`, 'aria-hidden': 'true' }, CATEGORY_GLYPH[t.category] || '·'), ' ', t.type),
-        h('td', {}, t.summary,
-          Object.keys(t.refs).some((k) => !k.endsWith('_digest')) ? h('div', { class: 'hint' }, Object.entries(t.refs).filter(([k]) => !k.endsWith('_digest')).map(([k, ref]) => refButton(ref, ctx, k))) : null,
-          Object.keys(t.refs).some((k) => k.endsWith('_digest')) ? technicalDetails(`event-${t.seq}`, Object.entries(t.refs).filter(([k]) => k.endsWith('_digest')).map(([k, ref]) => refMetadata(ref, k, 'Verification digest; not an artifact'))) : null,
-        ),
-      ))),
+      h('tbody', {}, rows.map((t) => {
+        const refs = Object.entries(t.refs).filter(([k]) => !k.endsWith('_digest'));
+        const who = eventWho(view, t);
+        return h('tr', { 'data-seq': t.seq, 'data-reading-anchor': `event-${t.seq}` },
+          h('td', { class: 'num' }, t.seq),
+          h('td', { class: 't' }, fmtTime(t.at)),
+          h('td', { class: 'ev-cell' }, h('span', { class: 'badge', 'data-token': who.token, 'aria-hidden': 'true' }, who.badge), h('span', { class: `glyph state-${CATEGORY_TONE[t.category] || 'neutral'}`, 'aria-hidden': 'true' }, CATEGORY_GLYPH[t.category] || '·'), ' ', t.type),
+          h('td', {}, t.summary,
+            refs.length > 0 ? h('details', { class: 'refs', 'data-view-key': `refs-${t.seq}` }, h('summary', {}, `${refs.length} record${refs.length === 1 ? '' : 's'}`), h('div', { class: 'ref-list' }, refs.map(([k, ref]) => refButton(ref, ctx, k)))) : null,
+            Object.keys(t.refs).some((k) => k.endsWith('_digest')) ? technicalDetails(`event-${t.seq}`, Object.entries(t.refs).filter(([k]) => k.endsWith('_digest')).map(([k, ref]) => refMetadata(ref, k, 'Verification digest; not an artifact'))) : null,
+          ),
+        );
+      })),
     ),
   );
 }

@@ -762,5 +762,6 @@ export function summarize(view: RunView): RunSummary {
     last_committed_at: view.last_committed_at,
     journal_version: view.journal_version,
     view_digest: view.view_digest,
+    stage_states: view.stage_graph.map((s) => ({ stage_id: s.stage_id, state: s.state })),
   };
 }

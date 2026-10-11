@@ -365,6 +365,11 @@ test('DASH-16: two runs in one workspace are listed separately with their own st
   assert.equal(sa?.view_digest, readRun(a.assembly.runsRoot, 'RUN-A').view_digest);
   assert.ok(list.every((r) => ID_PATTERN.test(r.run_id)));
   assert.deepEqual(listRuns(join(workspace, 'no-such-root')), []);
+  // The run list carries each stage's state, in stage-graph order, for the mini pipeline strip.
+  const va = readRun(a.assembly.runsRoot, 'RUN-A');
+  assert.deepEqual(sa?.stage_states, va.stage_graph.map((s) => ({ stage_id: s.stage_id, state: s.state })));
+  assert.equal(sa?.stage_states.find((s) => s.stage_id === 'plan-decision')?.state, 'WAITING_HUMAN');
+  assert.ok(sb?.stage_states.every((s) => s.state !== 'DISPATCHED_AWAITING_RESULT' && s.state !== 'WAITING_HUMAN'));
 });
 
 test('DASH-18: no attempt carries an effective model; configured models come from the retained profile only', async () => {

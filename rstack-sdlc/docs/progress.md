@@ -1561,3 +1561,13 @@ Added after commit `19f3f77`; the record above is left as it was written.
 - **Scratch space.** On the owner's "remove what could be removed", the contents of the 8,622 scratch directories of 2026-10-03 and 2026-10-04 under `tests/.tmp/` were deleted; about 3,080 remain as shells holding only copies of the fixture `package.json` that another process had open. Eight loose files in `tests/.tmp/` were kept. Drive C: then had about 1.8 GB free.
 
 Status unchanged: findings 1 to 3 `FIXED_BY_BUILDER / AWAITING INDEPENDENT VERIFICATION`; not approved for S6; `COPILOT_VALIDATED`: NO. This addendum is uncommitted.
+
+## Live dashboard: Mission Control redesign — 2026-10-11
+
+Implemented per [live-dashboard/06](live-dashboard/06-mission-control-redesign.md) and [07](live-dashboard/07-mission-control-implementation-plan.md); decision record D-DASH-MC. Uncommitted on `feat/rstack-sdlc-dashboard-mission-control` (spec commit `41db9fb`).
+
+- Page: new modules `derive.js`, `motion.js`, `flow.js`, `lanes.js`, `feed.js`, `live.js`, `clock.js`, `alerts.js`, `dom.js`; `app.js`, `views.js`, `app.css`, `index.html` reworked; `graph.js` removed. Read model: `RunSummary.stage_states`. Package: 62 files (13 page files).
+- Tests: three unit files for the pure modules; the browser test rewritten for the new page; package, architecture and file-count tests updated. Evidence class: offline checks against SIMULATED fixture runs; nothing here is host evidence.
+- Known: the server test "a run reaching a terminal state while the service runs gets its report…" fails about half the time on the unchanged baseline too (3 of 6 runs at `41db9fb`); the browser theme subtest timed out once in two runs. Neither was hardened, by the owner's direction.
+- Final full run: 306 tests, 303 pass, 2 fail, 1 skipped; the two failures are the recorded Windows `EPERM` rename in `writeSnapshot` (RC3 and the provenance test), which passed in the run before. Typecheck and scope check pass.
+- Demo: `node scripts/dashboard-demo.ts --no-screenshots --replay` steps a fresh run through the whole pipeline, one engine call every 5 s, to watch the motion.
