@@ -4,8 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RSTACK Live view mockup</title>
-<!-- Visual reference for 06-mission-control-redesign.md. SIMULATED content; fixed-width mockup, not the build.
-     Animations loop here for preview only; in the product each plays once per real journal event. -->
+<!-- Visual reference for 06-mission-control-redesign.md, updated 2026-10-11 to match the build merged in PR #5.
+     SIMULATED content; a fixed-width illustration, not the build. The code in rstack-sdlc/dashboard/web/ and the
+     demo replay (node scripts/dashboard-demo.ts --no-screenshots --replay) are authoritative where they differ.
+     Preview loops: the hand-off packet, card pop, feed slide-in and finish sweep repeat every 6 s here so they can be
+     seen; in the product each plays once per committed journal event. The only real loops are the calm glow while a
+     dispatch awaits its result and the amber pulse while a human is needed. -->
+<style>.mock-note { max-width: 1240px; margin: 0 auto 16px; padding: 10px 14px; border-left: 3px solid #2b5fd9; background: #fff; color: #333; font-size: 13px; }
+.mock-note ul { margin: 6px 0 0; padding-left: 18px; }</style>
 <style>
 :root { --border: #d1d1d6; --text-secondary: #86868b; }
 body { margin: 0; padding: 24px; background: #f5f5f7; color: #1d1d1f; font: 14px/1.5 "Segoe UI", system-ui, sans-serif; }
@@ -43,14 +49,21 @@ body { margin: 0; padding: 24px; background: #f5f5f7; color: #1d1d1f; font: 14px
   .lv-mode span { padding: 4px 13px; color: var(--muted); }
   .lv-mode span.on { background: #1d3366; color: #fff; font-weight: 650; }
   .lv-live { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; color: #8ff0c8; border: 1px solid #1f5a49; padding: 3px 10px; border-radius: 99px; background: #0a1f1a; }
+  .lv-ver { font-size: 12px; color: var(--muted); }
+  .lv-btn { font-size: 12px; padding: 4px 11px; border-radius: 9px; border: 1px solid var(--line-2); background: var(--panel); color: var(--text); white-space: nowrap; }
+  .lv-seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 9px; overflow: hidden; font-size: 12px; }
+  .lv-seg span { padding: 4px 9px; color: var(--muted); }
+  .lv-seg span.on { background: #e3ebff; color: #070b16; }
+  .lv-foot { margin: 0; font-size: 12px; color: #7383aa; }
   .lv-live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: lv-beat 4s infinite; }
   @keyframes lv-beat { 0% { box-shadow: 0 0 0 0 #34d399aa; } 12% { box-shadow: 0 0 0 7px #34d39900; } 100% { box-shadow: 0 0 0 0 #34d39900; } }
   /* hero */
   .lv-main { padding: 20px 22px 24px; display: grid; gap: 18px; }
   .lv-hero { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; }
   .lv-avatar { position: relative; width: 62px; height: 62px; border-radius: 18px; display: grid; place-items: center; font-weight: 800; font-size: 17px; color: #fff; background: linear-gradient(135deg, var(--developer), #6a4dff); box-shadow: 0 8px 26px #3f6bff66; }
-  .lv-avatar::after { content: ""; position: absolute; inset: -8px; border-radius: 24px; border: 2px dashed #5aa8ff77; animation: lv-orbit-sq 3.2s ease-in-out infinite; }
-  @keyframes lv-orbit-sq { 0%, 100% { opacity: .35; transform: scale(.97); } 50% { opacity: 1; transform: scale(1.03); } }
+  .lv-avatar::after { content: ""; position: absolute; inset: 0; border-radius: inherit; outline: 2px dashed #5aa8ff99; outline-offset: 5px; animation: lv-glow 3.2s ease-in-out infinite; }
+  /* Real loop: the calm glow while a dispatch awaits its result (opacity only). */
+  @keyframes lv-glow { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
   .lv-h1 { font-size: 25px; font-weight: 750; letter-spacing: -.015em; color: #fff; }
   .lv-h1 .st { font-size: 12px; font-weight: 650; vertical-align: middle; margin-left: 10px; padding: 3px 9px; border-radius: 99px; color: var(--info); border: 1px solid #2c5a99; background: #0d2142; letter-spacing: .02em; }
   .lv-sub { color: var(--muted); margin-top: 4px; }
@@ -83,8 +96,8 @@ body { margin: 0; padding: 24px; background: #f5f5f7; color: #1d1d1f; font: 14px
   .lv-spur { position: absolute; top: 0; font-size: 11px; color: var(--faint); border: 1px dotted var(--line-2); border-radius: 99px; padding: 2px 10px; white-space: nowrap; }
   .lv-wire { stroke: #24406f; stroke-width: 2; fill: none; }
   .lv-wire.done { stroke: #2b8f78; filter: drop-shadow(0 0 3px #34d39966); }
-  .lv-wire.hot { stroke: #5aa8ff; stroke-dasharray: 6 7; animation: lv-march 1s linear infinite; filter: drop-shadow(0 0 4px #5aa8ffaa); }
-  @keyframes lv-march { to { stroke-dashoffset: -13; } }
+  /* The wire into the current stage is lit and dashed, but still; it moves only during a hand-off. */
+  .lv-wire.hot { stroke: #5aa8ff; stroke-dasharray: 6 7; filter: drop-shadow(0 0 4px #5aa8ffaa); }
   .lv-packet { position: absolute; left: 0; top: 0; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px 4px #6fc8ff, 0 0 26px 8px #3f7bff88; offset-path: path("M 1000 87 C 1026 87, 1026 146, 996 146 L 14 146 C -12 146, -12 206, 0 206"); offset-rotate: 0deg; animation: lv-go 6s infinite cubic-bezier(.55,0,.3,1); }
   @keyframes lv-go { 0% { offset-distance: 0%; opacity: 0; } 4% { opacity: 1; } 27% { offset-distance: 100%; opacity: 1; } 32%, 100% { offset-distance: 100%; opacity: 0; } }
   /* vitals */
@@ -99,8 +112,8 @@ body { margin: 0; padding: 24px; background: #f5f5f7; color: #1d1d1f; font: 14px
   .lv-lane { position: relative; height: 14px; border-radius: 4px; background: #0a1124; border: 1px solid #16213d; }
   .lv-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: var(--c); box-shadow: 0 0 10px var(--c); opacity: .9; }
   .lv-bar.tick { width: 3px !important; box-shadow: none; }
-  .lv-bar.open { background: repeating-linear-gradient(-45deg, var(--developer) 0 6px, #2c5fb8 6px 12px); background-size: 17px 17px; animation: lv-stripe 1.2s linear infinite; box-shadow: 0 0 12px #60a5fa88; }
-  @keyframes lv-stripe { to { background-position: 17px 0; } }
+  /* An open segment has a static hatch; only its width grows, with the real clock. */
+  .lv-bar.open { background: repeating-linear-gradient(-45deg, var(--developer) 0 6px, #2c5fb8 6px 12px); box-shadow: 0 0 12px #60a5fa88; }
   .lv-now { position: absolute; top: 10px; bottom: 10px; right: 16px; width: 1px; background: #5aa8ff; box-shadow: 0 0 6px #5aa8ff; }
   .lv-now::before { content: "now"; position: absolute; top: -2px; right: 5px; font-size: 10px; color: #8fc4ff; }
   .lv-axis { grid-column: 2; display: flex; justify-content: space-between; color: var(--faint); font-size: 10.5px; }
@@ -144,8 +157,24 @@ body { margin: 0; padding: 24px; background: #f5f5f7; color: #1d1d1f; font: 14px
   @media (prefers-reduced-motion: reduce) { .lv *, .lv-var * , .lv-var { animation: none !important; } }
 </style>
 
-<h2>The combined Live view: B's structure with A's look</h2>
-<p class="subtitle">The full Live screen for a run whose Developer was just dispatched. Below it are the three other moments that matter most. Animations loop here for preview; in the product each plays once per real journal event.</p>
+<h2>RSTACK Mission Control: the Live view</h2>
+<p class="subtitle">The Live screen for a run whose Developer was just dispatched, as built in PR #5. Below it are the three other moments that matter most.</p>
+<div class="mock-note">
+  <strong>A fixed-width illustration, not the build.</strong> Where they differ, the code in <code>rstack-sdlc/dashboard/web/</code> and the demo replay (<code>node scripts/dashboard-demo.ts --no-screenshots --replay</code>) are authoritative.
+  <ul>
+    <li><strong>Motion here is a preview.</strong> The hand-off packet, card pop, feed slide-in and finish sweep repeat every 6 s so they can be seen. In the product each plays <em>once</em>, when a journal event is committed. The Live dot beats here every 4 s; in the product it beats once per real server heartbeat.</li>
+    <li><strong>The only real loops</strong> are the calm glow around the current card and the agent tile while a dispatch awaits its result, and the amber pulse while a human is needed. A blocked or finished run is still.</li>
+    <li><strong>Not shown here:</strong>
+      <ul>
+        <li>the light theme</li>
+        <li>the Inspect view (timeline, attempts, tests, audits, reviews, evidence, problems)</li>
+        <li>the landing page with run tiles</li>
+        <li>full screen</li>
+        <li>the responsive layout: 7, then 5 cards per row, then a vertical list</li>
+      </ul>
+    </li>
+  </ul>
+</div>
 
 <div class="lv-frame">
 <div class="lv">
@@ -155,14 +184,18 @@ body { margin: 0; padding: 24px; background: #f5f5f7; color: #1d1d1f; font: 14px
     <div class="lv-counts"><span><span class="lv-dot" style="--c:var(--info)"></span>5 active</span><span class="needs"><span class="lv-dot" style="--c:var(--human)"></span>2 need you</span><span><span class="lv-dot" style="--c:var(--danger)"></span>1 blocked</span><span><span class="lv-dot" style="--c:var(--ok)"></span>1 done</span></div>
     <div class="lv-sp"></div>
     <div class="lv-mode"><span class="on">Live</span><span>Inspect</span></div>
-    <span class="lv-live"><i></i>Live · journal v14</span>
+    <span class="lv-live"><i></i>Live</span>
+    <span class="lv-ver">journal v14</span>
+    <span class="lv-btn">Pause</span>
+    <span class="lv-btn">⤢ Full screen</span>
+    <span class="lv-seg"><span>Light</span><span class="on">Dark</span><span>System</span></span>
   </div>
 
   <div class="lv-main">
     <div class="lv-hero">
       <div class="lv-avatar">DEV</div>
       <div>
-        <div class="lv-h1">Waiting on the Developer<span class="st">◇ DISPATCHED · AWAITING RESULT</span></div>
+        <div class="lv-h1">Waiting on the Developer<span class="st">◇ Dispatched · awaiting result</span></div>
         <div class="lv-sub">Dispatched <b class="clk" data-start="192">3:12</b> ago · attempt implement-1 · retries 0 of 2 used · Sonnet 5 configured <span style="color:var(--faint)">(effective model not observed)</span></div>
       </div>
       <div class="lv-next">Run time<span class="big clk" data-start="1421">23:41</span>next: Verification · Engine</div>
@@ -189,25 +222,25 @@ body { margin: 0; padding: 24px; background: #f5f5f7; color: #1d1d1f; font: 14px
           <div class="lv-card done" style="left:0;top:51px;--c:var(--planner)"><div class="hd"><span class="lv-badge">PL</span><span class="l">Intake</span></div><div class="r">Planner</div><div class="ft"><span>✓ accepted</span><span>0:48</span></div></div>
           <div class="lv-card done" style="left:145px;top:51px;--c:var(--planner)"><div class="hd"><span class="lv-badge">PL</span><span class="l">Specification</span></div><div class="r">Planner</div><div class="ft"><span>✓ accepted</span><span>2:10</span></div></div>
           <div class="lv-card done" style="left:290px;top:51px;--c:var(--planner)"><div class="hd"><span class="lv-badge">PL</span><span class="l">Planning</span></div><div class="r">Planner</div><div class="ft"><span>✓ accepted</span><span>3:41</span></div></div>
-          <div class="lv-card done" style="left:435px;top:51px;--c:var(--auditor)"><div class="hd"><span class="lv-badge">AU</span><span class="l">Plan audit</span></div><div class="r">Plan Auditor · HOLDS</div><div class="ft"><span>✓ accepted</span><span>1:56</span></div></div>
-          <div class="lv-card done" style="left:580px;top:51px;--c:var(--engine)"><div class="hd"><span class="lv-badge">EN</span><span class="l">Brief</span></div><div class="r">Engine</div><div class="ft"><span>✓ rendered</span><span>0:01</span></div></div>
-          <div class="lv-card done" style="left:725px;top:51px;--c:var(--you)"><div class="hd"><span class="lv-badge">YOU</span><span class="l">Your decision</span></div><div class="r">proceed · you</div><div class="ft"><span>✓ decided</span><span>6:02</span></div></div>
-          <div class="lv-card done" style="left:870px;top:51px;--c:var(--tester)"><div class="hd"><span class="lv-badge">TE</span><span class="l">Tester proof</span></div><div class="r">Tester · 8 tests</div><div class="ft"><span>✓ accepted</span><span>2:37</span></div></div>
+          <div class="lv-card done" style="left:435px;top:51px;--c:var(--auditor)"><div class="hd"><span class="lv-badge">AU</span><span class="l">Plan audit</span></div><div class="r">Plan Auditor</div><div class="ft"><span>✓ accepted</span><span>1:56</span></div></div>
+          <div class="lv-card done" style="left:580px;top:51px;--c:var(--engine)"><div class="hd"><span class="lv-badge">EN</span><span class="l">Brief</span></div><div class="r">Engine</div><div class="ft"><span>✓ done</span><span>0:01</span></div></div>
+          <div class="lv-card done" style="left:725px;top:51px;--c:var(--you)"><div class="hd"><span class="lv-badge">YOU</span><span class="l">Human decision</span></div><div class="r">You</div><div class="ft"><span>✓ decided</span><span>6:02</span></div></div>
+          <div class="lv-card done" style="left:870px;top:51px;--c:var(--tester)"><div class="hd"><span class="lv-badge">TE</span><span class="l">Tester proof</span></div><div class="r">Tester</div><div class="ft"><span>✓ accepted</span><span>2:37</span></div></div>
 
-          <div class="lv-card cur" style="left:0;top:170px;--c:var(--developer)"><div class="hd"><span class="lv-badge">DEV</span><span class="l">Developer</span></div><div class="r">implement-1</div><div class="ft"><span>◇ awaiting</span><span class="clk" data-start="192">3:12</span></div></div>
+          <div class="lv-card cur" style="left:0;top:170px;--c:var(--developer)"><div class="hd"><span class="lv-badge">DEV</span><span class="l">Developer</span></div><div class="r">Developer</div><div class="ft"><span>◇ awaiting result</span><span class="clk" data-start="192">3:12</span></div></div>
           <div class="lv-card todo" style="left:145px;top:170px"><div class="hd"><span class="lv-badge">EN</span><span class="l">Verification</span></div><div class="r">Engine</div><div class="ft"><span>○ not reached</span></div></div>
           <div class="lv-card todo" style="left:290px;top:170px"><div class="hd"><span class="lv-badge">CR</span><span class="l">Technical review</span></div><div class="r">Code Reviewer</div><div class="ft"><span>○ not reached</span></div></div>
           <div class="lv-card todo" style="left:435px;top:170px"><div class="hd"><span class="lv-badge">EN</span><span class="l">PR review packet</span></div><div class="r">Engine</div><div class="ft"><span>○ not reached</span></div></div>
           <div class="lv-card todo" style="left:580px;top:170px"><div class="hd"><span class="lv-badge">PR</span><span class="l">PR review</span></div><div class="r">PR Reviewer</div><div class="ft"><span>○ not reached</span></div></div>
-          <div class="lv-card todo" style="left:725px;top:170px"><div class="hd"><span class="lv-badge">EN</span><span class="l">Proposal</span></div><div class="r">Engine · local only</div><div class="ft"><span>○ not reached</span></div></div>
+          <div class="lv-card todo" style="left:725px;top:170px"><div class="hd"><span class="lv-badge">EN</span><span class="l">Proposal</span></div><div class="r">Engine</div><div class="ft"><span>○ not reached</span></div></div>
         </div>
       </div>
       <div class="lv-panel">
         <h3>Run vitals</h3>
         <div class="lv-vitals">
-          <div class="lv-vital"><div class="k">Hand-offs accepted</div><div class="v">7 <small>of 13 stages</small></div></div>
+          <div class="lv-vital"><div class="k">Stages completed</div><div class="v">7 <small>of 13</small></div></div>
           <div class="lv-vital"><div class="k">Agent attempts</div><div class="v">6 <small>0 failed</small></div></div>
-          <div class="lv-vital"><div class="k">Tests run by Tester</div><div class="v ok">8 ✓ <small>0 ✗</small></div></div>
+          <div class="lv-vital"><div class="k">Tests, proof baseline</div><div class="v"><span style="color:var(--ok)">4 ✓</span> 1 ✗</div></div>
           <div class="lv-vital"><div class="k">Plan audit budget</div><div class="v">1 <small>of 2 used</small></div></div>
           <div class="lv-vital"><div class="k">Time waiting on you</div><div class="v">6:02</div></div>
         </div>
@@ -237,6 +270,7 @@ body { margin: 0; padding: 24px; background: #f5f5f7; color: #1d1d1f; font: 14px
         </div>
       </div>
     </div>
+    <p class="lv-foot">Times are engine commit times. A dispatch that awaits its result is not proof that a model is executing.</p>
   </div>
 </div>
 </div>
@@ -244,19 +278,19 @@ body { margin: 0; padding: 24px; background: #f5f5f7; color: #1d1d1f; font: 14px
 <div class="lv-variants">
   <div class="lv-var wait">
     <div class="tag">When it needs you</div>
-    <div class="row"><div class="av">!</div><div><h4>Your decision is needed · <span class="clk" data-start="362">6:02</span></h4><p>Plan audit HOLDS, 0 findings. Allowed: proceed, amend, second-audit, pause, reject.</p></div></div>
-    <div class="cta"><span class="p">Open the brief (round 1)</span><span>Decide in the Coordinator chat</span></div>
+    <div class="row"><div class="av">YOU</div><div><h4>Your plan decision is needed</h4><p>Waiting <span class="clk" data-start="362">6:02</span> · audit round 1: HOLDS, 0 blocking finding(s), 2 item(s) not checked. Allowed: proceed, amend, second-audit, pause, reject.</p></div></div>
+    <div class="cta"><span class="p">Open the brief (round 1)</span><span>Decide in the Coordinator chat. This dashboard records nothing.</span></div>
     <div class="strip"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </div>
   <div class="lv-var block">
     <div class="tag">When it's blocked</div>
     <div class="row"><div class="av">■</div><div><h4>Blocked at Technical review</h4><p><code>REVIEW_REJECTED</code>: the review of the candidate returned REJECT. No recovery path is recorded; a fix needs a new run.</p></div></div>
-    <div class="cta"><span>See the 1 finding</span><span>Open the run report</span></div>
+    <div class="cta"><span>See the findings</span><span>Open the run report</span></div>
     <div class="strip"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </div>
   <div class="lv-var done">
     <div class="tag">When it finishes</div>
-    <div class="row"><div class="av">✓</div><div><h4>Local PR proposal ready</h4><p>13 of 13 stages accepted in 41:07. Not published: no remote pull request was created.</p></div></div>
+    <div class="row"><div class="av">✓</div><div><h4>Local PR proposal ready <span style="font-size:11px;font-weight:650;color:#34d399;border:1px solid #1f5a49;border-radius:99px;padding:1px 8px;vertical-align:middle">✓ Completed</span></h4><p>13 of 13 stages accepted in 41:07. Not published: no remote pull request was created.</p></div></div>
     <div class="cta"><span>Open the proposal</span><span>Open the run report</span></div>
     <div class="strip"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </div>
