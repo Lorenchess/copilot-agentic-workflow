@@ -3,7 +3,7 @@
 **Document:** `06-mission-control-redesign.md`
 **Date:** 2026-10-11. **Author:** Claude (Opus 5.5), from a design session with the owner.
 **Baseline:** `main` at `52ac37a`, branch `feat/rstack-sdlc-dashboard-mission-control`.
-**Status:** design agreed section by section in conversation with the owner; the owner then said "go ahead and implement it" (2026-10-11). Implemented on the branch per [07 — implementation plan](07-mission-control-implementation-plan.md); not committed. Section 11 lists where the build differs from the text as first written. Nothing here is host evidence.
+**Status:** design agreed section by section in conversation with the owner; the owner then said "go ahead and implement it" (2026-10-11). Implemented per [07 — implementation plan](07-mission-control-implementation-plan.md) and merged to `main` in PR #5 (`ba0b0f4`). Section 11 lists where the build differs from the text as first written. Nothing here is host evidence.
 **Visual reference:** [mockups/06-live-view-mockup.html](mockups/06-live-view-mockup.html) (fixed-width, SIMULATED, animations looped for preview only).
 **Related documents:**
 - [01 — Product and UX](01-product-and-ux.md) (section 3.5 is amended by section 3 below)
