@@ -14,7 +14,9 @@
     "check:scope": "node scripts/check-scope.ts",
     "rstack": "node scripts/rstack.ts",
     "demo:synthetic": "node scripts/synthetic-run.ts",
-    "generate:package": "node scripts/generate-package.ts"
+    "generate:package": "node scripts/generate-package.ts",
+    "demo:dashboard": "node scripts/dashboard-demo.ts",
+    "dashboard": "node scripts/rstack.ts dashboard"
   },
   "devDependencies": {
     "@types/node": "24.19.1",

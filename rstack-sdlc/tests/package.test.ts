@@ -40,7 +40,8 @@ const AGENT_AND_SKILL_FILES = [
   '.github/skills/rstack-sdlc-planning-records/SKILL.md',
 ];
 
-// The engine and installer sources the two commands reach, and nothing else.
+// The engine, installer, and dashboard sources the three entry points reach,
+// the dashboard page files, and nothing else.
 const RUNTIME_FILES = [
   'runtime/adapters/copilot-vscode/install.ts',
   'runtime/adapters/local-pr-proposal/index.ts',
@@ -65,6 +66,22 @@ const RUNTIME_FILES = [
   'runtime/core/engine/tree.ts',
   'runtime/core/policies/pr-review-procedure.ts',
   'runtime/core/policies/workflow.ts',
+  'runtime/core/read-model/contracts.ts',
+  'runtime/core/read-model/list-runs.ts',
+  'runtime/core/read-model/project-run.ts',
+  'runtime/core/read-model/read-run.ts',
+  'runtime/core/read-model/report-html.ts',
+  'runtime/core/read-model/workflow-def.ts',
+  'runtime/dashboard/lifecycle.ts',
+  'runtime/dashboard/main.ts',
+  'runtime/dashboard/report-writer.ts',
+  'runtime/dashboard/server.ts',
+  'runtime/dashboard/watch.ts',
+  'runtime/dashboard/web/app.css',
+  'runtime/dashboard/web/app.js',
+  'runtime/dashboard/web/graph.js',
+  'runtime/dashboard/web/index.html',
+  'runtime/dashboard/web/views.js',
   'runtime/package.json',
   'runtime/profiles/trial-v2.json',
   'runtime/scripts/assembly.ts',
@@ -110,6 +127,14 @@ test('the runtime is what the commands import, the requirements are stated, and 
   }
   assert.deepEqual(runtimeSources(), RUNTIME_FILES.filter((f) => f.endsWith('.ts')).map((f) => f.slice('runtime/'.length)));
   assert.deepEqual(manifest.engine, { entry: 'runtime/scripts/rstack.ts', installer: 'runtime/scripts/install-package.ts', resolution: 'INSTALL_TIME_ABSOLUTE_PATH' });
+  // The dashboard page files ship beside the server that serves them, byte for byte.
+  for (const asset of ['app.css', 'app.js', 'graph.js', 'index.html', 'views.js']) {
+    assert.equal(readFileSync(join(out, 'runtime/dashboard/web', asset), 'utf8'), readFileSync(join(PACKAGE_ROOT, 'dashboard/web', asset), 'utf8').replaceAll('\r\n', '\n'));
+  }
+  // The page loads scripts and styles from itself only: no remote asset.
+  const page = readFileSync(join(out, 'runtime/dashboard/web/index.html'), 'utf8');
+  assert.doesNotMatch(page, /https?:\/\//);
+  assert.doesNotMatch(readFileSync(join(out, 'runtime/dashboard/web/app.js'), 'utf8'), /https?:\/\/|innerHTML|eval\(/);
   // Node is required and not bundled; the package does not claim to be self-contained.
   const nodeRange = (JSON.parse(readFileSync(join(PACKAGE_ROOT, 'package.json'), 'utf8')) as { engines: { node: string } }).engines.node;
   assert.deepEqual(manifest.runtime_requirements, { node: nodeRange, bundled: false, third_party_packages: 'none' });

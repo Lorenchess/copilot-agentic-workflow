@@ -89,8 +89,8 @@ function relocated(label: string): { base: string; pkg: string; app: string; wor
   const requests = join(base, 'request files');
   for (const dir of [workspace, cwd, requests]) mkdirSync(dir);
   cpSync(REQUEST, join(requests, 'REQ-001.md'));
-  // Bounded: the copies are the package (under 400 KB) and the sample application, not the project.
-  assert.ok(bytesOf(pkg) < 400_000, `package is ${bytesOf(pkg)} bytes`);
+  // Bounded: the copies are the package (under 800 KB, dashboard included) and the sample application, not the project.
+  assert.ok(bytesOf(pkg) < 800_000, `package is ${bytesOf(pkg)} bytes`);
   assert.ok(bytesOf(app) < 50_000);
   return { base, pkg, app, workspace, cwd, request: join(requests, 'REQ-001.md') };
 }
