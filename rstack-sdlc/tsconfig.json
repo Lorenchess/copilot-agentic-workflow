@@ -10,9 +10,22 @@
     "allowImportingTsExtensions": true,
     "noUnusedLocals": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "skipLibCheck": true
   },
-  "include": ["core", "adapters", "scripts", "evals", "tests"],
-  "exclude": ["node_modules", "dist", "tests/.tmp"]
+  "include": [
+    "core",
+    "adapters",
+    "dashboard",
+    "scripts",
+    "evals",
+    "tests"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests/.tmp"
+  ]
 }

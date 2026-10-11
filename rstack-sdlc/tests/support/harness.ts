@@ -40,10 +40,12 @@ export async function newRun(
   label: string,
   engine: Partial<EngineOptions> = {},
   transportClass: TransportClass = 'SIMULATED',
+  wantedRunId?: string,
+  workspaceDir?: string,
 ): Promise<TestRun> {
-  const workspace = tmpDir(label);
+  const workspace = workspaceDir ?? tmpDir(label);
   const assembly = createAssembly(workspace, { engine: { lockTimeoutMs: 400, ...engine } });
-  const started = await assembly.start({ request: { path: REQUEST }, appDir: APP, profilePath: PROFILE, transportClass });
+  const started = await assembly.start({ request: { path: REQUEST }, appDir: APP, profilePath: PROFILE, transportClass, runId: wantedRunId });
   assert.equal(started.code, 'STARTED');
   const runId = started.run_id as string;
   runsRoots.set(runId, assembly.runsRoot);
@@ -163,17 +165,23 @@ function parseCli(status: number | null, stdout: string, stderr: string): CliRes
   return { status, reply, stderr };
 }
 
+// The suite never starts a dashboard beside a run unless a test asks for one:
+// every child process inherits this, and a test that wants the real thing
+// passes RSTACK_DASHBOARD=on itself.
+process.env.RSTACK_DASHBOARD ??= 'off';
+const NO_DASHBOARD = { RSTACK_DASHBOARD: 'off' };
+
 export function cli(args: string[], nodeArgs: string[] = [], env: NodeJS.ProcessEnv = {}): CliResult {
   const r = spawnSync(process.execPath, [...nodeArgs, CLI, ...args], {
     encoding: 'utf8',
-    env: { ...process.env, ...env },
+    env: { ...NO_DASHBOARD, ...process.env, ...env },
   });
   return parseCli(r.status, r.stdout, r.stderr);
 }
 
 export function cliAsync(args: string[]): Promise<CliResult> {
   return new Promise((resolvePromise, reject) => {
-    const child = spawn(process.execPath, [CLI, ...args], { stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, [CLI, ...args], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...NO_DASHBOARD, ...process.env } });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d: Buffer) => (stdout += d.toString()));

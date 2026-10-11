@@ -13,6 +13,16 @@
 //                                  [--provenance HUMAN_RECORDED|SCRIPTED] [--answer-file <file>] [--amendments-file <file>]
 //   node scripts/rstack.ts resume  --workspace <dir> --run <id>
 //   node scripts/rstack.ts abandon --workspace <dir> --run <id> --attempt <id> (--reason <plain text> | --reason-file <file>)
+//   node scripts/rstack.ts dashboard --workspace <dir> [--do start|status|stop] [--dashboard-port <n>]
+//   node scripts/rstack.ts report  --workspace <dir> --run <id> [--force]
+//
+// `start` also makes sure the local dashboard is running for the workspace
+// (reusing a live one) and reports it under `dashboard` in the reply, unless
+// --no-dashboard is given or RSTACK_DASHBOARD=off is set. The engine's reply
+// and exit code never depend on the dashboard. A command whose reply is a
+// terminal directive (DONE or BLOCKED) also writes the run's HTML report into
+// `.rstack/reports/<run-id>/` and reports it under `report`; a failure to
+// write it is reported there too and changes nothing else.
 //
 // Text a human said (an answer, who recorded a decision, an abandon reason)
 // is read from a file: the file's bytes are the text, as UTF-8, with nothing
@@ -26,10 +36,13 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import type { Reply } from '../core/engine/engine.ts';
+import { dashboardStatus, ensureDashboard, runUrl, stopDashboard } from '../dashboard/lifecycle.ts';
+import { writeReport } from '../dashboard/report-writer.ts';
 import { createAssembly } from './assembly.ts';
 
 const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const COMMANDS = ['start', 'status', 'next', 'submit', 'decide', 'resume', 'abandon'];
+const COMMANDS = ['start', 'status', 'next', 'submit', 'decide', 'resume', 'abandon', 'dashboard', 'report'];
+const TRANSITIONING = ['next', 'submit', 'decide', 'abandon'];
 
 // Letters, digits, spaces and . , _ @ + - : unchanged inside double quotes by cmd.exe, PowerShell, and POSIX shells.
 const PLAIN_TEXT = /^[\p{L}\p{N} .,_@+-]*$/u;
@@ -100,6 +113,10 @@ async function main(): Promise<Reply> {
       'amendments-file': { type: 'string' },
       reason: { type: 'string' },
       'reason-file': { type: 'string' },
+      'no-dashboard': { type: 'boolean' },
+      'dashboard-port': { type: 'string' },
+      do: { type: 'string' },
+      force: { type: 'boolean' },
     },
   });
   const command = positionals[0];
@@ -109,10 +126,30 @@ async function main(): Promise<Reply> {
   if (lockTimeoutMs !== undefined && !(Number.isInteger(lockTimeoutMs) && lockTimeoutMs > 0)) {
     usage('--lock-timeout-ms must be a positive integer');
   }
-  const assembly = createAssembly(resolve(values.workspace), { engine: lockTimeoutMs ? { lockTimeoutMs } : {} });
+  const workspace = resolve(values.workspace);
+  const dashboardPort = values['dashboard-port'];
+  if (dashboardPort !== undefined && !/^[0-9]{1,5}$/.test(dashboardPort)) usage('--dashboard-port must be a port number');
+
+  // The dashboard's own commands touch no run.
+  if (command === 'dashboard') {
+    const action = values.do ?? 'status';
+    if (action === 'start') {
+      const d = await ensureDashboard(workspace, { disabled: values['no-dashboard'], ...(dashboardPort !== undefined ? { port: Number(dashboardPort) } : {}) });
+      return { ok: d.status !== 'UNAVAILABLE', code: d.status, run_id: null, state_version: null, directive: null, dashboard: d };
+    }
+    if (action === 'stop') {
+      const s = await stopDashboard(workspace);
+      return { ok: s.status === 'STOPPED' || s.status === 'NOT_RUNNING', code: s.status, run_id: null, state_version: null, directive: null, ...s };
+    }
+    if (action !== 'status') usage('--do must be start, status, or stop');
+    const s = await dashboardStatus(workspace);
+    return { ok: true, code: s.status, run_id: null, state_version: null, directive: null, ...s };
+  }
+
+  const assembly = createAssembly(workspace, { engine: lockTimeoutMs ? { lockTimeoutMs } : {} });
 
   if (command === 'start') {
-    return assembly.start({
+    const started = await assembly.start({
       source: values.source,
       sink: values.sink,
       request: { path: values.request, text: values['request-text'], request_id: values['request-id'] },
@@ -122,12 +159,23 @@ async function main(): Promise<Reply> {
       runId: values['run-id'],
       transportClass: values.simulated ? 'SIMULATED' : 'MANUAL_TRANSPORT',
     });
+    if (!started.ok || !started.run_id) return started;
+    // The run exists; the dashboard is a companion and can only add to the reply.
+    const d = await ensureDashboard(workspace, { disabled: values['no-dashboard'], ...(dashboardPort !== undefined ? { port: Number(dashboardPort) } : {}) });
+    const entry = d.entry_url && d.url ? runUrl({ url: d.url, token: d.entry_url.slice(d.entry_url.indexOf('?t=') + 3) }, started.run_id) : null;
+    if (entry) process.stderr.write(`RSTACK dashboard: ${entry}\n`);
+    return { ...started, dashboard: { ...d, run_url: entry } };
   }
 
   const run = values.run;
   if (!run) usage('--run is required');
   const { engine } = assembly;
   if (command === 'status') return engine.status(run);
+  if (command === 'report') {
+    const r = writeReport(workspace, run, { force: values.force });
+    if (r.status === 'WRITTEN' || r.status === 'UNCHANGED') process.stderr.write(`RSTACK report: ${r.path}\n`);
+    return { ok: r.status === 'WRITTEN' || r.status === 'UNCHANGED', code: r.status, run_id: run, state_version: null, directive: null, report: r };
+  }
   if (command === 'next') return engine.next(run);
   if (command === 'resume') return engine.resume(run);
   if (command === 'abandon') {
@@ -181,9 +229,29 @@ async function main(): Promise<Reply> {
   return command === 'submit' ? engine.submit(run, raw) : engine.decide(run, raw);
 }
 
-const reply = await main().catch((e: unknown) => {
-  if (e instanceof Refused) return e.reply;
-  throw e;
-});
+// After a transition into a terminal directive, the derived report is written.
+// Its outcome is reported beside the engine's reply and never changes it.
+function withTerminalReport(reply: Reply): Reply {
+  const command = process.argv[2];
+  const kind = reply.directive?.kind;
+  if (!reply.ok || !reply.run_id || !command || !TRANSITIONING.includes(command) || (kind !== 'DONE' && kind !== 'BLOCKED')) return reply;
+  const workspace = process.argv.indexOf('--workspace');
+  const dir = workspace >= 0 ? process.argv[workspace + 1] : undefined;
+  if (!dir) return reply;
+  try {
+    const r = writeReport(resolve(dir), reply.run_id);
+    if (r.status === 'WRITTEN' || r.status === 'UNCHANGED') process.stderr.write(`RSTACK report: ${r.path}\n`);
+    return { ...reply, report: r };
+  } catch (e) {
+    return { ...reply, report: { status: 'UNAVAILABLE', run_id: reply.run_id, path: null, sha256: null, final_outcome: null, detail: (e as Error).message } };
+  }
+}
+
+const reply = withTerminalReport(
+  await main().catch((e: unknown) => {
+    if (e instanceof Refused) return e.reply;
+    throw e;
+  }),
+);
 process.stdout.write(`${JSON.stringify(reply, null, 2)}\n`);
 process.exitCode = reply.ok ? 0 : 2;

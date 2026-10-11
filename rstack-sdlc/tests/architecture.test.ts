@@ -47,15 +47,35 @@ test('core names no model, vendor, IDE tool, or deferred service', () => {
   }
 });
 
-test('adapters and scripts add no third-party runtime dependency', () => {
+test('adapters, scripts, and the dashboard add no third-party runtime dependency', () => {
   const pkg = JSON.parse(readFileSync(join(PACKAGE_ROOT, 'package.json'), 'utf8')) as Record<string, unknown>;
   assert.equal(pkg.dependencies, undefined, 'no runtime dependencies');
-  for (const dir of ['core', 'adapters', 'scripts']) {
+  for (const dir of ['core', 'adapters', 'scripts', 'dashboard']) {
     for (const file of sourceFiles(dir)) {
       for (const spec of imports(file)) {
         assert.ok(spec.startsWith('node:') || spec.startsWith('.'), `${relative(PACKAGE_ROOT, file)} imports "${spec}"`);
       }
     }
+  }
+});
+
+test('the dashboard never imports an engine command path and the read model never imports the dashboard', () => {
+  // The read model may use the engine's pure replay and readers; the service
+  // and lifecycle may use the read model; nothing in either reaches `start`,
+  // `next`, `submit`, `decide`, `resume`, or `abandon`.
+  const sources = [...sourceFiles('dashboard'), ...sourceFiles('core/read-model')];
+  assert.ok(sources.length >= 10);
+  for (const file of sources) {
+    const text = readFileSync(file, 'utf8');
+    assert.doesNotMatch(text, /engine\.(start|next|submit|decide|resume|abandon)\(|createEngine\(|createAssembly\(/, `${relative(PACKAGE_ROOT, file)} reaches an engine command`);
+    assert.doesNotMatch(text, /quarantineTail|appendEvent|acquireLock|writeSnapshot/, `${relative(PACKAGE_ROOT, file)} uses a run writer`);
+  }
+  for (const file of sourceFiles('core/read-model')) {
+    for (const spec of imports(file)) assert.ok(!spec.includes('dashboard'), `${relative(PACKAGE_ROOT, file)} imports the dashboard`);
+  }
+  // The page never builds markup from text: every node is created and filled through textContent.
+  for (const name of ['app.js', 'views.js', 'graph.js']) {
+    assert.doesNotMatch(readFileSync(join(PACKAGE_ROOT, 'dashboard', 'web', name), 'utf8'), /innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function/, name);
   }
 });
 

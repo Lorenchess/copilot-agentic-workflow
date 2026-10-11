@@ -42,8 +42,12 @@ export const GENERATOR = 'rstack-sdlc/adapters/copilot-vscode/generate.ts';
 export const GENERATOR_VERSION = 4;
 export const HOST = 'copilot-vscode';
 export const EXTENSIONS_SOURCE = 'adapters/copilot-vscode/extensions.json';
-// Commands the installed package must be able to run.
-export const RUNTIME_ENTRIES = ['scripts/rstack.ts', 'scripts/install-package.ts'];
+// Commands the installed package must be able to run: the engine, the
+// installer, and the dashboard server that `start` launches beside a run.
+export const RUNTIME_ENTRIES = ['scripts/rstack.ts', 'scripts/install-package.ts', 'dashboard/main.ts'];
+// The dashboard page, served by the dashboard server from beside itself. Not
+// reached by an import, so listed here; shipped as read, line endings normalized.
+export const RUNTIME_ASSETS = ['dashboard/web/index.html', 'dashboard/web/app.css', 'dashboard/web/app.js', 'dashboard/web/graph.js', 'dashboard/web/views.js'];
 export { PREFIX };
 
 interface AgentSpec {
@@ -442,7 +446,7 @@ export function generatePackage(options: GenerateOptions): PackageManifest {
 
   // The runtime: sources as authored, at the same relative paths, so every
   // relative import resolves inside the package.
-  for (const source of runtime) {
+  for (const source of [...runtime, ...RUNTIME_ASSETS]) {
     const { text, sha256 } = readSource(source);
     emit(`runtime/${source}`, text, 'runtime', source, sha256);
   }

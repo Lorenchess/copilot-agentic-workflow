@@ -31,7 +31,7 @@ import { parseArgs } from 'node:util';
 import { sha256Hex } from '../core/contracts/records.ts';
 
 const PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const COPIED = ['core', 'adapters', 'scripts', 'profiles', 'evals', 'tests', 'package.json', 'tsconfig.json'];
+const COPIED = ['core', 'adapters', 'dashboard', 'scripts', 'profiles', 'evals', 'tests', 'package.json', 'tsconfig.json'];
 
 interface Mutation {
   guard: string;
@@ -1470,6 +1470,88 @@ const MUTATIONS: Mutation[] = [
     replace: '    technical_review.result,\n    technical_review.input_digest,\n    history.journal_digest,\n',
     testFile: 'tests/pr-review.test.ts',
     expectFailing: 'PRR-2: the packet names the exact candidate and the whole evidence set, and the PR reviewer is given exactly that',
+  },
+  // Dashboard guards (cases 178 onward). The viewer must not become a second
+  // authority, a path to run records, or a source of invented observations.
+  {
+    guard: 'the dashboard answers only on a loopback Host',
+    file: 'dashboard/server.ts',
+    find: 'if (!m || (m[2] !== undefined && Number(m[2]) !== port)) {',
+    replace: 'if (false) {',
+    testFile: 'tests/dashboard-server.test.ts',
+    expectFailing: 'DASH-20: the service binds to loopback, refuses foreign Host and Origin values, and needs the token',
+  },
+  {
+    guard: 'a cross-origin request is refused',
+    file: 'dashboard/server.ts',
+    find: 'if (!allowed.includes(origin)) {',
+    replace: 'if (false) {',
+    testFile: 'tests/dashboard-server.test.ts',
+    expectFailing: 'DASH-20: the service binds to loopback, refuses foreign Host and Origin values, and needs the token',
+  },
+  {
+    guard: 'every data route needs the instance token',
+    file: 'dashboard/server.ts',
+    find: "return typeof cookie === 'string' && safeEqual(cookie, options.token);",
+    replace: 'return true;',
+    testFile: 'tests/dashboard-server.test.ts',
+    expectFailing: 'DASH-20: the service binds to loopback, refuses foreign Host and Origin values, and needs the token',
+  },
+  {
+    guard: 'an artifact is served only when the run names its identity',
+    file: 'dashboard/server.ts',
+    find: 'if (!namedIdentities(view).has(arg)) {',
+    replace: 'if (false) {',
+    testFile: 'tests/dashboard-server.test.ts',
+    expectFailing: 'DASH-19: artifacts are served only by identity named in the run, re-hashed, and never by path',
+  },
+  {
+    guard: 'served bytes must still carry the identity the run recorded',
+    file: 'dashboard/server.ts',
+    find: 'if (!refs.includes(actual)) {',
+    replace: 'if (false) {',
+    testFile: 'tests/dashboard-server.test.ts',
+    expectFailing: 'DASH-19: artifacts are served only by identity named in the run, re-hashed, and never by path',
+  },
+  {
+    guard: 'a retained record is read only under its identity',
+    file: 'core/read-model/read-run.ts',
+    find: 'return refOf(bytes) === ref ? bytes : null;',
+    replace: 'return bytes;',
+    testFile: 'tests/read-model.test.ts',
+    expectFailing: 'DASH-15: a run whose retained workflow definition is missing or invalid is unsupported, not reinterpreted',
+  },
+  {
+    guard: 'no attempt is given an effective model the run did not record',
+    file: 'core/read-model/project-run.ts',
+    find: "      superseded,\n      configured_model: configuredModel(profile, role),\n      effective_model: 'NOT_OBSERVED',",
+    replace: "      superseded,\n      configured_model: configuredModel(profile, role),\n      effective_model: 'OBSERVED',",
+    testFile: 'tests/read-model.test.ts',
+    expectFailing: 'DASH-18: no attempt carries an effective model; configured models come from the retained profile only',
+  },
+  {
+    guard: 'the terminal report is written only to the derived area',
+    file: 'dashboard/report-writer.ts',
+    find: 'return join(workspace, ...REPORTS_DIR, runId);',
+    replace: "return join(workspace, '.rstack', 'runs', runId);",
+    testFile: 'tests/report.test.ts',
+    expectFailing: 'the report is written atomically to the derived area, is deterministic, and leaves the run untouched',
+  },
+  {
+    guard: 'every value in the report is escaped',
+    file: 'core/read-model/report-html.ts',
+    find: "const row = (cells: unknown[], tag = 'td'): string => `<tr>${cells.map((c) => `<${tag}>${esc(c)}</${tag}>`).join('')}</tr>`;",
+    replace: "const row = (cells: unknown[], tag = 'td'): string => `<tr>${cells.map((c) => `<${tag}>${String(c)}</${tag}>`).join('')}</tr>`;",
+    testFile: 'tests/report.test.ts',
+    expectFailing: 'every value from a record is escaped: hostile text cannot become markup',
+  },
+  {
+    guard: 'an incomplete journal tail is never shown as an event',
+    file: 'core/read-model/project-run.ts',
+    find: "source_status: input.incomplete_tail_bytes > 0 ? 'INCOMPLETE_TAIL' : 'CURRENT',",
+    replace: "source_status: 'CURRENT',",
+    testFile: 'tests/read-model.test.ts',
+    expectFailing: 'DASH-13: an incomplete journal tail is a diagnostic, never an event',
   },
 ];
 
