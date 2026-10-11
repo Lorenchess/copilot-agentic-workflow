@@ -10,6 +10,8 @@
 
 **Spec:** [06-mission-control-redesign.md](06-mission-control-redesign.md)
 
+**Status:** executed 2026-10-11 (commit `5436ac4`), implemented directly in one session with one builder-side review of the whole change. This plan was written before the code; where names or details differ, the code and spec 06 section 11 are authoritative. Examples: `derive.axis` returns `ms`; the cue effects live in `live.js` (`animate`), not `motion.js`; `player.missed(runId)` counts per run; `createFlow` also exposes `pop`, `sweep` and `redraw`; the demo flags are `--no-screenshots`, `--replay`, `--step-ms`. Full screen (button and `F`) was added later at the owner's request.
+
 ## Global Constraints
 
 - No new runtime or dev dependency; `third_party_packages: 'none'` in the manifest stays true.

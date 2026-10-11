@@ -177,4 +177,6 @@ No Playwright dependency: Node 24 ships a WebSocket client and the build machine
 | `tests/read-model.test.ts`, `tests/dashboard-server.test.ts`, `tests/dashboard-lifecycle.test.ts`, `tests/report.test.ts`, `tests/dashboard-browser.test.ts`, `tests/support/browser.ts`, `tests/support/scenarios.ts` | tests |
 | `tests/sensitivity.ts` | cases for the host check, the token check, the artifact identity re-check, the read-only guard, and the no-fabricated-model guard |
 
+**Later change (2026-10-11), added after this record:** the Mission Control redesign ([06](06-mission-control-redesign.md), commit `5436ac4`) replaced the UI row above: `graph.js` was removed and the page is now `index.html`, `app.css`, `app.js`, `views.js`, `live.js`, `flow.js`, `lanes.js`, `feed.js`, `motion.js`, `derive.js`, `clock.js`, `alerts.js`, `dom.js` (06 section 5.1). `RunSummary` gained `stage_states`. The table above is left as it was written.
+
 Order of work: contracts and projector with fixture tests (DASH-1); read-only loader and report renderer; server and watcher with security tests (DASH-2); UI and browser tests (DASH-3); lifecycle and CLI integration, package generator (DASH-4); demo, screenshots, full validation and records (DASH-5).
