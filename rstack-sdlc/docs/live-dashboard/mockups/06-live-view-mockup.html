@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RSTACK Live view mockup</title>
+<!-- Visual reference for 06-mission-control-redesign.md. SIMULATED content; fixed-width mockup, not the build.
+     Animations loop here for preview only; in the product each plays once per real journal event. -->
+<style>
+:root { --border: #d1d1d6; --text-secondary: #86868b; }
+body { margin: 0; padding: 24px; background: #f5f5f7; color: #1d1d1f; font: 14px/1.5 "Segoe UI", system-ui, sans-serif; }
+.subtitle { color: var(--text-secondary); }
+</style>
+</head>
+<body>
+<style>
+  .lv-frame { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); background: #070b16; display: flex; justify-content: center; }
+  .lv {
+    --bg: #070b16; --panel: #0c1324; --panel-2: #101a31; --line: #1b2744; --line-2: #26355a;
+    --text: #e3ebff; --muted: #8a9cc4; --faint: #55658c;
+    --ok: #34d399; --info: #5aa8ff; --human: #fbbf24; --danger: #f87171;
+    --planner: #a78bfa; --auditor: #e879f9; --you: #fbbf24; --tester: #2dd4bf; --developer: #60a5fa; --reviewer: #f472b6; --prreviewer: #818cf8; --engine: #94a3b8;
+    width: 1240px; box-sizing: border-box; color: var(--text);
+    background: radial-gradient(1100px 380px at 40% -8%, #13254d 0%, var(--bg) 62%);
+    font: 13px/1.45 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  }
+  .lv * { box-sizing: border-box; }
+  .lv .mono { font-family: "Cascadia Code", Consolas, monospace; }
+  /* top bar */
+  .lv-top { display: flex; align-items: center; gap: 16px; padding: 12px 22px; border-bottom: 1px solid var(--line); background: #070b16cc; }
+  .lv-brand { display: flex; align-items: center; gap: 9px; font-weight: 750; letter-spacing: .02em; }
+  .lv-mark { width: 22px; height: 22px; border-radius: 7px; background: conic-gradient(from 200deg, var(--planner), var(--developer), var(--tester), var(--reviewer), var(--planner)); box-shadow: 0 0 14px #5aa8ff66; }
+  .lv-brand small { color: var(--muted); font-weight: 400; letter-spacing: 0; }
+  .lv-switch { display: flex; align-items: center; gap: 10px; padding: 5px 12px; border-radius: 9px; background: var(--panel); border: 1px solid var(--line-2); }
+  .lv-switch b { font-weight: 650; }
+  .lv-switch .caret { color: var(--muted); }
+  .lv-counts { display: flex; gap: 12px; color: var(--muted); font-size: 12px; }
+  .lv-counts span { display: inline-flex; gap: 5px; align-items: center; }
+  .lv-counts .needs { color: var(--human); font-weight: 650; }
+  .lv-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; background: var(--c); }
+  .lv-sp { flex: 1; }
+  .lv-mode { display: inline-flex; border: 1px solid var(--line-2); border-radius: 9px; overflow: hidden; }
+  .lv-mode span { padding: 4px 13px; color: var(--muted); }
+  .lv-mode span.on { background: #1d3366; color: #fff; font-weight: 650; }
+  .lv-live { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; color: #8ff0c8; border: 1px solid #1f5a49; padding: 3px 10px; border-radius: 99px; background: #0a1f1a; }
+  .lv-live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: lv-beat 4s infinite; }
+  @keyframes lv-beat { 0% { box-shadow: 0 0 0 0 #34d399aa; } 12% { box-shadow: 0 0 0 7px #34d39900; } 100% { box-shadow: 0 0 0 0 #34d39900; } }
+  /* hero */
+  .lv-main { padding: 20px 22px 24px; display: grid; gap: 18px; }
+  .lv-hero { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; }
+  .lv-avatar { position: relative; width: 62px; height: 62px; border-radius: 18px; display: grid; place-items: center; font-weight: 800; font-size: 17px; color: #fff; background: linear-gradient(135deg, var(--developer), #6a4dff); box-shadow: 0 8px 26px #3f6bff66; }
+  .lv-avatar::after { content: ""; position: absolute; inset: -8px; border-radius: 24px; border: 2px dashed #5aa8ff77; animation: lv-orbit-sq 3.2s ease-in-out infinite; }
+  @keyframes lv-orbit-sq { 0%, 100% { opacity: .35; transform: scale(.97); } 50% { opacity: 1; transform: scale(1.03); } }
+  .lv-h1 { font-size: 25px; font-weight: 750; letter-spacing: -.015em; color: #fff; }
+  .lv-h1 .st { font-size: 12px; font-weight: 650; vertical-align: middle; margin-left: 10px; padding: 3px 9px; border-radius: 99px; color: var(--info); border: 1px solid #2c5a99; background: #0d2142; letter-spacing: .02em; }
+  .lv-sub { color: var(--muted); margin-top: 4px; }
+  .lv-sub b { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .lv-next { text-align: right; color: var(--muted); font-size: 12px; }
+  .lv-next .big { display: block; font-size: 30px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: -.02em; line-height: 1.1; }
+  /* flow */
+  .lv-flowrow { display: grid; grid-template-columns: 1010px 1fr; gap: 18px; }
+  .lv-panel { background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; }
+  .lv-panel h3 { margin: 0; padding: 11px 14px 0; font-size: 11.5px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .lv-graph { position: relative; height: 262px; margin: 14px 9px 10px; }
+  .lv-graph svg { position: absolute; inset: 0; overflow: visible; }
+  .lv-card { position: absolute; width: 128px; height: 72px; border-radius: 11px; padding: 8px 10px; background: #0f1a33; border: 1px solid var(--line-2); display: grid; grid-template-rows: auto 1fr auto; }
+  .lv-card .hd { display: flex; align-items: center; gap: 7px; }
+  .lv-badge { min-width: 20px; padding: 0 3px; height: 20px; border-radius: 6px; display: grid; place-items: center; font-size: 9.5px; font-weight: 800; color: #0a0f1d; background: var(--c); flex: none; }
+  .lv-card .l { font-weight: 650; font-size: 12.5px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lv-card .r { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .lv-card .ft { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-variant-numeric: tabular-nums; }
+  .lv-card.done { border-color: #1f3d48; }
+  .lv-card.done .ft { color: var(--ok); }
+  .lv-card.done::before, .lv-card.cur::before { content: ""; position: absolute; left: 10px; right: 10px; top: -1px; height: 2px; border-radius: 2px; background: var(--c); box-shadow: 0 0 8px var(--c); }
+  .lv-card.cur { border: 1.5px solid var(--info); background: #10295a; box-shadow: 0 0 22px #3f8cff55; animation: lv-breathe 3.2s ease-in-out infinite, lv-arrive 6s infinite; }
+  .lv-card.cur .ft { color: #a9d0ff; }
+  @keyframes lv-breathe { 0%, 100% { box-shadow: 0 0 14px #3f8cff44; } 50% { box-shadow: 0 0 28px #3f8cff88; } }
+  @keyframes lv-arrive { 0%, 27% { transform: scale(1); } 31% { transform: scale(1.06); } 38%, 100% { transform: scale(1); } }
+  .lv-card.todo { background: transparent; border: 1px dashed var(--line-2); }
+  .lv-card.todo .l { color: var(--faint); }
+  .lv-card.todo .lv-badge { background: transparent; border: 1px solid var(--line-2); color: var(--faint); }
+  .lv-card.todo .r, .lv-card.todo .ft { color: var(--faint); }
+  .lv-spur { position: absolute; top: 0; font-size: 11px; color: var(--faint); border: 1px dotted var(--line-2); border-radius: 99px; padding: 2px 10px; white-space: nowrap; }
+  .lv-wire { stroke: #24406f; stroke-width: 2; fill: none; }
+  .lv-wire.done { stroke: #2b8f78; filter: drop-shadow(0 0 3px #34d39966); }
+  .lv-wire.hot { stroke: #5aa8ff; stroke-dasharray: 6 7; animation: lv-march 1s linear infinite; filter: drop-shadow(0 0 4px #5aa8ffaa); }
+  @keyframes lv-march { to { stroke-dashoffset: -13; } }
+  .lv-packet { position: absolute; left: 0; top: 0; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px 4px #6fc8ff, 0 0 26px 8px #3f7bff88; offset-path: path("M 1000 87 C 1026 87, 1026 146, 996 146 L 14 146 C -12 146, -12 206, 0 206"); offset-rotate: 0deg; animation: lv-go 6s infinite cubic-bezier(.55,0,.3,1); }
+  @keyframes lv-go { 0% { offset-distance: 0%; opacity: 0; } 4% { opacity: 1; } 27% { offset-distance: 100%; opacity: 1; } 32%, 100% { offset-distance: 100%; opacity: 0; } }
+  /* vitals */
+  .lv-vitals { padding: 4px 14px 14px; display: grid; gap: 12px; }
+  .lv-vital .k { font-size: 11px; color: var(--muted); }
+  .lv-vital .v { font-size: 20px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+  .lv-vital .v small { font-size: 12px; color: var(--muted); font-weight: 400; }
+  .lv-vital .v.ok { color: var(--ok); }
+  /* bottom row */
+  .lv-bottom { display: grid; grid-template-columns: 1fr 380px; gap: 18px; }
+  .lv-lanes { display: grid; grid-template-columns: 96px 1fr; gap: 7px 12px; align-items: center; padding: 14px 16px 16px; font-size: 11.5px; color: var(--muted); position: relative; }
+  .lv-lane { position: relative; height: 14px; border-radius: 4px; background: #0a1124; border: 1px solid #16213d; }
+  .lv-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: var(--c); box-shadow: 0 0 10px var(--c); opacity: .9; }
+  .lv-bar.tick { width: 3px !important; box-shadow: none; }
+  .lv-bar.open { background: repeating-linear-gradient(-45deg, var(--developer) 0 6px, #2c5fb8 6px 12px); background-size: 17px 17px; animation: lv-stripe 1.2s linear infinite; box-shadow: 0 0 12px #60a5fa88; }
+  @keyframes lv-stripe { to { background-position: 17px 0; } }
+  .lv-now { position: absolute; top: 10px; bottom: 10px; right: 16px; width: 1px; background: #5aa8ff; box-shadow: 0 0 6px #5aa8ff; }
+  .lv-now::before { content: "now"; position: absolute; top: -2px; right: 5px; font-size: 10px; color: #8fc4ff; }
+  .lv-axis { grid-column: 2; display: flex; justify-content: space-between; color: var(--faint); font-size: 10.5px; }
+  .lv-feed { padding: 10px 12px 12px; display: grid; gap: 6px; }
+  .lv-ev { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; padding: 7px 10px; border-radius: 9px; background: #0b1428; border: 1px solid #172443; font-size: 12px; color: #b6c5e6; }
+  .lv-ev .v { color: var(--faint); font-variant-numeric: tabular-nums; }
+  .lv-ev .ago { color: var(--faint); font-size: 11px; }
+  .lv-ev .lv-badge { min-width: 16px; padding: 0 3px; height: 16px; font-size: 8px; border-radius: 5px; display: inline-grid; vertical-align: -3px; margin-right: 6px; }
+  .lv-ev.new { animation: lv-feedin 6s infinite; }
+  @keyframes lv-feedin { 0%, 26% { opacity: 0; transform: translateY(-8px); } 31% { opacity: 1; transform: none; background: #16306a; border-color: #3f7bff; } 55%, 100% { background: #0b1428; border-color: #172443; } }
+
+  /* state variants */
+  .lv-variants { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; }
+  .lv-var { border-radius: 14px; padding: 16px; background: radial-gradient(500px 200px at 30% -20%, #13254d, #070b16 70%); color: #e3ebff; font: 13px/1.45 "Segoe UI", system-ui, sans-serif; border: 1px solid var(--border); position: relative; overflow: hidden; }
+  .lv-var .tag { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8a9cc4; margin-bottom: 10px; }
+  .lv-var .row { display: flex; gap: 12px; align-items: center; }
+  .lv-var .av { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-weight: 800; color: #1b1200; flex: none; }
+  .lv-var h4 { margin: 0; font-size: 17px; color: #fff; }
+  .lv-var p { margin: 4px 0 0; color: #8a9cc4; font-size: 12px; }
+  .lv-var .cta { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .lv-var .cta span { font-size: 12px; padding: 4px 10px; border-radius: 8px; border: 1px solid #3a4a72; color: #dbe6ff; }
+  .lv-var.wait { border-color: #6b4f12; box-shadow: inset 0 0 0 1px #fbbf2433; }
+  .lv-var.wait .av { background: #fbbf24; animation: lv-attn 2.4s ease-in-out infinite; }
+  @keyframes lv-attn { 0%, 100% { box-shadow: 0 0 0 0 #fbbf2466; } 50% { box-shadow: 0 0 0 9px #fbbf2400; } }
+  .lv-var.wait h4 .clk { color: #fbbf24; font-variant-numeric: tabular-nums; }
+  .lv-var.wait .cta span.p { background: #fbbf24; color: #1b1200; border-color: #fbbf24; font-weight: 650; }
+  .lv-var.block { border-color: #6b2a2a; }
+  .lv-var.block .av { background: #f87171; color: #2a0505; }
+  .lv-var.block code { font-family: "Cascadia Code", Consolas, monospace; color: #fca5a5; }
+  .lv-var.done { border-color: #1f5a49; }
+  .lv-var.done .av { background: #34d399; color: #04241a; }
+  .lv-var .strip { display: flex; gap: 4px; margin-top: 14px; position: relative; }
+  .lv-var .strip i { flex: 1; height: 6px; border-radius: 3px; background: #34d399; opacity: .85; }
+  .lv-var.done .strip::after { content: ""; position: absolute; top: -3px; bottom: -3px; width: 60px; border-radius: 6px; background: linear-gradient(90deg, transparent, #ffffffcc, transparent); animation: lv-sweep 6s infinite; }
+  @keyframes lv-sweep { 0% { left: -60px; opacity: 0; } 3% { opacity: 1; } 22% { left: 100%; opacity: 1; } 24%, 100% { left: 100%; opacity: 0; } }
+  .lv-var.block .strip i:nth-child(n+11) { background: #26355a; }
+  .lv-var.block .strip i:nth-child(10) { background: #f87171; }
+  .lv-var.wait .strip i:nth-child(n+7) { background: #26355a; }
+  .lv-var.wait .strip i:nth-child(6) { background: #fbbf24; animation: lv-attn 2.4s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) { .lv *, .lv-var * , .lv-var { animation: none !important; } }
+</style>
+
+<h2>The combined Live view: B's structure with A's look</h2>
+<p class="subtitle">The full Live screen for a run whose Developer was just dispatched. Below it are the three other moments that matter most. Animations loop here for preview; in the product each plays once per real journal event.</p>
+
+<div class="lv-frame">
+<div class="lv">
+  <div class="lv-top">
+    <div class="lv-brand"><span class="lv-mark"></span>RSTACK <small>Mission Control</small></div>
+    <div class="lv-switch"><span class="lv-dot" style="--c:var(--info)"></span><span class="mono" style="color:var(--muted)">RUN-05</span><b>Add CSV export to sample-export-app</b><span class="caret">▾</span></div>
+    <div class="lv-counts"><span><span class="lv-dot" style="--c:var(--info)"></span>5 active</span><span class="needs"><span class="lv-dot" style="--c:var(--human)"></span>2 need you</span><span><span class="lv-dot" style="--c:var(--danger)"></span>1 blocked</span><span><span class="lv-dot" style="--c:var(--ok)"></span>1 done</span></div>
+    <div class="lv-sp"></div>
+    <div class="lv-mode"><span class="on">Live</span><span>Inspect</span></div>
+    <span class="lv-live"><i></i>Live · journal v14</span>
+  </div>
+
+  <div class="lv-main">
+    <div class="lv-hero">
+      <div class="lv-avatar">DEV</div>
+      <div>
+        <div class="lv-h1">Waiting on the Developer<span class="st">◇ DISPATCHED · AWAITING RESULT</span></div>
+        <div class="lv-sub">Dispatched <b class="clk" data-start="192">3:12</b> ago · attempt implement-1 · retries 0 of 2 used · Sonnet 5 configured <span style="color:var(--faint)">(effective model not observed)</span></div>
+      </div>
+      <div class="lv-next">Run time<span class="big clk" data-start="1421">23:41</span>next: Verification · Engine</div>
+    </div>
+
+    <div class="lv-flowrow">
+      <div class="lv-panel">
+        <h3>Pipeline · local-request-to-proposal v6</h3>
+        <div class="lv-graph">
+          <svg width="1000" height="262">
+            <!-- row 1 wires -->
+            <g>
+              <line class="lv-wire done" x1="128" y1="87" x2="145" y2="87"/><line class="lv-wire done" x1="273" y1="87" x2="290" y2="87"/><line class="lv-wire done" x1="418" y1="87" x2="435" y2="87"/><line class="lv-wire done" x1="563" y1="87" x2="580" y2="87"/><line class="lv-wire done" x1="708" y1="87" x2="725" y2="87"/><line class="lv-wire done" x1="853" y1="87" x2="870" y2="87"/>
+              <line class="lv-wire" x1="128" y1="206" x2="145" y2="206"/><line class="lv-wire" x1="273" y1="206" x2="290" y2="206"/><line class="lv-wire" x1="418" y1="206" x2="435" y2="206"/><line class="lv-wire" x1="563" y1="206" x2="580" y2="206"/><line class="lv-wire" x1="708" y1="206" x2="725" y2="206"/>
+              <line x1="64" y1="22" x2="64" y2="51" stroke="#26355a" stroke-dasharray="2 4" stroke-width="1.5"/>
+              <line x1="499" y1="22" x2="499" y2="51" stroke="#26355a" stroke-dasharray="2 4" stroke-width="1.5"/>
+            </g>
+            <path class="lv-wire hot" d="M 1000 87 C 1026 87, 1026 146, 996 146 L 14 146 C -12 146, -12 206, 0 206"/>
+          </svg>
+          <div class="lv-packet"></div>
+          <span class="lv-spur" style="left:0">↺ Product question · not taken</span>
+          <span class="lv-spur" style="left:440px">↺ Plan revision · not taken</span>
+
+          <div class="lv-card done" style="left:0;top:51px;--c:var(--planner)"><div class="hd"><span class="lv-badge">PL</span><span class="l">Intake</span></div><div class="r">Planner</div><div class="ft"><span>✓ accepted</span><span>0:48</span></div></div>
+          <div class="lv-card done" style="left:145px;top:51px;--c:var(--planner)"><div class="hd"><span class="lv-badge">PL</span><span class="l">Specification</span></div><div class="r">Planner</div><div class="ft"><span>✓ accepted</span><span>2:10</span></div></div>
+          <div class="lv-card done" style="left:290px;top:51px;--c:var(--planner)"><div class="hd"><span class="lv-badge">PL</span><span class="l">Planning</span></div><div class="r">Planner</div><div class="ft"><span>✓ accepted</span><span>3:41</span></div></div>
+          <div class="lv-card done" style="left:435px;top:51px;--c:var(--auditor)"><div class="hd"><span class="lv-badge">AU</span><span class="l">Plan audit</span></div><div class="r">Plan Auditor · HOLDS</div><div class="ft"><span>✓ accepted</span><span>1:56</span></div></div>
+          <div class="lv-card done" style="left:580px;top:51px;--c:var(--engine)"><div class="hd"><span class="lv-badge">EN</span><span class="l">Brief</span></div><div class="r">Engine</div><div class="ft"><span>✓ rendered</span><span>0:01</span></div></div>
+          <div class="lv-card done" style="left:725px;top:51px;--c:var(--you)"><div class="hd"><span class="lv-badge">YOU</span><span class="l">Your decision</span></div><div class="r">proceed · you</div><div class="ft"><span>✓ decided</span><span>6:02</span></div></div>
+          <div class="lv-card done" style="left:870px;top:51px;--c:var(--tester)"><div class="hd"><span class="lv-badge">TE</span><span class="l">Tester proof</span></div><div class="r">Tester · 8 tests</div><div class="ft"><span>✓ accepted</span><span>2:37</span></div></div>
+
+          <div class="lv-card cur" style="left:0;top:170px;--c:var(--developer)"><div class="hd"><span class="lv-badge">DEV</span><span class="l">Developer</span></div><div class="r">implement-1</div><div class="ft"><span>◇ awaiting</span><span class="clk" data-start="192">3:12</span></div></div>
+          <div class="lv-card todo" style="left:145px;top:170px"><div class="hd"><span class="lv-badge">EN</span><span class="l">Verification</span></div><div class="r">Engine</div><div class="ft"><span>○ not reached</span></div></div>
+          <div class="lv-card todo" style="left:290px;top:170px"><div class="hd"><span class="lv-badge">CR</span><span class="l">Technical review</span></div><div class="r">Code Reviewer</div><div class="ft"><span>○ not reached</span></div></div>
+          <div class="lv-card todo" style="left:435px;top:170px"><div class="hd"><span class="lv-badge">EN</span><span class="l">PR review packet</span></div><div class="r">Engine</div><div class="ft"><span>○ not reached</span></div></div>
+          <div class="lv-card todo" style="left:580px;top:170px"><div class="hd"><span class="lv-badge">PR</span><span class="l">PR review</span></div><div class="r">PR Reviewer</div><div class="ft"><span>○ not reached</span></div></div>
+          <div class="lv-card todo" style="left:725px;top:170px"><div class="hd"><span class="lv-badge">EN</span><span class="l">Proposal</span></div><div class="r">Engine · local only</div><div class="ft"><span>○ not reached</span></div></div>
+        </div>
+      </div>
+      <div class="lv-panel">
+        <h3>Run vitals</h3>
+        <div class="lv-vitals">
+          <div class="lv-vital"><div class="k">Hand-offs accepted</div><div class="v">7 <small>of 13 stages</small></div></div>
+          <div class="lv-vital"><div class="k">Agent attempts</div><div class="v">6 <small>0 failed</small></div></div>
+          <div class="lv-vital"><div class="k">Tests run by Tester</div><div class="v ok">8 ✓ <small>0 ✗</small></div></div>
+          <div class="lv-vital"><div class="k">Plan audit budget</div><div class="v">1 <small>of 2 used</small></div></div>
+          <div class="lv-vital"><div class="k">Time waiting on you</div><div class="v">6:02</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lv-bottom">
+      <div class="lv-panel">
+        <h3>Who held the work</h3>
+        <div class="lv-lanes">
+          <span>Planner</span><div class="lv-lane"><div class="lv-bar" style="left:0;width:28%;--c:var(--planner)"></div></div>
+          <span>Plan Auditor</span><div class="lv-lane"><div class="lv-bar" style="left:28%;width:8%;--c:var(--auditor)"></div></div>
+          <span>Engine</span><div class="lv-lane"><div class="lv-bar tick" style="left:36%;--c:var(--engine)"></div></div>
+          <span>You</span><div class="lv-lane"><div class="lv-bar" style="left:36.3%;width:25.5%;--c:var(--you)"></div></div>
+          <span>Tester</span><div class="lv-lane"><div class="lv-bar" style="left:62%;width:11%;--c:var(--tester)"></div></div>
+          <span>Developer</span><div class="lv-lane"><div class="lv-bar open" style="left:73%;width:27%"></div></div>
+          <span></span><div class="lv-axis"><span>started 19:12</span><span>+6m</span><span>+12m</span><span>+18m</span><span>now</span></div>
+        </div>
+      </div>
+      <div class="lv-panel">
+        <h3>Journal feed</h3>
+        <div class="lv-feed">
+          <div class="lv-ev new"><span class="v">v14</span><span><span class="lv-badge" style="--c:var(--developer)">DEV</span>Dispatched Developer · implement-1</span><span class="ago">just now</span></div>
+          <div class="lv-ev"><span class="v">v13</span><span><span class="lv-badge" style="--c:var(--tester)">TE</span>Accepted proof-1 · COMPLETED</span><span class="ago">3m</span></div>
+          <div class="lv-ev"><span class="v">v12</span><span><span class="lv-badge" style="--c:var(--tester)">TE</span>Dispatched Tester · proof-1</span><span class="ago">6m</span></div>
+          <div class="lv-ev"><span class="v">v11</span><span><span class="lv-badge" style="--c:var(--you)">YOU</span>Decision D1: proceed</span><span class="ago">6m</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="lv-variants">
+  <div class="lv-var wait">
+    <div class="tag">When it needs you</div>
+    <div class="row"><div class="av">!</div><div><h4>Your decision is needed · <span class="clk" data-start="362">6:02</span></h4><p>Plan audit HOLDS, 0 findings. Allowed: proceed, amend, second-audit, pause, reject.</p></div></div>
+    <div class="cta"><span class="p">Open the brief (round 1)</span><span>Decide in the Coordinator chat</span></div>
+    <div class="strip"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+  <div class="lv-var block">
+    <div class="tag">When it's blocked</div>
+    <div class="row"><div class="av">■</div><div><h4>Blocked at Technical review</h4><p><code>REVIEW_REJECTED</code>: the review of the candidate returned REJECT. No recovery path is recorded; a fix needs a new run.</p></div></div>
+    <div class="cta"><span>See the 1 finding</span><span>Open the run report</span></div>
+    <div class="strip"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+  <div class="lv-var done">
+    <div class="tag">When it finishes</div>
+    <div class="row"><div class="av">✓</div><div><h4>Local PR proposal ready</h4><p>13 of 13 stages accepted in 41:07. Not published: no remote pull request was created.</p></div></div>
+    <div class="cta"><span>Open the proposal</span><span>Open the run report</span></div>
+    <div class="strip"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var t0 = Date.now();
+    function fmt(s) { var m = Math.floor(s / 60), r = s % 60; return m + ':' + (r < 10 ? '0' : '') + r; }
+    setInterval(function () {
+      var dt = Math.floor((Date.now() - t0) / 1000);
+      document.querySelectorAll('.clk').forEach(function (el) { el.textContent = fmt(+el.dataset.start + dt); });
+    }, 1000);
+  })();
+</script>
+</body>
+</html>
