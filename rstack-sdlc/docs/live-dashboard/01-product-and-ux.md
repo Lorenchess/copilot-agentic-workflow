@@ -1,6 +1,6 @@
 # RSTACK Live Run Dashboard — Product Vision and UX
 
-**Status:** proposed feature; not implemented or host-validated.
+**Status:** implemented (first build: PR #3; Mission Control redesign: [06](06-mission-control-redesign.md), PR #5); not host-validated.
 **Audience:** RSTACK maintainers, independent architecture reviewers, frontend builders, and developers using VS Code Copilot.
 **Reference baseline:** authored RSTACK SDLC workflow on main, workflow v6 (local-request-to-proposal).
 **Companion documents:** [02 — Architecture and read model](02-architecture-and-read-model.md), [03 — Builder implementation plan](03-builder-plan-and-acceptance.md).
