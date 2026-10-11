@@ -136,7 +136,7 @@ Use **"dispatched / awaiting response"** rather than **"model is thinking"** unl
 Target a modern, calm developer tool:
 
 - Flow visualization with strong active-stage focus and quiet completed nodes.
-- Subtle motion only on newly confirmed transitions, not fabricated activity.
+- Motion follows the honest-motion rules in [06 — Mission Control redesign, section 3](06-mission-control-redesign.md#3-honest-motion-rules-replaces-01-35-motion-bullets) (owner decision, 2026-10-11): every animation is started by a newly committed journal event, a service heartbeat, real elapsed time since a recorded timestamp, or the user's own action; the only loops are a calm glow while a dispatch awaits its result and an amber pulse while a human is needed. Never fabricated activity.
 - Side-by-side role, attempt, model, and evidence identity.
 - Distinct waiting / blocked / review rejected / completed semantics; never color alone.
 - Crisp timeline with optional branch/attempt tree.

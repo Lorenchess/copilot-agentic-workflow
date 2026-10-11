@@ -74,7 +74,9 @@ test('the dashboard never imports an engine command path and the read model neve
     for (const spec of imports(file)) assert.ok(!spec.includes('dashboard'), `${relative(PACKAGE_ROOT, file)} imports the dashboard`);
   }
   // The page never builds markup from text: every node is created and filled through textContent.
-  for (const name of ['app.js', 'views.js', 'graph.js']) {
+  const pageModules = readdirSync(join(PACKAGE_ROOT, 'dashboard', 'web')).filter((name) => name.endsWith('.js'));
+  assert.ok(pageModules.length >= 10 && pageModules.includes('app.js') && pageModules.includes('motion.js'));
+  for (const name of pageModules) {
     assert.doesNotMatch(readFileSync(join(PACKAGE_ROOT, 'dashboard', 'web', name), 'utf8'), /innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function/, name);
   }
 });

@@ -747,3 +747,9 @@ Builder choices made inside that authorization, each open to the owner:
 3. **A changed reviewer copy is refused with the existing code `WRITE_BOUNDARY_VIOLATION`** (or `UNSAFE_PATH` when the copy cannot be read). No new reply code, and no change to the Coordinator's text.
 4. **Only the PR review stage measures its copy.** The technical `review` stage receives a copy of the candidate in the same way and is not measured. Astra's finding and the authorization name the PR review, and decision 4 of D-PRR keeps the Code Reviewer as it is. **Open owner decision.**
 5. **Measurement, not prevention.** The check is made at acceptance. It does not show what the copy held earlier, and the PR reviewer keeps the `edit` tool. The owner decision listed under "Builder defaults" is unchanged.
+
+## D-DASH-MC — 2026-10-11 — Mission Control redesign of the live dashboard
+
+**Status:** implemented on `feat/rstack-sdlc-dashboard-mission-control`, uncommitted; builder-side review findings fixed; not independently verified. Authority: the owner's design decisions in conversation and "go ahead and implement it". Design: [live-dashboard/06](live-dashboard/06-mission-control-redesign.md) (section 11 lists every deviation); plan: [live-dashboard/07](live-dashboard/07-mission-control-implementation-plan.md).
+
+Owner decisions (D1–D8 in the design): honest motion (every animation started by a committed journal event, a heartbeat, a recorded clock, or the user; two loops only); Live and Inspect modes; blueprint stage cards with real durations and a per-role swimlane in a dark mission-control look; dark-first with a light variant; tab title and icon alerts only; plain modules updated in place, no new dependency; containment as a hard requirement; additive `RunSummary.stage_states`. Later the same day: full-screen mode; the repository is reference code for the owner's working pipeline, so tests are kept to a basic safety net.

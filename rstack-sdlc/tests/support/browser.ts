@@ -189,7 +189,9 @@ export async function launchChrome(): Promise<Browser | null> {
         };
         const k = keys[key];
         if (!k) throw new Error(`unsupported key ${key}`);
-        await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', ...k }, sessionId);
+        // Enter and Space carry their text so a focused button is activated, as a real key press does.
+        const text = key === 'Enter' ? { text: '\r' } : key === 'Space' ? { text: ' ' } : {};
+        await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', ...k, ...text }, sessionId);
         await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', ...k }, sessionId);
       },
       text: (selector) => evaluate<string | null>(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); return el ? el.textContent : null; })()`),
