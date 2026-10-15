@@ -1,7 +1,8 @@
 # RSTACK-SDLC — Full/Express × HITL/HOTL Startup Selection and Delegated Gates
 
 **Date:** 2026-10-15  
-**Status:** Owner-requested implementation design and agent handoff; **not yet implemented or host-validated**  
+**Status:** Consolidated authoritative owner-requested implementation guide; **not yet implemented or host-validated**  
+**Consolidation:** Incorporates the earlier `hitl-hotl-oversight-selection-2026-10-15.md` (retired from `main`; retrievable in Git history). This is the **single source of truth** for HITL/HOTL implementation guidance.  
 **Repository:** [Lorenchess/copilot-agentic-workflow](https://github.com/Lorenchess/copilot-agentic-workflow)  
 **Intended scope:** Standalone RSTACK SDLC reference under `rstack-sdlc/`; adapt to the current workplace system only after inspecting that separate implementation.  
 **Owner's requested outcome:** At the **existing startup question** that asks whether to use **Express or Full**, also ask whether the developer wants **HITL (Human in the Loop) or HOTL (Human on the Loop)**. Maintain the existing behavior and offer the new route alongside it. In HOTL, let independent agents and deterministic gates handle eligible intermediate plan/code checks; retain **human final PR review**, and escalate earlier for ambiguity or elevated risk.
@@ -92,6 +93,14 @@ If any condition fails, stop to request a human plan decision or block when a no
 
 **High-risk categories requiring earlier human plan review:** authentication/authorization; secrets; payment routing/calculation/settlement; schema and data migrations; infrastructure/CI/deployment permissions; cross-service contracts; idempotency/concurrency; security policy and the factory's own permissions; sensitive privacy/retention impacts; unclear impact or requirements. Align this list with the existing Express risk taxonomy rather than maintaining contradictory copies. HOTL can still be selected, but no delegated planning approval is granted for these classes in the first release.
 
+### Risk tiers and effective delegation
+
+- **Tier A — low risk:** Only evidenced, bounded work (non-operational documentation, isolated UI wording, proven behavior-preserving refactors, or narrow bug fixes with complete requirements) may qualify for autonomous **intermediate** advancement. Filename or line count alone is never eligibility evidence. The full AUTO-PLAN predicate above still applies.
+- **Tier B — moderate risk:** Bounded multi-file changes without protected-domain effects may proceed automatically **only when a separately adopted owner policy explicitly allows that task class and every Tier A condition is satisfied**. The initial HOTL rollout must treat medium risk as human-required until approved evidence and a dedicated policy revision exist. Otherwise pause for human plan and/or code review.
+- **Tier C — high risk or unknown:** Sensitive domains enumerated above, policy/configuration changes to the factory itself, or insufficient impact evidence mandate early human authorization or a hard block. A human checkpoint does **not** waive non-negotiable proof, security or integrity failures.
+
+Review risk at intake, after specification/planning, after audit, after Tester proof, after actual Developer file changes, before exact-candidate verification/review, and before PR proposal. If the risk rises, freeze new dispatch and retain evidence; reconcile outstanding workers; write an identity-bound \`OVERSIGHT_ESCALATION_REQUIRED\` record with the trigger, policy, affected subjects, and invalidations. A run may remain **HOTL selected / human escalation used**—never silently rewrite its original selection or record a human decision that was not actually given.
+
 ### Concrete plan-decision policy
 
 ```text
@@ -137,27 +146,78 @@ The current reference `core/policies/workflow.ts` defines `plan-decision` as a `
 
 Illustrative schema shape only—**do not paste this into production without validating current contracts and backward compatibility**:
 
+> **Merged illustrative sample:** requested/effective modes, explicit decision origin, passed checks and pending human PR review must be represented together. This is **not an approved runtime schema**; the implementing agent must reconcile it with actual parsers, provenance and versioning.
+
 ```json
 {
+  "record_type": "oversight-decision",
   "schema_version": 1,
+  "run_id": "RUN-SYN-001",
   "requested_pipeline": "full",
   "effective_pipeline": "full",
   "requested_oversight": "hotl",
   "effective_oversight": "hotl",
-  "oversight_policy_ref": "sha256:<actual-policy-digest>",
+  "oversight_policy_ref": "sha256:example-policy",
+  "risk_ref": "sha256:example-risk",
   "plan_authorization": {
     "kind": "POLICY_DELEGATED",
-    "plan_ref": "sha256:<actual-plan-digest>",
-    "audit_ref": "sha256:<actual-audit-digest>",
-    "source_ref": "sha256:<actual-source-digest>",
+    "origin": "AUTO_POLICY",
+    "disposition": "AUTO_AUTHORIZED",
+    "stage": "PLAN",
+    "source_ref": "sha256:example-source",
+    "plan_ref": "sha256:example-plan",
+    "audit_ref": "sha256:example-audit",
     "policy_rule_id": "HOTL-PLAN-LOW-RISK",
-    "evidence_ref": "sha256:<actual-decision-record>"
+    "checks": [
+      {
+        "rule": "AUDIT_ACCEPTED",
+        "result": "PASS"
+      },
+      {
+        "rule": "NO_MATERIAL_OPEN_FINDINGS",
+        "result": "PASS"
+      },
+      {
+        "rule": "DELEGATION_SCOPE_ALLOWLIST",
+        "result": "PASS"
+      },
+      {
+        "rule": "EXACT_SUBJECT_BINDING",
+        "result": "PASS"
+      }
+    ]
   },
-  "final_pr_human_review": "REQUIRED"
+  "final_pr_human_review": "PENDING",
+  "external_publication": "NOT_ATTEMPTED"
 }
 ```
 
-The `<...>` strings above are descriptive placeholders, not valid digests. No submitted runtime record may accept them.
+All `sha256:example-*` strings are **invalid illustrative placeholders**, not verified artifact identities. No submitted runtime record may accept them; missing source, policy, audit or candidate evidence must fail closed.
+
+### Typed per-gate policy outcome (illustrative)
+
+Beyond the run-level mode, record each automatic decision with its own exact subject, scope, evidence and rule results. The following is a design shape, **not** a claim that these types exist in the current engine:
+
+```ts
+interface AutomatedGateDecision {
+  schema_version: number;
+  origin: 'AUTO_POLICY';
+  stage: 'PLAN' | 'TECHNICAL_REVIEW';
+  disposition: OversightDisposition;
+  source_ref: string;
+  plan_ref: string;
+  audit_ref?: string;
+  candidate_ref?: string;
+  verification_ref?: string;
+  reviewer_ref?: string;
+  risk_assessment_ref: string;
+  oversight_policy_ref: string;
+  rules_evaluated: { id: string; passed: boolean; evidence_refs: string[] }[];
+  reason: string;
+}
+```
+
+\`REQUIRES_HUMAN\` and \`BLOCKED\` are first-class outcomes; an agent's \`APPROVE\` cannot force \`AUTO_AUTHORIZED\`. A reviewer must be independent of the implementation session, and only controller-verified results may advance the workflow.
 
 ## 6. Responsibility/authority matrix
 
@@ -174,6 +234,25 @@ The `<...>` strings above are descriptive placeholders, not valid digests. No su
 | Remote PR creation/merge/deploy | Existing separate authorization | Unchanged | Unchanged | Unchanged |
 
 **Clarification:** The technical Reviewer and PR Reviewer remain independent **agent** gates in HOTL. Their verdicts can block a run; approval to *proceed past the plan checkpoint* is issued by the controller using trusted policy. The human's final PR review is never replaced by an agent.
+
+### Full + HOTL: stage-by-stage authorization and escalation
+
+| Stage | Actor(s) | Engine action on HOTL | Human intervention |
+|---|---|---|---|
+| Start selection / intake | Human operator + engine | Store requested/effective `Full/Express` + `HITL/HOTL` and policy refs atomically before model dispatch. | Operator chooses both fields. |
+| Intent/spec | Planner | Source-grounded requirements with stable AC IDs, no invented product behavior. | Product ambiguity => ASK, not hallucinated assumptions. |
+| Plan | Planner | Produce canonical identity-bound plan and proof strategy. | No routine plan approval yet. |
+| Plan audit | Fresh independent Auditor | Complete audit, structured findings, coverage, limitations and basis refs. | Unresolved material findings / required design call => human; bounded revision per current policy. |
+| **Plan authorization** | **Trusted engine applying policy** | On eligible case write `AUTO_AUTHORIZED_BY_POLICY`, exact policy/plan/audit refs, decision predicate results and rationale; no false human approval. | If not eligible, existing HITL plan checkpoint with combined audit/plan brief. |
+| Controlled proof | Tester | Independent tests/characterization protected from Developer; honest RED semantics. | Missing valid evidence => blocked or human product clarification. |
+| Implementation | Developer | Only permitted candidate paths; prevent or reject protected writes. | Unauthorized change cannot be waived by “agent approval.” |
+| Candidate verification | Deterministic executor | Exact candidate/baseline evidence; verify all required tests and policy invariants. | Verification failure => bounded fix loop or block. |
+| **Technical code review** | **Fresh Reviewer** | Independent findings and coverage; engine validates exact subject, allowed verdict, missing evidence and risk classification; eligible accepted verdict can progress. | For protected/high-risk/policy-exception code or unresolved review => human checkpoint. |
+| Agent PR review | Fresh independent PR Reviewer | Validate proposal claims, provenance and limitations after successful technical review; cannot override an earlier rejection. | Does **not** replace final human PR review. |
+| **Final PR decision** | **Human reviewer** | Always wait for genuine review of exact candidate, diff, plan, audit, tests, reviewer findings, risk and scope; verify identity/binding. | **MANDATORY** in HOTL as requested. |
+| Publication / merge / deploy | Existing authorized mechanism | Preserve all separate external action gates, branch rules and deployment policy. | As mandated by existing systems; never inferred from PR review. |
+
+In **HITL**, maintain the exact existing user experience, current wait semantics, decision identity and code-review flow; avoid adding artificial new questions. If a workplace implementation already uses a manual code review, preserve it for HITL and permit HOTL to use the automated technical review + exception logic only through an approved engine gate.
 
 ## 7. Integration map — inspect exact implementation before editing
 
@@ -218,6 +297,7 @@ The `<...>` strings above are descriptive placeholders, not valid digests. No su
 
 ### H3 — Full + HOTL controlled opt-in
 
+- The implementation must distinguish automated **plan** authorization from automated progression after an independently approved **technical code review**. Current HITL manual code-review checkpoints must remain unchanged; HOTL may omit routine manual code-review waits only where risk policy, exact candidate evidence, and fresh Reviewer approval jointly permit it. A failed/missing technical review is never a success.
 - Add controller-owned policy authorization record and trustworthy gate. Preserve Auditor and all subsequent mandatory proof/review stages.
 - In eligible tasks only, auto-progress after completed audit. On risk, missing evidence, scope drift, unknown or disagreeing audit => human wait or block with exact reason.
 - Ensure the **human final PR review** remains mandatory. For the reference local-proposal flow, show accurate `LOCAL_PROPOSAL_READY_FOR_HUMAN` (or equivalent, after schema design) rather than claiming a remote PR exists.
@@ -233,6 +313,7 @@ The `<...>` strings above are descriptive placeholders, not valid digests. No su
 
 ### H5 — Evaluation and rollout
 
+- Use the earlier risk-tier classification and explicit late-scope escalation cases; initial moderate-risk automatic approval remains disabled pending a separate owner decision. Run a shadow-mode sample (suggested 30–50 approved synthetic or historical, non-sensitive cases) before authorizing live HOTL and retain human judgments as baseline labels.
 - Compare paired tasks with **same source, model+effort+host, tool set, frozen code baseline and acceptance criteria**, changing oversight only.
 - Measure **human interruptions**, median/P95 cycle time, accepted task correctness, missed-material-audit rate, proof/technical/PR review integrity, per-stage tokens/cost where *actually observable*, rework, and escalations.
 - Use held-out known-defect cases as well as clean cases; adjudicate false approvals. Record unknown metrics as unknown.
@@ -260,6 +341,16 @@ The `<...>` strings above are descriptive placeholders, not valid digests. No su
 | PR-01 | Agents all approve but human rejects final PR | Remains unapproved; no publication, merge or deploy |
 | PR-02 | PR packet changed after final human approval | Prior human decision invalidated; fresh review required |
 | PR-03 | Local proposal exists but remote PR was never created | UI/report says `NOT_PUBLISHED`, not “PR approved/merged” |
+| SEL-06 | Operator cancels or leaves an explicit interactive question unanswered | No run starts, no automatic HOTL authorization or external side effect; legacy noninteractive calls still default to Full+HITL |
+| PLAN-06 | Untrusted ticket/model claims \`LOW_RISK\` contrary to protected path/category rules | Deterministic policy deny prevails over semantic L1 or agent optimism |
+| PLAN-07 | Moderate-risk multi-file task without explicit scope-limited delegation | Required human plan/code checkpoint; never implicitly permitted by HOTL selection |
+| PLAN-08 | Auditor not checked required coverage or changes the reviewed plan revision | No automatic advancement; request human disposition or new complete audit |
+| RUN-03 | Developer changes actual paths/interfaces so initial risk classification is stale | Freeze new dispatch, reconcile worker, persist reason and invalidation, escalate without rewriting prior events |
+| RUN-04 | Duplicate/out-of-order agent submissions during delegated transition | One decision at most, no second dispatch or human authorization impersonation |
+| PR-04 | Agent PR review succeeds but no human final PR action was taken | Explicit \`WAITING_HUMAN\` (or accurate local-proposal pending state), never \`APPROVED\` |
+| PR-05 | Human requests changes or cancels final PR review | Correct pending/rejected state retained; no unauthorized publication or automatic bypass |
+| UX-01 | Repeated dashboard status reads/report rendering | Read-only; zero new engine transitions, model dispatches, or authorization events |
+| HITL-01 | Existing human plan amendment / second-audit path | Old budget, exact subjects, amended-plan provenance and downstream tests remain unchanged |
 | EVAL-01 | HOTL on clean and adversarial paired fixtures | Truthful quality + intervention + cost comparison |
 
 For every test, state whether it is **OFFLINE_UNIT**, **OFFLINE_INTEGRATION**, **HOST_OBSERVED**, or **INTERNAL_OBSERVED**. Do not claim host enforcement from green offline unit tests. Run relevant affected tests first; retain full applicable suite results and independent review before merging code.
@@ -276,6 +367,12 @@ The developer should always be able to answer:
 - **Is the PR ready?** Separate: technical approval, independent PR Reviewer acceptance, **human final review pending/accepted/rejected**, external publication state.
 
 Report every delegated decision in the journal and terminal HTML with explicit provenance. The existing Mission Control read model derives display state from committed events: **do not animate speculative agent progress or add UI-triggered state mutations**. Keep dark/light themes and accessible, text-based status semantics.
+
+### Promotion measurements and owner decision
+
+Compare Full+HITL to Full+HOTL with matched source, model, host, effort, tools, context and task class; Express is a separate axis. Report denominators for human interruptions per verified change, approval waiting time, total P50/P95 completion time, verified AC fulfillment, escaped defects, material Auditor/Reviewer misses, false policy authorizations, retry amplification, token/cost (only when actually observed), high-risk escalations and human final PR outcomes.
+
+Promotion requires: **zero tested critical authorization bypasses**, no stale-candidate acceptance or invented human signatures, preservation of complete independent proof/review, observed actual-host final human PR gating, no Full+HITL or historical replay regression, and a measured benefit without a material quality loss. The owner records \`KEEP_PILOT\`, \`EXPAND\`, \`REVERT\` or \`INCONCLUSIVE\`; agents cannot self-promote the policy. A protected switch disables new HOTL starts; in-flight runs either retain their pinned policy safely or stop for an explicit human migration decision.
 
 ## 11. Compatibility / failure behavior and rollback
 
