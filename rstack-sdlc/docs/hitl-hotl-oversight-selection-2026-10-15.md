@@ -13,7 +13,9 @@
 
 ## 0. Important baseline distinctions
 
-**CONFIRMED IN THE PUBLIC REFERENCE:** [`core/policies/workflow.ts`](../core/policies/workflow.ts) contains `local-request-to-proposal` workflow version 6, with ```text
+**CONFIRMED IN THE PUBLIC REFERENCE:** [`core/policies/workflow.ts`](../core/policies/workflow.ts) contains `local-request-to-proposal` workflow version 6, with the following stage sequence:
+
+```text
 intent → spec → plan → plan-audit → brief → plan-decision (human)
 → proof → implement → verify → review (agent)
 → pr-review-packet → pr-review (agent) → proposal (local)
