@@ -248,6 +248,6 @@ Prepare, **in company-approved internal storage**, without leaking workplace spe
 - [VS Code — Use tools with agents; availability vs approval](https://code.visualstudio.com/docs/agents/run/tools)
 - [VS Code — Monitor agent usage with OpenTelemetry](https://code.visualstudio.com/docs/agents/guides/monitoring-agents)
 - [GitHub — Available rules for repository rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)
-- [GitHub — Protected branches and required status checks](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing/protected-branches/about-protected-branches)
+- [GitHub — Protected branches and required status checks](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
 
 **Bottom line:** RSTACK can be a deterministic **workflow and acceptance** engine without Copilot hooks. To claim deterministic **tool-action prevention**, it additionally needs an approved host/OS mediation boundary. To claim merge protection, it needs separately administered, mandatory repository checks. **Do not conflate the three.**
